@@ -129,4 +129,20 @@ test_that("bptcross overall function works correctly", {
     expect_equal(ref, BiocSingular:::bptcross(x, y, BPPARAM=MulticoreParam(2))) # by row of 'x', which is divisible by 2.
     expect_equal(ref, BiocSingular:::bptcross(x, y, BPPARAM=MulticoreParam(3))) # by column, which is divisible by 3.
     expect_equal(ref, BiocSingular:::bptcross(x, y, BPPARAM=MulticoreParam(4))) # by row of 'y', which is divisible by 4.
+
+    # Handles vector inputs.
+    xv <- runif(20)
+    ref <- tcrossprod(xv)
+    expect_equal(ref, BiocSingular:::bptcross(xv, BPPARAM=SerialParam()))
+    expect_equal(ref, BiocSingular:::bptcross(xv, BPPARAM=MulticoreParam(2))) 
+
+    y <- matrix(runif(300), ncol=20)
+    ref <- tcrossprod(xv, y)
+    expect_equal(ref, BiocSingular:::bptcross(xv, y, BPPARAM=SerialParam()))
+    expect_equal(ref, BiocSingular:::bptcross(xv, y, BPPARAM=MulticoreParam(2)))
+
+    x <- matrix(runif(150), ncol=15)
+    yv <- runif(10)
+    expect_error(ref <- tcrossprod(x, yv), "non-conformable arguments")
+    expect_error(BiocSingular:::bptcross(x, yv, BPPARAM=MulticoreParam(2)), "non-conformable arguments")
 })

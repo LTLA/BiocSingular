@@ -127,4 +127,21 @@ test_that("bpcross overall function works correctly", {
     expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(2))) # by column of 'x', which is divisible by 2.
     expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(3))) # by row, which is divisible by 3.
     expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(4))) # by column of 'y', which is divisible by 4.
+
+    # Handles vector inputs.
+    xv <- runif(20)
+    ref <- crossprod(xv)
+    expect_equal(ref, BiocSingular:::bpcross(xv, BPPARAM=SerialParam()))
+    expect_equal(ref, BiocSingular:::bpcross(xv, BPPARAM=MulticoreParam(2))) 
+
+    y <- matrix(runif(300), nrow=20)
+    ref <- crossprod(xv, y)
+    expect_equal(ref, BiocSingular:::bpcross(xv, y, BPPARAM=SerialParam()))
+    expect_equal(ref, BiocSingular:::bpcross(xv, y, BPPARAM=MulticoreParam(2)))
+
+    x <- matrix(runif(150), nrow=15)
+    yv <- runif(15)
+    ref <- crossprod(x, yv)
+    expect_equal(ref, BiocSingular:::bpcross(x, yv, BPPARAM=SerialParam()))
+    expect_equal(ref, BiocSingular:::bpcross(x, yv, BPPARAM=MulticoreParam(2)))
 })
