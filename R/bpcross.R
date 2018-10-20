@@ -42,6 +42,11 @@ bpcross <- function(x, y=NULL, BPPARAM=SerialParam())
 # is the most convenient, i.e., most evenly distributes jobs among the workers.
 {
     ncores <- bpnworkers(BPPARAM)
+    if (ncores==1L) {
+        return(crossprod(x, y))
+    }
+
+    x <- .matrixify_by_col(x)  
     njobs_by_row <- bpnjobs_by_row(x, ncores)
     njobs_by_col <- bpnjobs_by_col(x, ncores)
     row.dev <- .deviation(njobs_by_row)
@@ -54,6 +59,8 @@ bpcross <- function(x, y=NULL, BPPARAM=SerialParam())
             return(bpcross_x_by_col(x, BPPARAM=BPPARAM, njobs=njobs_by_col))
         }
     } else {
+        y <- .matrixify_by_col(y)
+
         njobs_by_col2 <- bpnjobs_by_col(y, ncores)
         col.dev2 <- .deviation(njobs_by_col2)
         if (col.dev2 < col.dev && col.dev2 < row.dev) {
@@ -70,5 +77,3 @@ bpcross <- function(x, y=NULL, BPPARAM=SerialParam())
         return(bpcross_x_by_col(x, y, BPPARAM=BPPARAM, njobs=njobs_by_col))
     }
 }
-
-

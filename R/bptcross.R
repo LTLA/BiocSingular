@@ -42,18 +42,33 @@ bptcross <- function(x, y=NULL, BPPARAM=SerialParam())
 # is the most convenient, i.e., most evenly distributes jobs among the workers.
 {
     ncores <- bpnworkers(BPPARAM)
-    njobs_by_row <- bpnjobs_by_row(x, ncores)
-    njobs_by_col <- bpnjobs_by_col(x, ncores)
-    row.dev <- .deviation(njobs_by_row)
-    col.dev <- .deviation(njobs_by_col)
-
+    if (ncores==1L) {
+        return(tcrossprod(x, y))
+    }
+    
     if (is.null(y)) {
+        x <- .matrixify_by_col(x)
+        njobs_by_row <- bpnjobs_by_row(x, ncores)
+        njobs_by_col <- bpnjobs_by_col(x, ncores)
+        row.dev <- .deviation(njobs_by_row)
+        col.dev <- .deviation(njobs_by_col)
+
         if (row.dev < col.dev) {
             return(bptcross_x_by_row(x, BPPARAM=BPPARAM, njobs=njobs_by_row))
         } else {
             return(bptcross_by_col(x, BPPARAM=BPPARAM, njobs=njobs_by_col))
         }
     } else {
+        x <- .matrixify_by_row(x)
+        njobs_by_row <- bpnjobs_by_row(x, ncores)
+        njobs_by_col <- bpnjobs_by_col(x, ncores)
+        row.dev <- .deviation(njobs_by_row)
+        col.dev <- .deviation(njobs_by_col)
+
+        if (is.null(dim(y))) { # tcrossprod fails when 'y' is a vector.
+            stop("non-conformable arguments")
+        }
+
         njobs_by_row2 <- bpnjobs_by_row(y, ncores)
         row.dev2 <- .deviation(njobs_by_row2)
         if (row.dev2 < col.dev && row.dev2 < row.dev) {
