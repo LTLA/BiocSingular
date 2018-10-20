@@ -54,8 +54,8 @@ test_that("exact SVD works on fat matrices", {
     # Handles zeroes.
     out0 <- runExactSVD(y, k=0, nv=0, nu=0, fold=1)
     expect_equal(out0$d, numeric(0))
-    expect_equal(out0$u, ref$u[,0])
-    expect_equal(out0$v, ref$v[,0])
+    expect_equivalent(out0$u, ref$u[,0])
+    expect_equivalent(out0$v, ref$v[,0])
 })
 
 test_that("exact SVD works with centering and scaling", {

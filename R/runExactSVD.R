@@ -1,6 +1,7 @@
 #' @export
 #' @importFrom utils head
-runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, fold=5L)
+#' @importFrom BiocParallel SerialParam
+runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, fold=5L, BPPARAM=SerialParam())
 # Wrapper for svd(), with options for faster calculation by taking the 
 # cross-product for fat or tall matrices.
 {
@@ -14,17 +15,18 @@ runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, f
     }
 
     if (nrow(x) > fold*ncol(x)) {
-        y <- crossprod(dx)
+        y <- bpcross(dx, BPPARAM=BPPARAM)
         res <- .safe.svd(y, nu=0, nv=max(nu, nv))
         res$d <- sqrt(res$d)
         res$u <- sweep(dx %*% res$v[,seq_len(nu),drop=FALSE], 2, head(res$d, nu), "/")
         res$v <- res$v[,seq_len(nv),drop=FALSE]
 
     } else if (ncol(x) > fold*nrow(x)) {
-        y <- tcrossprod(dx)
+        y <- bptcross(dx, BPPARAM=BPPARAM)
         res <- .safe.svd(y, nu=max(nu, nv), nv=0)
         res$d <- sqrt(res$d)
-        res$v <- sweep(crossprod(dx, res$u[,seq_len(nv),drop=FALSE]), 2, head(res$d, nv), "/")
+        v0 <- bpcross(dx, res$u[,seq_len(nv),drop=FALSE], BPPARAM=BPPARAM)
+        res$v <- sweep(v0, 2, head(res$d, nv), "/")
         res$u <- res$u[,seq_len(nu),drop=FALSE]
 
     } else {
@@ -47,4 +49,3 @@ runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, f
     }
     out[c("d", "u", "v")]
 }
-
