@@ -126,5 +126,5 @@ test_that("bpcross overall function works correctly", {
     expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=SerialParam()))
     expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(2))) # by column of 'x', which is divisible by 2.
     expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(3))) # by row, which is divisible by 3.
-    expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(4))) # by column of 'y', which is divisible by 3.
+    expect_equal(ref, BiocSingular:::bpcross(x, y, BPPARAM=MulticoreParam(4))) # by column of 'y', which is divisible by 4.
 })
