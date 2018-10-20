@@ -13,10 +13,6 @@ bpnjobs_by_col <- function(x, ncores) {
 }
 
 bpsplit_by_row <- function(x, ncores, njobs=NULL) {
-    if (ncores==1L) {
-        return(list(x))
-    }
-
     if (is.null(njobs)) {
         njobs <- bpnjobs_by_row(x, ncores)
     }
@@ -33,10 +29,6 @@ bpsplit_by_row <- function(x, ncores, njobs=NULL) {
 }
 
 bpsplit_by_col <- function(x, ncores, njobs=NULL) {
-    if (ncores==1L) {
-        return(list(x))
-    }
-
     if (is.null(njobs)) {
         njobs <- bpnjobs_by_col(x, ncores)
     }
