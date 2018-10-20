@@ -51,3 +51,8 @@ bpsplit_by_col <- function(x, ncores, njobs=NULL) {
 
     out
 }
+
+.deviation <- function(njobs) {
+    if (length(njobs)==1L) { return(0) }
+    mean(abs(njobs - mean(njobs)))
+}
