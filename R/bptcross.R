@@ -1,32 +1,27 @@
-#' @importFrom BiocParallel bpnworkers bplapply SerialParam
-bptcross_x_by_row <- function(x, y=NULL, BPPARAM=SerialParam(), njobs=NULL) {
-    per.core <- bpsplit_by_row(x, bpnworkers(BPPARAM), njobs=njobs)
-    if (is.null(y) && length(per.core) > 1L) { 
+#' @importFrom BiocParallel bplapply bpnworkers
+bptcross_x_by_row <- function(x, y=NULL, BPPARAM, njobs=bpnjobs_by_row(x, bpnworkers(BPPARAM))) {
+    per.core <- bpsplit_by_row(x, njobs)
+    if (is.null(y)) {
         y <- x 
     }
     out <- bplapply(per.core, FUN=tcrossprod, y=y, BPPARAM=BPPARAM) 
     do.call(rbind, out)
 }
 
-#' @importFrom BiocParallel bpnworkers bplapply SerialParam
-bptcross_y_by_row <- function(x, y, BPPARAM=SerialParam(), njobs=NULL) {
-    per.core <- bpsplit_by_row(y, bpnworkers(BPPARAM), njobs=njobs)
+#' @importFrom BiocParallel bplapply bpnworkers
+bptcross_y_by_row <- function(x, y, BPPARAM, njobs=bpnjobs_by_row(y, bpnworkers(BPPARAM))) {
+    per.core <- bpsplit_by_row(y, njobs)
     out <- bplapply(per.core, FUN=tcrossprod, x=x, BPPARAM=BPPARAM)
     do.call(cbind, out)
 }
 
-#' @importFrom BiocParallel bpnworkers bpmapply SerialParam
-bptcross_by_col <- function(x, y=NULL, BPPARAM=SerialParam(), njobs=NULL) {
-    ncores <- bpnworkers(BPPARAM)
-    if (is.null(njobs)) {
-        njobs <- bpnjobs_by_col(x, ncores)
-    }
-    
-    left.per.core <- bpsplit_by_col(x, ncores, njobs=njobs)
+#' @importFrom BiocParallel bpmapply bpnworkers
+bptcross_by_col <- function(x, y=NULL, BPPARAM, njobs=bpnjobs_by_col(x, bpnworkers(BPPARAM))) {
+    left.per.core <- bpsplit_by_col(x, njobs)
     if (is.null(y)) {
-        right.per.core <- vector("list", ncores)
+        right.per.core <- vector("list", length(left.per.core))
     } else {
-        right.per.core <- bpsplit_by_col(y, ncores, njobs=njobs)
+        right.per.core <- bpsplit_by_col(y, njobs)
     }
 
     # Technically this would be slightly more memory efficient
@@ -45,43 +40,29 @@ bptcross <- function(x, y=NULL, BPPARAM=SerialParam())
     if (ncores==1L) {
         return(tcrossprod(x, y))
     }
-    
+
     if (is.null(y)) {
         x <- .matrixify_by_col(x)
-        njobs_by_row <- bpnjobs_by_row(x, ncores)
-        njobs_by_col <- bpnjobs_by_col(x, ncores)
-        row.dev <- .deviation(njobs_by_row)
-        col.dev <- .deviation(njobs_by_col)
-
-        if (row.dev < col.dev) {
-            return(bptcross_x_by_row(x, BPPARAM=BPPARAM, njobs=njobs_by_row))
+        pattern <- dispatcher(x, x, ncores, x.transposed=FALSE, y.transposed=TRUE)
+        if (pattern$choice=="both") {
+            return(bptcross_by_col(x, BPPARAM=BPPARAM, njobs=pattern$jobs))
         } else {
-            return(bptcross_by_col(x, BPPARAM=BPPARAM, njobs=njobs_by_col))
+            return(bptcross_x_by_row(x, BPPARAM=BPPARAM, njobs=pattern$jobs))
         }
+
     } else {
         x <- .matrixify_by_row(x)
-        njobs_by_row <- bpnjobs_by_row(x, ncores)
-        njobs_by_col <- bpnjobs_by_col(x, ncores)
-        row.dev <- .deviation(njobs_by_row)
-        col.dev <- .deviation(njobs_by_col)
-
         if (is.null(dim(y))) { # tcrossprod fails when 'y' is a vector.
             stop("non-conformable arguments")
         }
 
-        njobs_by_row2 <- bpnjobs_by_row(y, ncores)
-        row.dev2 <- .deviation(njobs_by_row2)
-        if (row.dev2 < col.dev && row.dev2 < row.dev) {
-            return(bptcross_y_by_row(x, y, BPPARAM=BPPARAM, njobs=njobs_by_row2))
-        }
-
-        if (col.dev < row.dev) {
-            njobs_by_col2 <- bpnjobs_by_col(y, ncores)
-            if (identical(njobs_by_col2, njobs_by_col)) { # only possible if the columns match up.
-                return(bptcross_by_col(x, y, BPPARAM=BPPARAM, njobs=njobs_by_col))
-            }
-        }
-
-        return(bptcross_x_by_row(x, y, BPPARAM=BPPARAM, njobs=njobs_by_row))
+        pattern <- dispatcher(x, y, ncores, x.transposed=FALSE, y.transposed=TRUE)
+        return(
+            switch(pattern$choice,
+                x=bptcross_x_by_row(x, y, BPPARAM=BPPARAM, njobs=pattern$jobs),
+                y=bptcross_y_by_row(x, y, BPPARAM=BPPARAM, njobs=pattern$jobs),
+                both=bptcross_by_col(x, y, BPPARAM=BPPARAM, njobs=pattern$jobs)
+            )
+        )
     }
 }
