@@ -2,6 +2,8 @@
 #' @importFrom BiocParallel SerialParam bpstart bpstop bpisup
 #' @importFrom rsvd rsvd 
 #' @importFrom utils head
+#' @importClassesFrom DelayedArray DelayedMatrix
+#' @importFrom methods is
 runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, ..., fold=5L, BPPARAM=SerialParam())
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
@@ -31,6 +33,10 @@ runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work
                 on.exit(bpstop(BPPARAM))
             }
             x <- bpmatrix(x, BPPARAM)
+        }
+
+        if (is(x, "DelayedMatrix")) {
+            x <- as.matrix(x) # remove this once crossprod for DMs are supported.
         }
 
         res <- rsvd(x, k=max(nu, nv, k), nu=nu, nv=nv, ...) 
