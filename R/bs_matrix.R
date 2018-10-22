@@ -66,6 +66,7 @@ setMethod("%*%", c("bs_matrix", "ANY"), function(x, y) {
     out
 })
 
+#' @importFrom BiocGenerics rowSums
 setMethod("%*%", c("ANY", "bs_matrix"), function(x, y) {
     out <- as.matrix(x %*% get_matrix2(y))
 
@@ -86,4 +87,65 @@ setMethod("%*%", c("ANY", "bs_matrix"), function(x, y) {
 
 setMethod("%*%", c("bs_matrix", "bs_matrix"), function(x, y) {
     stop("multiplication of two 'bs_matrix' objects is not yet supported")
+})
+
+###################################
+# Cross-product. 
+
+# Again, we attempt to use the 'crossprod' defined for '.matrix' in the 'bs_matrix'.
+
+#' @importFrom BiocGenerics colSums
+setMethod("crossprod", c("bs_matrix", "missing"), function(x, y) {
+    x0 <- get_matrix2(x)
+    out <- as.matrix(crossprod(x0))
+
+    if (use_center(x)) {
+        centering <- get_center(x)
+        colsums <- colSums(x0)
+
+        # Minus, then add, then minus, to mitigate cancellation.
+        out <- out - outer(centering, colsums)
+        out <- out + outer(centering, centering) * nrow(x0)
+        out <- out - outer(colsums, centering)
+    }
+
+    if (use_scale(x)) {
+        out <- sweep(out / get_scale(x), 2, get_scale(x), "/", check.margin=FALSE)
+    }
+
+    out
+})
+
+setMethod("crossprod", c("bs_matrix", "ANY"), function(x, y) {
+
+})
+
+setMethod("crossprod", c("ANY", "bs_matrix"), function(x, y) {
+
+})
+
+###################################
+# Transposed cross-product. 
+
+setMethod("tcrossprod", c("bs_matrix", "missing"), function(x, y) {
+    new.x <- get_matrix2(x)
+    if (use_scale(x)) {
+        new.x <- sweep(new.x, 2, get_scale(x), "/", check.margin=FALSE) # Can't avoid this.
+    }
+
+    out <- as.matrix(tcrossprod(new.x))
+    
+    if (use_center(x)) {
+        centering <- get_center(x)
+        if (use_scale(x)) {
+            centering <- centering / get_scale(x)
+        }
+
+        # Minus, then add, then minus, to mitigate cancellation.
+        out <- sweep(out, 2, as.numeric(tcrossprod(centering, new.x)), "-", check.margin=FALSE)
+        out <- out + sum(centering^2)
+        out <- out - as.numeric(new.x %*% centering)
+    }
+
+    out
 })

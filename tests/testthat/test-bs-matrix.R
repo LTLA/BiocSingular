@@ -1,6 +1,8 @@
 # Tests the bs_matrix implementation.
 # library(testthat); library(BiocSingular); source("test-bs-matrix.R")
 
+##########################
+
 test_that("bs_matrix right multiplication works as expected", {
     for (it in 1:4) {
         y <- matrix(rnorm(100000), ncol=20)
@@ -76,3 +78,58 @@ test_that("bs_matrix dual multiplication fails as expected", {
     bs.y <- bs_matrix(y, NULL, NULL)
     expect_error(bs.y %*% bs.y, "not yet supported")
 })
+
+##########################
+
+test_that("bs_matrix lonely crossproduct works as expected", {
+    for (it in 1:4) {
+        y <- matrix(rnorm(10000), ncol=200)
+        center <- scale <- NULL
+
+        if (it==1L) {
+            center <- colMeans(y)
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=center, scale=scale)
+        } else if (it==2L) {
+            center <- rnorm(ncol(y))
+            ref.y <- scale(y, center=center, scale=FALSE)
+        } else if (it==3L) {
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=FALSE, scale=scale)
+        } else {
+            ref.y <- y
+        }
+
+        bs.y <- bs_matrix(y, center, scale)
+        expect_equal(crossprod(bs.y), crossprod(ref.y))
+    }
+})
+
+##########################
+
+
+test_that("bs_matrix lonely tcrossproduct works as expected", {
+    for (it in 1:4) {
+        y <- matrix(rnorm(10000), ncol=200)
+        center <- scale <- NULL
+
+        if (it==1L) {
+            center <- colMeans(y)
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=center, scale=scale)
+        } else if (it==2L) {
+            center <- rnorm(ncol(y))
+            ref.y <- scale(y, center=center, scale=FALSE)
+        } else if (it==3L) {
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=FALSE, scale=scale)
+        } else {
+            ref.y <- y
+        }
+
+        bs.y <- bs_matrix(y, center, scale)
+        expect_equal(tcrossprod(bs.y), tcrossprod(ref.y))
+    }
+})
+
+
