@@ -1,5 +1,5 @@
 #' @export
-#' @importFrom BiocParallel SerialParam
+#' @importFrom BiocParallel SerialParam bpstart bpstop
 #' @importFrom irlba irlba
 #' @importFrom utils head
 runIrlba <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, ..., fold=5L, BPPARAM=SerialParam())
@@ -15,6 +15,8 @@ runIrlba <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
             work=max(k, nu, nv) + extra.work, ...)
 
     if (bpnworkers(BPPARAM)!=1L) {
+        bpstart(BPPARAM) # lots of multiplications, so we set up the backend.
+        on.exit(bpstop(BPPARAM))
         args$mult <- function(x, y) { as.matrix(bpmult(x, y, BPPARAM=BPPARAM)) }
         args$fastpath <- FALSE
     }
