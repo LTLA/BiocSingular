@@ -44,7 +44,7 @@ setMethod("length", "bs_matrix", function(x) length(get_matrix2(x)))
 ###################################
 # Matrix multiplication.
 
-# We attempt to use the '%*%' defined for '.matrix' in the 'bs_matrix'.
+# We attempt to use operators defined for '.matrix' in the 'bs_matrix'.
 # This avoids expensive modifications such as loss of sparsity.
 # Centering and scaling are factored out into separate operations.
 #
@@ -91,8 +91,6 @@ setMethod("%*%", c("bs_matrix", "bs_matrix"), function(x, y) {
 
 ###################################
 # Cross-product. 
-
-# Again, we attempt to use the 'crossprod' defined for '.matrix' in the 'bs_matrix'.
 
 #' @importFrom BiocGenerics colSums
 setMethod("crossprod", c("bs_matrix", "missing"), function(x, y) {
@@ -169,6 +167,40 @@ setMethod("tcrossprod", c("bs_matrix", "missing"), function(x, y) {
         out <- sweep(out, 2, as.numeric(tcrossprod(centering, new.x)), "-", check.margin=FALSE)
         out <- out + sum(centering^2)
         out <- out - as.numeric(new.x %*% centering)
+    }
+
+    out
+})
+
+setMethod("tcrossprod", c("bs_matrix", "ANY"), function(x, y) {
+    if (use_scale(x)) {
+        if (!is.null(dim(y))) { # vector 'y' triggers error in 'tcrossprod' anyway.
+            y <- sweep(y, 2, get_scale(x), "/", check.margin=FALSE)
+        }
+    }
+
+    out <- as.matrix(tcrossprod(get_matrix2(x), y))
+
+    if (use_center(x)) {
+        out <- sweep(out, 2, as.numeric(tcrossprod(get_center(x), y)), "-", check.margin=FALSE)
+    }
+
+    out
+})
+
+setMethod("tcrossprod", c("ANY", "bs_matrix"), function(x, y) {
+    if (use_scale(y)) {
+        if (is.null(dim(x))) {
+            x <- x / get_scale(y)
+        } else { 
+            x <- sweep(x, 2, get_scale(y), "/", check.margin=FALSE)
+        }
+    }
+
+    out <- as.matrix(tcrossprod(x, get_matrix2(y)))
+
+    if (use_center(y)) {
+        out <- out - as.numeric(x %*% get_center(y))
     }
 
     out
