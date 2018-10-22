@@ -8,7 +8,7 @@ runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, f
     x <- standardize_matrix(x, center=center, scale=scale)
 
     if (use_crossprod(x, fold)) {
-        x <- as.matrix(x) # uncomment once crossprod supports DAs.
+        x <- as.matrix(x) # remove once crossprod supports DAs.
         res <- svd_via_crossprod(x, k=k, nu=nu, nv=nv, FUN=safe_svd, BPPARAM=BPPARAM)
     } else {
         res <- safe_svd(as.matrix(x), nu=nu, nv=nv)
