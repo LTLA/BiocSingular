@@ -14,7 +14,5 @@ Description: Implements exact and approximate methods for singular value
     workflows. Where possible, parallelization is achieved using 
     the BiocParallel framework.
 License: GPL-3
-LinkingTo: Rcpp, RcppAnnoy
 VignetteBuilder: knitr
-SystemRequirements: C++11
 RoxygenNote: 6.1.0
