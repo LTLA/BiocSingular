@@ -105,6 +105,78 @@ test_that("bs_matrix lonely crossproduct works as expected", {
     }
 })
 
+test_that("bs_matrix left crossproduct works as expected", {
+    for (it in 1:4) {
+        y <- matrix(rnorm(10000), ncol=200)
+        center <- scale <- NULL
+
+        if (it==1L) {
+            center <- colMeans(y)
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=center, scale=scale)
+        } else if (it==2L) {
+            center <- rnorm(ncol(y))
+            ref.y <- scale(y, center=center, scale=FALSE)
+        } else if (it==3L) {
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=FALSE, scale=scale)
+        } else {
+            ref.y <- y
+        }
+
+        bs.y <- bs_matrix(y, center, scale)
+
+        # Multiply by a vector.
+        z <- rnorm(nrow(y))
+        expect_equal(crossprod(bs.y, z), crossprod(ref.y, z))
+        
+        # Multiply by a matrix.
+        z <- matrix(rnorm(nrow(y)*10), ncol=10)
+        expect_equal(crossprod(bs.y, z), crossprod(ref.y, z))
+        
+        # Multiply by an empty matrix.
+        z <- matrix(0, ncol=0, nrow=nrow(y))
+        expect_equal(crossprod(bs.y, z), crossprod(ref.y, z))
+    }
+})
+
+test_that("bs_matrix right crossproduct works as expected", {
+    for (it in 1:4) {
+        y <- matrix(rnorm(10000), ncol=200)
+        center <- scale <- NULL
+
+        if (it==1L) {
+            center <- colMeans(y)
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=center, scale=scale)
+        } else if (it==2L) {
+            center <- rnorm(ncol(y))
+            ref.y <- scale(y, center=center, scale=FALSE)
+        } else if (it==3L) {
+            scale <- runif(ncol(y))
+            ref.y <- scale(y, center=FALSE, scale=scale)
+        } else {
+            ref.y <- y
+        }
+
+        bs.y <- bs_matrix(y, center, scale)
+
+        # Multiply by a vector.
+        z <- rnorm(nrow(y))
+        expect_equal(crossprod(z, bs.y), crossprod(z, ref.y))
+        
+        # Multiply by a matrix.
+        z <- matrix(rnorm(nrow(y)*10), ncol=10)
+        expect_equal(crossprod(z, bs.y), crossprod(z, ref.y))
+        
+        # Multiply by an empty matrix.
+        z <- matrix(0, ncol=0, nrow=nrow(y))
+        expect_equal(crossprod(z, bs.y), crossprod(z, ref.y))
+    }
+})
+
+
+
 ##########################
 
 

@@ -116,12 +116,36 @@ setMethod("crossprod", c("bs_matrix", "missing"), function(x, y) {
     out
 })
 
+#' @importFrom BiocGenerics colSums
 setMethod("crossprod", c("bs_matrix", "ANY"), function(x, y) {
-
+    out <- as.matrix(crossprod(get_matrix2(x), y))
+    if (use_center(x)) {
+        if (is.null(dim(y))) {
+            out <- out - get_center(x) * sum(y)
+        } else {
+            out <- out - outer(get_center(x), colSums(y))
+        }
+    }
+    if (use_scale(x)) {
+        out <- out / get_scale(x)
+    }
+    out
 })
 
+#' @importFrom BiocGenerics colSums
 setMethod("crossprod", c("ANY", "bs_matrix"), function(x, y) {
-
+    out <- as.matrix(crossprod(x, get_matrix2(y)))
+    if (use_center(y)) {
+        if (is.null(dim(x))) {
+            out <- sweep(out, 2, sum(x) * get_center(y), "-", check.margin=FALSE)
+        } else {
+            out <- out - outer(colSums(x), get_center(y))
+        }
+    }
+    if (use_scale(y)) {
+        out <- sweep(out, 2, get_scale(y), "/", check.margin=FALSE)
+    }
+    out
 })
 
 ###################################
