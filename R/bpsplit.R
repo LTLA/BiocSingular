@@ -85,10 +85,10 @@ dispatcher <- function(x, y, ncores, x.transposed=FALSE, y.transposed=FALSE)
     # nor for various parallelization schemes (depending on whether serialization is necessary).
     # However, refining the calculations increases the complexity considerably,
     # and it should be pretty clear which one is better when one matrix is large and file-backed.
-    x.cost <- x.choice * common.dim + nrow(y) * ncol(y)
-    y.cost <- y.choice * common.dim + nrow(x) * ncol(x)
-    both.cost.x <- both.choice.x * (x.other.dim + y.other.dim)
-    both.cost.y <- both.choice.y * (x.other.dim + y.other.dim)
+    x.cost <- x.choice * common.dim + as.double(nrow(y)) * ncol(y)
+    y.cost <- y.choice * common.dim + as.double(nrow(x)) * ncol(x)
+    both.cost.x <- both.choice.x * as.double(x.other.dim + y.other.dim)
+    both.cost.y <- both.choice.y * as.double(x.other.dim + y.other.dim)
 
     collected <- c(x=max(x.cost), y=max(y.cost), both.x=max(both.cost.x), both.y=max(both.cost.y))
     best <- names(collected)[which.min(collected)]
