@@ -30,7 +30,7 @@ bpmult <- function(x, y, BPPARAM=SerialParam())
 { 
     ncores <- bpnworkers(BPPARAM)
     if (ncores==1L) {
-        return(x %*% y)
+        return(.internal_mult(x, y))
     }
 
     x <- .matrixify_by_row(x)
@@ -46,8 +46,9 @@ bpmult <- function(x, y, BPPARAM=SerialParam())
 
 .internal_mult <- function(left, right) 
 # Avoid problems with using 'y' in lapply on '%*%' directly.
+# Also ensure that the output is a dense ordinary matrix.
 {
-    left %*% right
+    as.matrix(left %*% right)
 }
 
 .matrixify_by_row <- function(x) {

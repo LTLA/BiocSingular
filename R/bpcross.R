@@ -4,14 +4,14 @@ bpcross_x_by_col <- function(x, y=NULL, BPPARAM, njobs=bpnjobs_by_col(x, bpnwork
     if (is.null(y)) { 
         y <- x 
     }
-    out <- bplapply(per.core, FUN=crossprod, y=y, BPPARAM=BPPARAM) 
+    out <- bplapply(per.core, FUN=.internal_crossprod, y=y, BPPARAM=BPPARAM) 
     do.call(rbind, out)
 }
 
 #' @importFrom BiocParallel bplapply bpnworkers
 bpcross_y_by_col <- function(x, y, BPPARAM, njobs=bpnjobs_by_col(y, bpnworkers(BPPARAM))) {
     per.core <- bpsplit_by_col(y, njobs)
-    out <- bplapply(per.core, FUN=crossprod, x=x, BPPARAM=BPPARAM)
+    out <- bplapply(per.core, FUN=.internal_crossprod, x=x, BPPARAM=BPPARAM)
     do.call(cbind, out)
 }
 
@@ -27,7 +27,7 @@ bpcross_by_row <- function(x, y=NULL, BPPARAM, njobs=bpnjobs_by_row(x, bpnworker
     # Technically this would be slightly more memory efficient
     # if we used bpiterate to immediately Reduce jobs upon completion,
     # rather than holding all results in memory and adding them together.
-    out <- bpmapply(FUN=crossprod, x=left.per.core, y=right.per.core, BPPARAM=BPPARAM, USE.NAMES=FALSE, SIMPLIFY=FALSE)
+    out <- bpmapply(FUN=.internal_crossprod, x=left.per.core, y=right.per.core, BPPARAM=BPPARAM, USE.NAMES=FALSE, SIMPLIFY=FALSE)
     Reduce("+", out)    
 }
 
@@ -38,7 +38,7 @@ bpcross <- function(x, y=NULL, BPPARAM=SerialParam())
 {
     ncores <- bpnworkers(BPPARAM)
     if (ncores==1L) {
-        return(crossprod(x, y))
+        return(.internal_crossprod(x, y))
     }
 
     x <- .matrixify_by_col(x)  
@@ -62,4 +62,10 @@ bpcross <- function(x, y=NULL, BPPARAM=SerialParam())
             )
         )
     }
+}
+
+.internal_crossprod <- function(x, y) 
+# Ensure that the output is a dense ordinary matrix.
+{
+    as.matrix(crossprod(x, y))
 }
