@@ -2,11 +2,11 @@
 \alias{runIrlba}
 
 \title{Approximate SVD with \pkg{irlba}}
-\description{Perform an approximate singular value decomposition with \pkg{irlba}.}
+\description{Perform an approximate singular value decomposition with the augmented implicitly restarted Lanczos bidiagonalization algorithm.}
 
 \usage{
 runIrlba(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
-    ..., BPPARAM=SerialParam())
+    ..., fold=5L, BPPARAM=SerialParam())
 }
 
 \arguments{
