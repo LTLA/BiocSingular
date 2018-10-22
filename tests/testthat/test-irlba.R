@@ -2,6 +2,8 @@
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-irlba.R")
 
 library(irlba)
+
+set.seed(9000)
 test_that("IRLBA works on input matrices", {
     y <- matrix(rnorm(50000), ncol=200)
     set.seed(100)
@@ -32,6 +34,7 @@ test_that("IRLBA works on input matrices", {
     expect_equal(out0$v, ref$v[,0])
 })
 
+set.seed(9001)
 test_that("IRLBA works on thin matrices", {
     y <- matrix(rnorm(10000), ncol=10)
     set.seed(200)
@@ -56,6 +59,7 @@ test_that("IRLBA works on thin matrices", {
     expect_equal_svd(out, ref)
 })
 
+set.seed(9002)
 test_that("IRLBA works on fat matrices", {
     y <- matrix(rnorm(10000), nrow=10)
     set.seed(300)
@@ -80,6 +84,7 @@ test_that("IRLBA works on fat matrices", {
     expect_equal_svd(out, ref)
 })
 
+set.seed(9003)
 test_that("IRLBA works with alternative multiplication", {
     # Lower tol to avoid numeric precision issues.
     y <- matrix(rnorm(50000), ncol=100)
@@ -98,6 +103,7 @@ test_that("IRLBA works with alternative multiplication", {
     expect_equal_svd(out, ref[c("d", "u", "v")], tol=1e-6)
 })
 
+set.seed(9004)
 test_that("IRLBA works with centering and scaling", {
     y <- matrix(rnorm(10000), ncol=50)
     center <- runif(ncol(y))

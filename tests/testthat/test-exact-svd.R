@@ -1,6 +1,7 @@
 # Tests runExactSVD().
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-exact-svd.R")
 
+set.seed(50000)
 test_that("exact SVD works on square matrices", {
     y <- matrix(rnorm(10000), ncol=100, nrow=100)
     out <- runExactSVD(y, fold=Inf)
@@ -25,6 +26,7 @@ test_that("exact SVD works on square matrices", {
     expect_equal(out0$v, ref$v[,0])
 })
 
+set.seed(50001)
 test_that("exact SVD works on thin matrices", {
     y <- matrix(rnorm(10000), ncol=10)
     out <- runExactSVD(y, fold=1)
@@ -49,6 +51,7 @@ test_that("exact SVD works on thin matrices", {
     expect_equal(out0$v, ref$v[,0])
 })
 
+set.seed(50002)
 test_that("exact SVD works on fat matrices", {
     y <- matrix(rnorm(10000), nrow=10)
     out <- runExactSVD(y, fold=1)
@@ -73,6 +76,7 @@ test_that("exact SVD works on fat matrices", {
     expect_equivalent(out0$v, ref$v[,0])
 })
 
+set.seed(50003)
 test_that("exact SVD works with centering and scaling", {
     y <- matrix(rnorm(10000), ncol=50)
     center <- runif(ncol(y))

@@ -1,6 +1,7 @@
 # Tests the bpmatrix functionality.
 # library(testthat); library(BiocSingular); source("test-bpmatrix.R")
 
+set.seed(200001)
 test_that("bpmatrix utilities work correctly", {
     y <- matrix(rnorm(1000), ncol=20)
     colnames(y) <- head(LETTERS, 20)
@@ -10,6 +11,7 @@ test_that("bpmatrix utilities work correctly", {
     expect_identical(length(x), length(y))
 })
 
+set.seed(200002)
 test_that("bpmatrix multiplication works correctly", {
     y <- matrix(rnorm(1000), ncol=20)
     z <- matrix(rnorm(500), nrow=20)
@@ -24,6 +26,7 @@ test_that("bpmatrix multiplication works correctly", {
     expect_equal(ref, yp %*% zp)
 })
 
+set.seed(200003)
 test_that("bpmatrix crossprod works correctly", {
     y <- matrix(rnorm(1000), nrow=20)
     yp <- BiocSingular:::bpmatrix(y, BiocParallel::SerialParam())
@@ -38,6 +41,7 @@ test_that("bpmatrix crossprod works correctly", {
     expect_equal(ref, BiocSingular:::crossprod(yp, zp))
 })
 
+set.seed(200004)
 test_that("bpmatrix tcrossprod works correctly", {
     y <- matrix(rnorm(1000), ncol=20)
     yp <- BiocSingular:::bpmatrix(y, BiocParallel::SerialParam())

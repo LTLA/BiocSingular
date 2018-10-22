@@ -2,6 +2,8 @@
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-random-svd.R")
 
 library(rsvd)
+
+set.seed(80000)
 test_that("Random SVD works on input matrices", {
     y <- matrix(rnorm(50000), ncol=200)
     set.seed(100)
@@ -32,6 +34,7 @@ test_that("Random SVD works on input matrices", {
     expect_equal(out0$v, ref$v[,0])
 })
 
+set.seed(80001)
 test_that("Random SVD works on thin matrices", {
     y <- matrix(rnorm(10000), ncol=10)
     set.seed(200)
@@ -56,6 +59,7 @@ test_that("Random SVD works on thin matrices", {
     expect_equal_svd(out, ref)
 })
 
+set.seed(80002)
 test_that("Random SVD works on fat matrices", {
     y <- matrix(rnorm(10000), nrow=10)
     set.seed(300)
@@ -79,6 +83,7 @@ test_that("Random SVD works on fat matrices", {
     expect_equal_svd(out, ref)
 })
 
+set.seed(80003)
 test_that("Random SVD works with parallelization", {
     y <- matrix(rnorm(50000), ncol=100)
     set.seed(100)
@@ -95,6 +100,7 @@ test_that("Random SVD works with parallelization", {
     expect_equal_svd(out, ref[c("d", "u", "v")], tol=1e-6)
 })
 
+set.seed(80004)
 test_that("Random SVD works with centering and scaling", {
     y <- matrix(rnorm(10000), ncol=50)
     center <- runif(ncol(y))

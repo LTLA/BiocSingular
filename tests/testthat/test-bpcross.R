@@ -1,6 +1,7 @@
 # Tests bpcross() for parallelized cross products.
 # library(testthat); library(BiocSingular); source("test-bpcross.R")
 
+set.seed(190000)
 test_that("bpcross_x_by_col works correctly", {
     x <- matrix(runif(1000), nrow=20)
     y <- matrix(runif(5000), nrow=20)
@@ -38,6 +39,7 @@ test_that("bpcross_x_by_col works correctly", {
     expect_equivalent(ref, BiocSingular:::bpcross_x_by_col(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(190001)
 test_that("bpcross_y_by_col works correctly", {
     x <- matrix(runif(1000), nrow=20)
     y <- matrix(runif(5000), nrow=20)
@@ -65,6 +67,7 @@ test_that("bpcross_y_by_col works correctly", {
     expect_equivalent(ref, BiocSingular:::bpcross_y_by_col(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(190002)
 test_that("bpcross_by_row works correctly", {
     x <- matrix(runif(1000), nrow=20)
     y <- matrix(runif(5000), nrow=20)
@@ -102,6 +105,7 @@ test_that("bpcross_by_row works correctly", {
     expect_equivalent(ref, BiocSingular:::bpcross_by_row(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(190003)
 test_that("bpcross overall function works correctly", {
     x <- matrix(runif(300), nrow=15)
     ref <- crossprod(x)

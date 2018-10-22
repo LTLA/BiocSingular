@@ -1,6 +1,7 @@
 # Tests bpmult() for parallelized matrix multiplication.
 # library(testthat); library(BiocSingular); source("test-bpmult.R")
 
+set.seed(3000000)
 test_that("bpmult_x_by_row works correctly on two input matrices", {
     x <- matrix(runif(1000), ncol=20)
     y <- matrix(runif(5000), nrow=20)
@@ -29,6 +30,7 @@ test_that("bpmult_x_by_row works correctly on two input matrices", {
     expect_equivalent(ref, BiocSingular:::bpmult_x_by_row(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(3000001)
 test_that("bpmult_x_by_col works correctly on two input matrices", {
     x <- matrix(runif(1000), ncol=25)
     y <- matrix(runif(5000), nrow=25)
@@ -57,6 +59,7 @@ test_that("bpmult_x_by_col works correctly on two input matrices", {
     expect_equivalent(ref, BiocSingular:::bpmult_x_by_col(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(3000002)
 test_that("bpmult_y_by_col works correctly on two input matrices", {
     x <- matrix(runif(1000), ncol=50)
     y <- matrix(runif(5000), nrow=50)
@@ -85,6 +88,7 @@ test_that("bpmult_y_by_col works correctly on two input matrices", {
     expect_equivalent(ref, BiocSingular:::bpmult_y_by_col(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(3000003)
 test_that("bpmult works correctly on two input matrices", {
     # 'y' is bigger than 'x'.
     x <- matrix(runif(1000), ncol=20)
@@ -133,6 +137,7 @@ test_that("bpmult works correctly on two input matrices", {
     expect_equivalent(ref, BiocSingular:::bpmult(x0, y0, BPPARAM=MulticoreParam(2)))
 })
 
+set.seed(3000004)
 test_that("bpmult overall function works correctly", {
     x <- matrix(runif(150), ncol=15)
     y <- matrix(runif(300), nrow=15)
