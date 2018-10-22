@@ -1,3 +1,3 @@
 library(BiocSingular)
 library(testthat)
-test_that("BiocSingular")
+test_check("BiocSingular")
