@@ -80,20 +80,19 @@ test_that("Random SVD works on fat matrices", {
 })
 
 test_that("Random SVD works with parallelization", {
-# Uncomment once rsvd() accepts alternative matrix representations.
-#    y <- matrix(rnorm(50000), ncol=100)
-#    set.seed(100)
-#    ref <- runRandomSVD(y, k=5, fold=Inf)
-#    set.seed(100)
-#    out <- runRandomSVD(y, k=5, BPPARAM=MulticoreParam(2), fold=Inf)
-#    expect_equal_svd(ref, out)
-#
-#    # Handles truncation.
-#    set.seed(100)
-#    ref <- runRandomSVD(y, k=5, nv=2, nu=3, fold=Inf)
-#    set.seed(100)
-#    out <- runRandomSVD(y, k=5, nv=2, nu=3, BPPARAM=MulticoreParam(2), fold=Inf)
-#    expect_equal_svd(out, ref[c("d", "u", "v")])
+    y <- matrix(rnorm(50000), ncol=100)
+    set.seed(100)
+    ref <- runRandomSVD(y, k=5, fold=Inf, p=50, q=20)
+    set.seed(100)
+    out <- runRandomSVD(y, k=5, BPPARAM=MulticoreParam(2), fold=Inf, p=50, q=20)
+    expect_equal_svd(ref, out, tol=1e-6)
+
+    # Handles truncation.
+    set.seed(100)
+    ref <- runRandomSVD(y, k=5, nv=2, nu=3, fold=Inf, p=50, q=20)
+    set.seed(100)
+    out <- runRandomSVD(y, k=5, nv=2, nu=3, BPPARAM=MulticoreParam(2), fold=Inf, p=50, q=20)
+    expect_equal_svd(out, ref[c("d", "u", "v")], tol=1e-6)
 })
 
 test_that("Random SVD works with centering and scaling", {
