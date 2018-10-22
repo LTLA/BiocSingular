@@ -5,7 +5,7 @@ Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
 Depends: R (>= 3.5), BiocParallel
-Imports: irlba, rsvd, DelayedArray, methods
+Imports: irlba, rsvd, DelayedArray, DelayedMatrixStats, methods
 Suggests: testthat, BiocStyle, knitr, rmarkdown
 biocViews: DimensionReduction, PrincipalComponent
 Description: Implements exact and approximate methods for singular value
