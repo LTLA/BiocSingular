@@ -19,6 +19,8 @@ runIrlba(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7,
     This is applied after \code{center} if both are specified.}
     \item{extra.work}{Integer scalar specifying the additional number of dimensions to use for the working subspace.}
     \item{...}{Further arguments to pass to \code{\link{irlba}}.}
+    \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x}, 
+        at which the SVD is performed on the cross-product rather than \code{x} itself.}
     \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
 }
 
@@ -27,6 +29,9 @@ If \code{BPPARAM} has only 1 core \emph{and} \code{x} is an ordinary matrix or \
 Otherwise, it will use the slower R-based algorithm to take advantage of the generic (and parallelized) multiplication.
 
 The total dimensionality of the working subspace is defined as the maximum of \code{k}, \code{nu} and \code{nv}, plus the \code{extra.work}.
+
+If the dimensions of \code{x} are very different (as defined by \code{fold}), \code{\link{irlba}} is called on the cross-product of \code{x} instead.
+This can be much faster than directly performing the SVD on a very fat or tall \code{x}.
 }
 
 \value{
