@@ -26,12 +26,14 @@ runIrlba(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7,
 
 \details{
 If \code{BPPARAM} has only 1 core \emph{and} \code{x} is an ordinary matrix or \code{dgCMatrix}, this function will use \code{\link{irlba}} with the default \code{fastpath=TRUE}.
-Otherwise, it will use the slower R-based algorithm to take advantage of the generic (and parallelized) multiplication.
-
-The total dimensionality of the working subspace is defined as the maximum of \code{k}, \code{nu} and \code{nv}, plus the \code{extra.work}.
+Otherwise, it will use the slower R-based algorithm to take advantage of the generic matrix multiplication.
+All multiplication operations involving \code{x} will be parallelized according to the supplied \code{BPPARAM}.
 
 If the dimensions of \code{x} are very different (as defined by \code{fold}), \code{\link{irlba}} is called on the cross-product of \code{x} instead.
 This can be much faster than directly performing the SVD on a very fat or tall \code{x}.
+Note that, in this case, parallelization is only used for performing the cross-product and not in \code{\link{irlba}} itself.
+
+The total dimensionality of the working subspace is defined as the maximum of \code{k}, \code{nu} and \code{nv}, plus the \code{extra.work}.
 }
 
 \value{
