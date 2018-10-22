@@ -1,4 +1,4 @@
-# Tests bpcross() for parallelized cross products.
+# Tests bptcross() for parallelized transposed cross products.
 # library(testthat); library(BiocSingular); source("test-bptcross.R")
 
 test_that("bpcross_x_by_row works correctly", {

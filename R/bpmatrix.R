@@ -1,3 +1,7 @@
+# Wrapper class that enables parallelized matrix multiplication
+# in IRLBA() and RSVD(), without needing to define a custom 
+# matrix multiplication function.
+
 #' @import methods
 #' @importClassesFrom BiocParallel BiocParallelParam
 setClass("bpmatrix", slots=c(MATRIX="ANY", BPPARAM="BiocParallelParam"))

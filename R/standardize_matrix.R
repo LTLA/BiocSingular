@@ -1,6 +1,5 @@
 #' @importFrom BiocGenerics t
 #' @importFrom DelayedArray DelayedArray
-#' @importFrom DelayedMatrixStats rowMeans2 rowSums2
 standardize_matrix <- function(x, center=NULL, scale=NULL) 
 # Centers and scales the matrix, if this is required.
 {
