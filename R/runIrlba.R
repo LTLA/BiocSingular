@@ -1,7 +1,8 @@
 #' @export
 #' @importFrom BiocParallel SerialParam
 #' @importFrom irlba irlba
-runIrlba <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, maxit=1000, tol=1e-5, BPPARAM=SerialParam())
+#' @importFrom utils head
+runIrlba <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, ..., fold=5L, BPPARAM=SerialParam())
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
     if (nu==0 && nv==0 && k==0) {
@@ -11,16 +12,24 @@ runIrlba <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
     }
 
     args <- list(A=x, nu=nu, nv=max(nv, k),
-            work=max(k, nu, nv) + extra.work, 
-            center=center, scale=scale, 
-            maxit=maxit, tol=tol)
+            work=max(k, nu, nv) + extra.work, ...)
 
-    # Fix when DA parallel multiplication is operational.
     if (bpnworkers(BPPARAM)!=1L) {
-        args$mult <- `%*%`
+        args$mult <- function(x, y) { as.matrix(bpmult(x, y, BPPARAM=BPPARAM)) }
+        args$fastpath <- FALSE
     }
 
-    res <- do.call(irlba, args)
-    res$v <- res$v[,seq_len(nv),drop=FALSE]
+    if (use_crossprod(x, fold)) {
+        x <- standardize_matrix(x, center=center, scale=scale)
+        x <- as.matrix(x) # remove once crossprod supports DAs.
+        res <- svd_via_crossprod(x, k=k, nu=nu, nv=nv, FUN=safe_svd, BPPARAM=BPPARAM)
+    } else {
+        args$center <- center
+        args$scale <- scale
+        res <- do.call(irlba, args)
+        res$v <- res$v[,seq_len(nv),drop=FALSE]
+        res$d <- head(res$d, k)
+    }
+
     res[c("d", "u", "v")]
 }
