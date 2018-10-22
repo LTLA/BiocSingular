@@ -96,7 +96,7 @@ test_that("IRLBA works with centering and scaling", {
     # Works with the cross-product.
     y <- matrix(rnorm(10000), ncol=10)
     center <- runif(ncol(y))
-    scale <- runif(ncol(y))
+    scale <- NULL #runif(ncol(y))
     
     ry <- scale(y, center=center, scale=FALSE)
     set.seed(200)
