@@ -3,12 +3,12 @@
 
 test_that("exact SVD works on square matrices", {
     y <- matrix(rnorm(10000), ncol=100, nrow=100)
-    out <- runExactSVD(y)
+    out <- runExactSVD(y, fold=Inf)
     ref <- svd(y)
     expect_equal(out, ref)
 
     # Handles truncation.
-    out <- runExactSVD(y, k=10, nv=5, nu=3)
+    out <- runExactSVD(y, k=10, nv=5, nu=3, fold=Inf)
     ref <- svd(y, nv=5, nu=3)
     ref$d <- ref$d[1:10]
     expect_equal(out, ref)
@@ -59,12 +59,22 @@ test_that("exact SVD works on fat matrices", {
 })
 
 test_that("exact SVD works with centering and scaling", {
+    y <- matrix(rnorm(10000), ncol=50)
+    center <- runif(ncol(y))
+    scale <- runif(ncol(y))
+
+    ry <- scale(y, center=center, scale=scale)
+    ref <- svd(ry)
+    out <- runExactSVD(y, center=center, scale=scale, fold=Inf)
+    expect_equal_svd(out, ref)
+
+    # Works with the crossproduct.
     y <- matrix(rnorm(10000), ncol=10)
     center <- runif(ncol(y))
     scale <- runif(ncol(y))
 
     ry <- scale(y, center=center, scale=scale)
     ref <- svd(ry)
-    out <- runExactSVD(y, center=center, scale=scale)
+    out <- runExactSVD(y, center=center, scale=scale, fold=1)
     expect_equal_svd(out, ref)
 })
