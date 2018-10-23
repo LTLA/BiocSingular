@@ -6,7 +6,7 @@
 
 \usage{
 runRandomSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, ..., 
-    fold=5L, BPPARAM=SerialParam())
+    fold=5L, BPPARAM=NULL)
 }
 
 \arguments{
@@ -20,7 +20,8 @@ runRandomSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, ...,
     \item{...}{Further arguments to pass to \code{\link{rsvd}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x}, 
         at which the SVD is performed on the cross-product rather than \code{x} itself.}
-    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.
+        Defaults to \code{\link{bpparam}()}.}
 }
 
 \details{

@@ -6,7 +6,7 @@
 
 \usage{
 runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, 
-    fold=5, BPPARAM=SerialParam())
+    fold=5, BPPARAM=NULL)
 }
 
 \arguments{
@@ -19,7 +19,8 @@ runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL,
     This is applied after \code{center} if both are specified.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x}, 
         at which the SVD is performed on the cross-product rather than \code{x} itself.}
-    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.
+        Defaults to \code{\link{bpparam}()}.}
 }
         
 \details{

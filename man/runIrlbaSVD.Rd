@@ -1,12 +1,12 @@
-\name{runIrlba}
-\alias{runIrlba}
+\name{runIrlbaSVD}
+\alias{runIrlbaSVD}
 
 \title{Approximate SVD with \pkg{irlba}}
 \description{Perform an approximate singular value decomposition with the augmented implicitly restarted Lanczos bidiagonalization algorithm.}
 
 \usage{
 runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
-    ..., fold=5L, BPPARAM=SerialParam())
+    ..., fold=5L, BPPARAM=NULL)
 }
 
 \arguments{
@@ -21,7 +21,8 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7,
     \item{...}{Further arguments to pass to \code{\link{irlba}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x}, 
         at which the SVD is performed on the cross-product rather than \code{x} itself.}
-    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.
+        Defaults to \code{\link{bpparam}()}.}
 }
 
 \details{
@@ -57,6 +58,6 @@ Aaron Lun
 
 \examples{
 a <- matrix(rnorm(100000), ncol=20)
-out <- runIrlba(a)
+out <- runIrlbaSVD(a)
 str(out)
 }

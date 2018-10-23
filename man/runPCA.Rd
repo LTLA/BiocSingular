@@ -45,7 +45,7 @@ Aaron Lun
 \seealso{
 \code{\link{runSVD}} for the underlying SVD function.
 
-\code{\link{BiocSingularParam}} for details on the algorithm choices.
+\code{?\linkS4class{BiocSingularParam}} for details on the algorithm choices.
 }
 
 \examples{

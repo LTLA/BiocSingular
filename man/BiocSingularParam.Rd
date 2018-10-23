@@ -36,7 +36,7 @@ RandomParam(fold=5, ...)
 \arguments{
     \item{fold}{Numeric scalar, minimum fold-difference for cross-product calculation.}
     \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
-    \item{...}{Additional arguments to pass to \code{\link{runIrlba}} or \code{\link{runRandomSVD}}.}
+    \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}.}
     \item{object}{An ExactParam object.}
 }
 
