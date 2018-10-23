@@ -2,7 +2,7 @@
 #' @importFrom DelayedArray DelayedArray
 #' @importFrom DelayedMatrixStats colMeans2 rowSums2
 #' @importFrom BiocGenerics nrow
-runPCA <- function(x, k, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, get.pcs=TRUE, ...) {
+runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, get.pcs=TRUE, ...) {
     if (is.logical(center)) {
         if (center) {
             center <- colMeans2(DelayedArray(x))
@@ -20,9 +20,9 @@ runPCA <- function(x, k, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TR
         }
     }
 
-    svd.out <- runSVD(x, k=k, 
-        nu=ifelse(get.pcs, k, 0),
-        nv=ifelse(get.rotation, k, 0),
+    svd.out <- runSVD(x, k=rank, 
+        nu=ifelse(get.pcs, rank, 0),
+        nv=ifelse(get.rotation, rank, 0),
         center=center, scale=scale, BSPARAM=BSPARAM, ...)
 
     out <- list(sdev=svd.out$d / sqrt(nrow(x) - 1))

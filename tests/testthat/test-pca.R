@@ -8,7 +8,7 @@ register(SerialParam())
 set.seed(10000)
 test_that("runPCA with exact SVD matches up to the reference implementation", {
     a <- matrix(rnorm(100000), ncol=20)
-    out <- runPCA(a, k=10)
+    out <- runPCA(a, rank=10)
     ref <- prcomp(a, rank.=10)
 
     expect_equal(out$sdev, head(ref$sdev, 10))
@@ -16,7 +16,7 @@ test_that("runPCA with exact SVD matches up to the reference implementation", {
     expect_equal_besides_sign(out$x, ref$x)
 
     # With scaling.
-    out <- runPCA(a, k=5, scale=TRUE)
+    out <- runPCA(a, rank=5, scale=TRUE)
     ref <- prcomp(a, rank.=5, scale=TRUE)
 
     expect_equal(out$sdev, head(ref$sdev, 5))
@@ -28,7 +28,7 @@ set.seed(10001)
 test_that("runPCA with approximate SVD (IRLBA) matches up to the reference implementation", {
     a <- matrix(rnorm(100000), ncol=50)
     set.seed(200)
-    out <- runPCA(a, k=10, BSPARAM=IrlbaParam(fold=Inf))
+    out <- runPCA(a, rank=10, BSPARAM=IrlbaParam(fold=Inf))
     set.seed(200)
     ref <- irlba::prcomp_irlba(a, n=10)
 
@@ -41,7 +41,7 @@ set.seed(10002)
 test_that("runPCA with randomized SVD matches up to the reference implementation", {
     a <- matrix(rnorm(100000), ncol=50)
     set.seed(200)
-    out <- runPCA(a, k=10, BSPARAM=RandomParam(fold=Inf))
+    out <- runPCA(a, rank=10, BSPARAM=RandomParam(fold=Inf))
     set.seed(200)
     ref <- rsvd::rpca(a, k=10, scale=FALSE)
 

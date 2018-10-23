@@ -5,13 +5,13 @@
 \description{Perform a principal components analysis (PCA) on a target matrix with a specified SVD algorithm.}
 
 \usage{
-runPCA(x, k, center=TRUE, scale=FALSE, BSPARAM=NULL,
-    get.rotation=TRUE, get.pcs=TRUE, ...) 
+runPCA(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, 
+    get.pcs=TRUE, ...) 
 }
 
 \arguments{
 \item{x}{A numeric matrix-like object.}
-\item{k}{Integer scalar specifying the number of principal components to retain.}
+\item{rank}{Integer scalar specifying the number of principal components to retain.}
 \item{center}{A logical scalar indicating whether columns of \code{x} should be centered before the PCA is performed.
 Alternatively, a numeric vector of length \code{ncol(x)} containing the value to subtract from each column of \code{x}.}
 \item{scale}{A logical scalar indicating whether columns of \code{x} should be scaled to unit variance before the PCA is performed.
@@ -30,10 +30,10 @@ Any \code{scale} is applied after \code{center}, and mimics the behaviour of the
 \value{
 A list is returned containing:
 \itemize{
-\item{\code{sdev}, a numeric vector of length \code{k} containing the standard deviations of the first \code{k} principal components.}
-\item{\code{rotation}, a numeric matrix with \code{k} columns and \code{nrow(x)} rows, containing the first \code{k} rotation vectors.
+\item{\code{sdev}, a numeric vector of length \code{rank} containing the standard deviations of the first \code{rank} principal components.}
+\item{\code{rotation}, a numeric matrix with \code{rank} columns and \code{nrow(x)} rows, containing the first \code{rank} rotation vectors.
 This is only returned if \code{get.rotation=TRUE}.}
-\item{\code{x}, a numeric matrix with \code{k} columns and \code{ncol(x)} rows, containing the scores for the first \code{k} principal components.
+\item{\code{x}, a numeric matrix with \code{rank} columns and \code{ncol(x)} rows, containing the scores for the first \code{rank} principal components.
 This is only returned if \code{get.pcs=TRUE}.}
 }
 }
