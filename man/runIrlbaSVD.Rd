@@ -5,7 +5,7 @@
 \description{Perform an approximate singular value decomposition with the augmented implicitly restarted Lanczos bidiagonalization algorithm.}
 
 \usage{
-runIrlba(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
+runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
     ..., fold=5L, BPPARAM=SerialParam())
 }
 

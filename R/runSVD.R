@@ -15,7 +15,7 @@ setMethod("runSVD", "ExactParam", function(..., BSPARAM) {
 
 #' @export
 setMethod("runSVD", "IrlbaParam", function(..., BSPARAM) {
-    do.call(runIrlba, c(list(..., fold=bsp_fold(BSPARAM), extra.work=ip_extra(BSPARAM)), bsp_args(BSPARAM)))
+    do.call(runIrlbaSVD, c(list(..., fold=bsp_fold(BSPARAM), extra.work=ip_extra(BSPARAM)), bsp_args(BSPARAM)))
 })
 
 #' @export

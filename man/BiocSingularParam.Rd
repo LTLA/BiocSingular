@@ -35,7 +35,7 @@ RandomParam(fold=5, ...)
 
 \arguments{
     \item{fold}{Numeric scalar, minimum fold-difference for cross-product calculation.}
-    \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlba}}.}
+    \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
     \item{...}{Additional arguments to pass to \code{\link{runIrlba}} or \code{\link{runRandomSVD}}.}
     \item{object}{An ExactParam object.}
 }
@@ -45,7 +45,7 @@ The BiocSingularParam class is a virtual base class on which other parameter obj
 There are 3 concrete subclasses:
 \describe{
     \item{}{\code{\link{ExactParam}}: exact SVD with \code{\link{runExactSVD}}.}
-    \item{}{\code{\link{IrlbaParam}}: approximate SVD with \pkg{irlba} via \code{\link{runIrlba}}.}
+    \item{}{\code{\link{IrlbaParam}}: approximate SVD with \pkg{irlba} via \code{\link{runIrlbaSVD}}.}
     \item{}{\code{\link{RandomParam}}: approximate SVD with \pkg{rsvd} via \code{\link{runRandomSVD}}.}
 }
 

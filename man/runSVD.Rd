@@ -53,7 +53,7 @@ Aaron Lun
 }
 
 \seealso{
-\code{\link{runExactSVD}}, \code{\link{runIrlba}} and \code{\link{runRandomSVD}} for the specific functions.
+\code{\link{runExactSVD}}, \code{\link{runIrlbaSVD}} and \code{\link{runRandomSVD}} for the specific functions.
 }
 
 \examples{
