@@ -1,15 +1,26 @@
 #' @export
-#' @importFrom BiocParallel SerialParam
+#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register
 #' @importFrom utils head
-runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, fold=5L, BPPARAM=SerialParam())
+runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, fold=5L, BPPARAM=NULL)
 # Wrapper for svd(), with options for faster calculation by taking the 
 # cross-product for fat or tall matrices.
 {
-    x <- standardize_matrix(x, center=center, scale=scale)
+    # Setting up the parallelization environment.
+    if (is.null(BPPARAM)) {
+        BPPARAM <- bpparam()
+    } else {
+        old <- bpparam()
+        register(BPPARAM)
+        on.exit(register(old))
+    }
+    if (!bpisup(BPPARAM)) {
+        bpstart(BPPARAM)
+        on.exit(bpstop(BPPARAM), add=TRUE)
+    }
 
+    x <- bs_matrix(x, center=center, scale=scale)
     if (use_crossprod(x, fold)) {
-        x <- as.matrix(x) # remove once crossprod supports DAs.
-        res <- svd_via_crossprod(x, k=k, nu=nu, nv=nv, FUN=safe_svd, BPPARAM=BPPARAM)
+        res <- svd_via_crossprod(x, k=k, nu=nu, nv=nv, FUN=safe_svd)
     } else {
         res <- safe_svd(as.matrix(x), nu=nu, nv=nv)
         res$d <- head(res$d, k)

@@ -41,6 +41,22 @@ setMethod("dimnames", "bs_matrix", function(x) dimnames(get_matrix2(x)))
 
 setMethod("length", "bs_matrix", function(x) length(get_matrix2(x)))
 
+#' @importFrom BiocGenerics t
+setMethod("as.matrix", "bs_matrix", function(x) {
+    out <- get_matrix2(x)
+    if (use_scale(x) || use_center(x)) {
+        out <- t(out)
+        if (use_center(x)) {
+            out <- out - get_center(x)
+        }
+        if (use_scale(x)) {
+            out <- out / get_scale(x)
+        }
+        out <- t(out)
+    }
+    return(as.matrix(out))
+})
+
 ###################################
 # Matrix multiplication.
 
