@@ -1,6 +1,10 @@
 # Tests the runPCA() function.
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-pca.R")
 
+library(BiocParallel)
+old <- bpparam()
+register(SerialParam())
+
 set.seed(10000)
 test_that("runPCA with exact SVD matches up to the reference implementation", {
     a <- matrix(rnorm(100000), ncol=20)
@@ -46,3 +50,5 @@ test_that("runPCA with randomized SVD matches up to the reference implementation
     dimnames(out$x) <- NULL
     expect_equal_besides_sign(out$x, ref$x)
 })
+
+register(old)
