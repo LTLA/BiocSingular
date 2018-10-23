@@ -1,11 +1,10 @@
 #' @export
 #' @importFrom DelayedArray DelayedArray
-#' @importFrom DelayedMatrixStats colMeans2 rowSums2
-#' @importFrom BiocGenerics nrow
+#' @importFrom BiocGenerics nrow colMeans rowSums t
 runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, get.pcs=TRUE, ...) {
     if (is.logical(center)) {
         if (center) {
-            center <- colMeans2(DelayedArray(x))
+            center <- colMeans(DelayedArray(x))
         } else {
             center <- NULL
         }
@@ -13,7 +12,7 @@ runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation
 
     if (is.logical(scale)) {
         if (scale) {
-            scale <- rowSums2((t(DelayedArray(x)) - center)^2) / (nrow(x) - 1L) # mimic scale() behaviour for any 'center'.
+            scale <- rowSums((t(DelayedArray(x)) - center)^2) / (nrow(x) - 1L) # mimic scale() behaviour for any 'center'.
             scale <- sqrt(scale)
         } else {
             scale <- NULL

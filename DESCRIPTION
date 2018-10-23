@@ -5,14 +5,14 @@ Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
 Depends: R (>= 3.5), BiocParallel
-Imports: irlba, rsvd, DelayedArray, DelayedMatrixStats, methods
+Imports: BiocGenerics, Matrix, methods, DelayedArray, irlba, rsvd
 Suggests: testthat, BiocStyle, knitr, rmarkdown
 biocViews: DimensionReduction, PrincipalComponent
 Description: Implements exact and approximate methods for singular value
-    decomposition and principal components analysis, in a framework that 
-    allows them to be easily switched within Bioconductor packages or 
-    workflows. Where possible, parallelization is achieved using 
-    the BiocParallel framework.
+        decomposition and principal components analysis, in a framework that
+        allows them to be easily switched within Bioconductor packages or 
+        workflows. Where possible, parallelization is achieved using 
+        the BiocParallel framework.
 License: GPL-3
 VignetteBuilder: knitr
 RoxygenNote: 6.1.0
