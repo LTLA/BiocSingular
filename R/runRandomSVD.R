@@ -12,33 +12,31 @@ runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work
                     u=matrix(0, nrow(x), 0),
                     v=matrix(0, ncol(x), 0)))
     }
-        
-    x <- standardize_matrix(x, center=center, scale=scale)
+
+    # Setting up the parallelization environment.
+    if (is.null(BPPARAM)) {
+        BPPARAM <- bpparam()
+    } else {
+        old <- bpparam()
+        register(BPPARAM)
+        on.exit(register(old))
+    }
+    if (!bpisup(BPPARAM)) {
+        bpstart(BPPARAM)
+        on.exit(bpstop(BPPARAM), add=TRUE)
+    }
+
+    x <- bs_matrix(x, center=center, scale=scale)
 
     if (use_crossprod(x, fold)) {
-        x <- as.matrix(x) # remove once crossprod supports DAs.
-
         FUN <- function(x, nu, nv, ...) { 
             # FUN is assumed to only take 'nu' and 'nv',
             # so we need to fill-in rsvd()'s version of 'k'.
             rsvd(x, k=max(nu, nv), nu=nu, nv=nv, ...)
         }
-
-        res <- svd_via_crossprod(x, k=k, nu=nu, nv=nv, FUN=FUN, ..., BPPARAM=BPPARAM)
+        res <- svd_via_crossprod(x, k=k, nu=nu, nv=nv, FUN=FUN, ...) 
 
     } else {
-        if (bpnworkers(BPPARAM)!=1L) {
-            if (!bpisup(BPPARAM)) {
-                bpstart(BPPARAM) # lots of multiplications, so we set up the backend.
-                on.exit(bpstop(BPPARAM))
-            }
-            x <- bpmatrix(x, BPPARAM)
-        }
-
-        if (is(x, "DelayedMatrix")) {
-            x <- as.matrix(x) # remove this once crossprod for DMs are supported.
-        }
-
         res <- rsvd(x, k=max(nu, nv, k), nu=nu, nv=nv, ...) 
         res$d <- head(res$d, k)
     }

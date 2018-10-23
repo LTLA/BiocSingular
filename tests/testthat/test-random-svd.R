@@ -1,7 +1,10 @@
 # Tests runRandomSVD().
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-random-svd.R")
 
+library(BiocParallel)
 library(rsvd)
+old <- bpparam()
+register(SerialParam())
 
 set.seed(80000)
 test_that("Random SVD works on input matrices", {
@@ -132,3 +135,5 @@ test_that("Random SVD works with centering and scaling", {
     out <- runRandomSVD(y, k=5, center=center, scale=scale, BPPARAM=MulticoreParam(2))
     expect_equal_svd(out, ref)
 })
+
+register(old)
