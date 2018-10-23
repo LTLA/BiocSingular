@@ -50,6 +50,6 @@ Aaron Lun
 
 \examples{
 a <- matrix(rnorm(100000), ncol=20)
-str(out <- runPCA(a, k=10))
+str(out <- runPCA(a, rank=10))
 }
 
