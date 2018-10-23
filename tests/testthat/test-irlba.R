@@ -2,9 +2,13 @@
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-irlba.R")
 
 library(irlba)
+library(BiocParallel)
+old <- bpparam()
+register(SerialParam())
 
 set.seed(9000)
 test_that("IRLBA works on input matrices", {
+
     y <- matrix(rnorm(50000), ncol=200)
     set.seed(100)
     out <- runIrlba(y, k=5, fold=Inf)
@@ -110,18 +114,18 @@ test_that("IRLBA works with centering and scaling", {
     scale <- NULL # runif(ncol(y)) # irlba seems to be broken with scaling.
 
     set.seed(100)
-    ref <- irlba(y, k=5, center=center, scale=scale)
+    ref <- irlba(y, k=5, center=center, scale=scale, tol=1e-8)
     set.seed(100)
-    out <- runIrlba(y, k=5, center=center, scale=scale, fold=Inf)
+    out <- runIrlba(y, k=5, center=center, scale=scale, fold=Inf, tol=1e-8) 
     expect_equal_svd(out, ref)
 
     ry <- scale(y, center=center, scale=FALSE)
     set.seed(100)
-    ref2 <- irlba(ry, nv=5, nu=5)
+    ref2 <- irlba(ry, nv=5, nu=5, tol=1e-8)
     expect_equal_svd(out, ref2)
 
     # Works with the cross-product.
-    y <- matrix(rnorm(10000), ncol=10)
+    y <- matrix(rnorm(10000), ncol=20)
     center <- runif(ncol(y))
     scale <- NULL #runif(ncol(y))
     
@@ -130,12 +134,14 @@ test_that("IRLBA works with centering and scaling", {
     ref <- irlba(ry, nu=5, nv=5, tol=1e-8)
     set.seed(200)
     out <- runIrlba(y, k=5, center=center, scale=scale, fold=1, tol=1e-8)
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 
     # Works with the alternative multiplication.
     set.seed(100)
     out <- runIrlba(ry, k=5, BPPARAM=MulticoreParam(2), tol=1e-8)
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 })
+
+register(old)
