@@ -136,4 +136,16 @@ test_that("Random SVD works with centering and scaling", {
     expect_equal_svd(out, ref)
 })
 
+set.seed(80005)
+test_that("Random SVD fails gracefully with silly inputs", {
+    y <- matrix(rnorm(10000), ncol=50)
+    expect_error(runRandomSVD(y, k=-1), "non-negative")
+    expect_error(runRandomSVD(y, nu=-1), "non-negative")
+    expect_error(runRandomSVD(y, nv=-1), "non-negative")
+
+    expect_warning(runRandomSVD(y, k=1e6), "requested than available")
+    expect_warning(runRandomSVD(y, nu=1e6), "requested than available")
+    expect_warning(runRandomSVD(y, nv=1e6), "requested than available")
+})
+
 register(old)

@@ -107,3 +107,15 @@ test_that("exact SVD works with centering and scaling", {
     out <- runExactSVD(y, center=center, scale=scale, deferred=TRUE)
     expect_equal_svd(out, ref)
 })
+
+set.seed(50004)
+test_that("exact SVD fails gracefully with silly inputs", {
+    y <- matrix(rnorm(10000), ncol=50)
+    expect_error(runExactSVD(y, k=-1), "non-negative")
+    expect_error(runExactSVD(y, nu=-1), "non-negative")
+    expect_error(runExactSVD(y, nv=-1), "non-negative")
+
+    expect_warning(runExactSVD(y, k=1e6), "requested than available")
+    expect_warning(runExactSVD(y, nu=1e6), "requested than available")
+    expect_warning(runExactSVD(y, nv=1e6), "requested than available")
+})

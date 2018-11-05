@@ -12,6 +12,11 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FA
                     v=matrix(0, ncol(x), 0)))
     }
 
+    checked <- check_numbers(x, k=k, nu=nu, nv=nv)
+    k <- checked$k
+    nv <- checked$nv
+    nu <- checked$nu
+
     # Setting up the parallelization environment.
     if (is.null(BPPARAM)) {
         BPPARAM <- bpparam()

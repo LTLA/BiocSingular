@@ -5,6 +5,11 @@ runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, d
 # Wrapper for svd(), with options for faster calculation by taking the 
 # cross-product for fat or tall matrices.
 {
+    checked <- check_numbers(x, k=k, nu=nu, nv=nv)
+    k <- checked$k
+    nv <- checked$nv
+    nu <- checked$nu
+
     # Setting up the parallelization environment.
     if (is.null(BPPARAM)) {
         BPPARAM <- bpparam()
