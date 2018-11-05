@@ -5,8 +5,8 @@
 \description{Perform an approximate singular value decomposition with the augmented implicitly restarted Lanczos bidiagonalization algorithm.}
 
 \usage{
-runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, 
-    ..., fold=5L, BPPARAM=NULL)
+runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
+    extra.work=7, ..., fold=5L, BPPARAM=NULL)
 }
 
 \arguments{
@@ -17,6 +17,7 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7,
     \item{center}{Numeric vector of length equal to \code{ncol(x)}, specifying values to subtract from each column of \code{x}.}
     \item{scale}{Numeric vector of length equal to \code{ncol(x)}, specifying values to divide each column of \code{x}.
     This is applied after \code{center} if both are specified.}
+    \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{deferred-operations}"}.}
     \item{extra.work}{Integer scalar specifying the additional number of dimensions to use for the working subspace.}
     \item{...}{Further arguments to pass to \code{\link{irlba}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x}, 

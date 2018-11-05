@@ -20,11 +20,11 @@
 \description{Classes for specifying the type of singular value decomposition (SVD) algorithm and associated parameters.}
 
 \usage{
-ExactParam(fold=5)
+ExactParam(deferred=FALSE, fold=5)
 
-IrlbaParam(fold=5, extra.work=7, ...)
+IrlbaParam(deferred=FALSE, fold=5, extra.work=7, ...)
 
-RandomParam(fold=5, ...)
+RandomParam(deferred=FALSE, fold=5, ...)
     
 \S4method{show}{BiocSingularParam}(object)
 
@@ -34,6 +34,7 @@ RandomParam(fold=5, ...)
 }
 
 \arguments{
+    \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{deferred-operations}"}.}
     \item{fold}{Numeric scalar, minimum fold-difference for cross-product calculation.}
     \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
     \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}.}
