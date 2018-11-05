@@ -1,5 +1,5 @@
 #' @export
-#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register
+#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register bpnworkers
 #' @importFrom irlba irlba
 #' @importFrom utils head
 #' @importClassesFrom Matrix dgCMatrix
