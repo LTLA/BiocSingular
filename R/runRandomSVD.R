@@ -4,7 +4,7 @@
 #' @importFrom utils head
 #' @importClassesFrom DelayedArray DelayedMatrix
 #' @importFrom methods is
-runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, ..., fold=5L, BPPARAM=NULL)
+runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, ..., fold=5L, BPPARAM=NULL)
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
     if (nu==0 && nv==0 && k==0) {
@@ -26,7 +26,7 @@ runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, ..., fold=
         on.exit(bpstop(BPPARAM), add=TRUE)
     }
 
-    x <- bs_matrix(x, center=center, scale=scale)
+    x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred)
 
     if (use_crossprod(x, fold)) {
         FUN <- function(x, nu, nv, ...) { 

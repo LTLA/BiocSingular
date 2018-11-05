@@ -1,11 +1,21 @@
 bsp_fold <- function(object) object@fold
+bsp_deferred <- function(object) object@deferred
 bsp_args <- function(object) object@args
 
 setValidity("BiocSingularParam", function(object) {
     msg <- character(0)
+
+    if (length(bsp_fold(object))!=1L) {
+        msg <- c(msg, "'fold' should be a numeric scalar")
+    }
     if (bsp_fold(object) < 1) {
         msg <- c(msg, "'fold' should be no less than 1")
     }
+
+    if (length(bsp_deferred(object))!=1L) {
+        msg <- c(msg, "'deferred' should be a numeric scalar")
+    }
+
     if (length(msg)) {
         return(msg)
     }
@@ -17,18 +27,19 @@ setValidity("BiocSingularParam", function(object) {
 setMethod("show", "BiocSingularParam", function(object) {
     cat(sprintf("class: %s\n", class(object)))
     cat(sprintf("cross-product fold-threshold: %.2f\n", bsp_fold(object)))
+    cat(sprintf("deferred centering/scaling: %s\n", ifelse(bsp_deferred(object), "on", "off")))
 })
 
 #' @export
 #' @importFrom methods new
-ExactParam <- function(fold=5) {
-    new("ExactParam", fold=as.numeric(fold))
+ExactParam <- function(deferred=FALSE, fold=5) {
+    new("ExactParam", deferred=as.logical(deferred), fold=as.numeric(fold))
 }
 
 #' @export
 #' @importFrom methods new
-IrlbaParam <- function(fold=5, extra.work=7, ...) {
-    new("IrlbaParam", fold=as.numeric(fold), extra.work=as.integer(extra.work), args=list(...))
+IrlbaParam <- function(deferred=FALSE, fold=5, extra.work=7, ...) {
+    new("IrlbaParam", deferred=as.logical(deferred), fold=as.numeric(fold), extra.work=as.integer(extra.work), args=list(...))
 }
 
 ip_extra <- function(object) object@extra.work
@@ -56,8 +67,8 @@ setMethod("show", "IrlbaParam", function(object) {
 
 #' @export
 #' @importFrom methods new
-RandomParam <- function(fold=5, ...) {
-    new("RandomParam", fold=as.numeric(fold), args=list(...))
+RandomParam <- function(deferred=FALSE, fold=5, ...) {
+    new("RandomParam", deferred=as.logical(deferred), fold=as.numeric(fold), args=list(...))
 }
 
 #' @export

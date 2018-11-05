@@ -1,5 +1,5 @@
 #' @export
-setClass("BiocSingularParam", contains="VIRTUAL", slots=c(fold="numeric"))
+setClass("BiocSingularParam", contains="VIRTUAL", slots=c(deferred="logical", fold="numeric"))
 
 #' @export
 setClass("ExactParam", contains="BiocSingularParam")

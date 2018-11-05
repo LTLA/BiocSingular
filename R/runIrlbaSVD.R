@@ -3,7 +3,7 @@
 #' @importFrom irlba irlba
 #' @importFrom utils head
 #' @importClassesFrom Matrix dgCMatrix
-runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=7, ..., fold=5L, BPPARAM=NULL)
+runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, extra.work=7, ..., fold=5L, BPPARAM=NULL)
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
     if (nu==0 && nv==0 && k==0) {
@@ -28,7 +28,7 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=
     args <- list(work=max(k, nu, nv) + extra.work, ...)
 
     if (use_crossprod(x, fold)) {
-        x <- bs_matrix(x, center=center, scale=scale)
+        x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred)
         res <- do.call(svd_via_crossprod, c(list(x, k=k, nu=nu, nv=nv, FUN=irlba, BPPARAM=BPPARAM), args))
 
     } else {
@@ -40,7 +40,7 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, extra.work=
             res <- do.call(irlba, c(list(A=x, center=center, scale=scale), args))
 
         } else {
-            x <- bs_matrix(x, center=center, scale=scale)
+            x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred)
             res <- do.call(irlba, c(list(A=x, fastpath=FALSE), args))
         }
 
