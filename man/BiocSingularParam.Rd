@@ -57,8 +57,16 @@ See the associated documentation pages for more details.
 \section{Methods}{
 \describe{
 \item{\code{show(object)}:}{Display the class of a BiocSingularParam \code{object}.
-Also shows the minimum fold-difference between dimensions required to perform the SVD on the cross-product rather than directly on the matrix.}
+Also shows the minimum fold-difference between dimensions required to perform the SVD on the cross-product rather than directly on the matrix;
+whether or not centering or scaling operations are to be deferred;
+and additional parameters, where available.}
 }
+}
+
+\value{
+The constructors return a BiocSingularParam subclass of the same type, containing the specified parameters.
+
+The \code{show} method prints the class of and a summary of the set parameters in each object.
 }
 
 \seealso{
