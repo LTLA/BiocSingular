@@ -6,12 +6,12 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
     if (deferred) {
         X <- bs_matrix(x, center=center, scale=scale)
     } else {
-        X <- DelayedArray(x)
+        X <- x # DelayedArray(x) # uncomment once DA supports crossprod, etc.
         if (!is.null(center)) {
-            X <- sweep(X, 2, center, "-", check.margins=FALSE)
+            X <- sweep(X, 2, center, "-", check.margin=FALSE)
         }
         if (!is.null(scale)) {
-            X <- sweep(X, 2, scale, "/", check.margins=FALSE)
+            X <- sweep(X, 2, scale, "/", check.margin=FALSE)
         }
     }
     return(X)
