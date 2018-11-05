@@ -96,4 +96,14 @@ test_that("exact SVD works with centering and scaling", {
     ref <- svd(ry)
     out <- runExactSVD(y, center=center, scale=scale, fold=1)
     expect_equal_svd(out, ref)
+
+    # Works with deferred operations.
+    y <- matrix(rnorm(10000), ncol=10)
+    center <- runif(ncol(y))
+    scale <- runif(ncol(y))
+
+    ry <- scale(y, center=center, scale=scale)
+    ref <- svd(ry)
+    out <- runExactSVD(y, center=center, scale=scale, deferred=TRUE)
+    expect_equal_svd(out, ref)
 })

@@ -142,6 +142,13 @@ test_that("IRLBA works with centering and scaling", {
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)
+
+    # Works with deffered operations (which also requires parallelization).
+    set.seed(100)
+    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=MulticoreParam(2), tol=1e-8)
+    set.seed(100)
+    ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
+    expect_equal_svd(out, ref, tol=1e-6)
 })
 
 register(old)

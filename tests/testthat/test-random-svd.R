@@ -128,11 +128,11 @@ test_that("Random SVD works with centering and scaling", {
     out <- runRandomSVD(y, k=5, center=center, scale=scale, fold=1)
     expect_equal_svd(out, ref)
 
-    # Works with the alternative multiplication.
+    # Works with the deferred operations. 
     set.seed(100)
     ref <- runRandomSVD(ry, k=5)
     set.seed(100)
-    out <- runRandomSVD(y, k=5, center=center, scale=scale, BPPARAM=MulticoreParam(2))
+    out <- runRandomSVD(y, k=5, center=center, scale=scale, deferred=TRUE)
     expect_equal_svd(out, ref)
 })
 
