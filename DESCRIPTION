@@ -5,7 +5,8 @@ Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
 Depends: R (>= 3.6), BiocParallel
-Imports: BiocGenerics, Matrix, methods, utils, DelayedArray, irlba, rsvd
+Imports: BiocGenerics, Matrix, methods, utils, DelayedArray, irlba, rsvd,
+        nipals
 Suggests: testthat, BiocStyle, knitr, rmarkdown
 biocViews: DimensionReduction, PrincipalComponent
 Description: Implements exact and approximate methods for singular value
@@ -15,4 +16,4 @@ Description: Implements exact and approximate methods for singular value
         the BiocParallel framework.
 License: GPL-3
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
