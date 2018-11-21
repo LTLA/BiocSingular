@@ -34,8 +34,8 @@ RandomParam(deferred=FALSE, fold=5, ...)
 }
 
 \arguments{
-    \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{deferred-operations}"}.}
-    \item{fold}{Numeric scalar, minimum fold-difference for cross-product calculation.}
+    \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
+    \item{fold}{Numeric scalar specifying the minimum fold-difference for cross-product calculation, see \code{?"\link{BiocSingular-options}"}.}
     \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
     \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}.}
     \item{object}{An ExactParam object.}
@@ -70,9 +70,9 @@ The \code{show} method prints the class of and a summary of the set parameters i
 }
 
 \seealso{
-\code{\link{ExactParam}}, \code{\link{IrlbaParam}} and \code{\link{RandomParam}} for constructors.
+\code{\link{runSVD}} for generic dispatch.
 
-\code{\link{runSVD}} for dispatch.
+\code{\link{runExactSVD}}, \code{\link{runIrlbaSVD}} and \code{\link{runRandomSVD}} for specific methods.
 }
 
 \author{

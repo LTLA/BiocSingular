@@ -4,8 +4,6 @@
 svd_via_crossprod <- function(x, k, nu=k, nv=k, FUN=svd, ...) 
 # Computes the SVD via a crossproduct, using 'FUN' with arguments '...'. 
 # We assume that any centering/scaling has already been applied to 'x'.
-# For this reason, we can't easily run 'FUN(x)' directly, 
-# as this might require centering/scaling within 'FUN' (e.g., in irlba()).
 {
     if (nrow(x) > ncol(x)) {
         y <- crossprod(x)

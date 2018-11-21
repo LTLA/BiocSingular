@@ -17,17 +17,14 @@ runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL,
     \item{center}{Numeric vector of length equal to \code{ncol(x)}, specifying values to subtract from each column of \code{x}.}
     \item{scale}{Numeric vector of length equal to \code{ncol(x)}, specifying values to divide each column of \code{x}.
     This is applied after \code{center} if both are specified.}
-    \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{deferred-operations}"}.}
-    \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x}, 
-        at which the SVD is performed on the cross-product rather than \code{x} itself.}
+    \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
+    \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
+        see \code{?"\link{BiocSingular-options}"}.}
     \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.
         Defaults to \code{\link{bpparam}()}.}
 }
         
 \details{
-If the dimensions of \code{x} are very different, a cross-product of \code{x} is computed and the SVD is performed on the resulting square matrix.
-This can be much faster than directly performing the SVD on a very fat or tall \code{x}.
-
 Supplying \code{center} or \code{scale} is more efficient than directly scaling \code{x} when computing a cross-product.
 This is because the function will avoid constructing intermediate centered (possibly non-sparse) matrices.
 
