@@ -3,7 +3,7 @@
 #' @importFrom irlba irlba
 #' @importFrom utils head
 #' @importClassesFrom Matrix dgCMatrix
-runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, extra.work=7, ..., fold=5L, BPPARAM=NULL)
+runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, extra.work=7, ..., fold=5, BPPARAM=NULL)
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
     if (nu==0 && nv==0 && k==0) {
