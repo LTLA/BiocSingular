@@ -16,7 +16,7 @@ If the dimensions of the input matrix are very different, it may be faster to co
 rather than performing SVD directly on a very fat or tall input matrix.
 The cross-product can often be computed very quickly due to good data locality, yielding a small square matrix that is easily handled by any SVD algorithm.
 This is especially true in cases where the input matrix is not held in memory.
-Calculation of the cross-product only involves on read across the data, 
+Calculation of the cross-product only involves one read across the entire data set, 
 while direct application of approximate methods like \code{\link{irlba}} or \code{\link{rsvd}} would need to access the data multiple times.
 
 The various \pkg{BiocSingular} SVD functions allow users to specify the minimum fold difference (via the \code{fold} argument) at which a cross-product should be computed. 
