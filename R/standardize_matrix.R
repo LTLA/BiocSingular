@@ -16,3 +16,12 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
     }
     return(X)
 }
+
+standardize_output_SVD <- function(res) 
+# Provide a common standard output for all SVD functions.
+{
+    res$d <- as.numeric(res$d)
+    res$u <- as.matrix(res$u)
+    res$v <- as.matrix(res$v)
+    res[c("d", "u", "v")]
+}
