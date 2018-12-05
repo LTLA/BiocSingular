@@ -1,4 +1,4 @@
-#' @importFrom DelayedArray DelayedArray
+#' @importFrom DelayedArray DelayedArray sweep
 standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
 # Creates a deferred or delayed centered and scaled matrix.
 # The two choices have different implications for speed and accuracy.
@@ -6,7 +6,7 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
     if (deferred) {
         X <- bs_matrix(x, center=center, scale=scale)
     } else {
-        X <- as.matrix(x) # DelayedArray(x) # uncomment once DA supports crossprod, etc.
+        X <- DelayedArray(x)
         if (!is.null(center)) {
             X <- sweep(X, 2, center, "-", check.margin=FALSE)
         }
@@ -16,4 +16,3 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
     }
     return(X)
 }
-
