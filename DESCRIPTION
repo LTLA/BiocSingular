@@ -15,4 +15,4 @@ Description: Implements exact and approximate methods for singular value
         the BiocParallel framework.
 License: GPL-3
 VignetteBuilder: knitr
-RoxygenNote: 6.1.0
+RoxygenNote: 6.1.1
