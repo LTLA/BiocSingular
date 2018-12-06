@@ -10,7 +10,7 @@ runPCA(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE,
 }
 
 \arguments{
-\item{x}{A numeric matrix-like object.}
+\item{x}{A numeric matrix-like object with samples as rows and variables as columns.}
 \item{rank}{Integer scalar specifying the number of principal components to retain.}
 \item{center}{A logical scalar indicating whether columns of \code{x} should be centered before the PCA is performed.
 Alternatively, a numeric vector of length \code{ncol(x)} containing the value to subtract from each column of \code{x}.}
