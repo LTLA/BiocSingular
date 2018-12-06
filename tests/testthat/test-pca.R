@@ -22,6 +22,14 @@ test_that("runPCA with exact SVD matches up to the reference implementation", {
     expect_equal(out$sdev, head(ref$sdev, 5))
     expect_equal_besides_sign(out$rotation, ref$rotation)
     expect_equal_besides_sign(out$x, ref$x)
+
+    # With scaling, but without centering.
+    out <- runPCA(a, rank=5, scale=TRUE, center=FALSE)
+    ref <- prcomp(a, rank.=5, scale=TRUE, center=FALSE)
+
+    expect_equal(out$sdev, head(ref$sdev, 5))
+    expect_equal_besides_sign(out$rotation, ref$rotation)
+    expect_equal_besides_sign(out$x, ref$x)
 })
 
 set.seed(10001)
