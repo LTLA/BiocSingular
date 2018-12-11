@@ -6,7 +6,7 @@
 
 \usage{
 runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
-    extra.work=7, ..., fold=5, BPPARAM=NULL)
+    extra.work=7, ..., fold=5, BPPARAM=SerialParam())
 }
 
 \arguments{
@@ -22,8 +22,7 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
     \item{...}{Further arguments to pass to \code{\link{irlba}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
         see \code{?"\link{BiocSingular-options}"}.}
-    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.
-        Defaults to \code{\link{bpparam}()}.}
+    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
 }
 
 \details{
