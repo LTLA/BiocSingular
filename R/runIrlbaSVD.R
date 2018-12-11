@@ -1,9 +1,9 @@
 #' @export
-#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register bpnworkers
+#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register bpnworkers SerialParam
 #' @importFrom irlba irlba
 #' @importFrom utils head
 #' @importClassesFrom Matrix dgCMatrix
-runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, extra.work=7, ..., fold=5, BPPARAM=NULL)
+runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, extra.work=7, ..., fold=5, BPPARAM=SerialParam())
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
     if (nu==0 && nv==0 && k==0) {
@@ -18,13 +18,10 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FA
     nu <- checked$nu
 
     # Setting up the parallelization environment.
-    if (is.null(BPPARAM)) {
-        BPPARAM <- bpparam()
-    } else {
-        old <- bpparam()
-        register(BPPARAM)
-        on.exit(register(old))
-    }
+    old <- bpparam()
+    register(BPPARAM)
+    on.exit(register(old))
+
     if (!bpisup(BPPARAM)) {
         bpstart(BPPARAM)
         on.exit(bpstop(BPPARAM), add=TRUE)

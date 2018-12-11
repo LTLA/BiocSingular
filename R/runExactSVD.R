@@ -1,7 +1,7 @@
 #' @export
-#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register
+#' @importFrom BiocParallel bpstart bpstop bpisup bpparam register SerialParam
 #' @importFrom utils head
-runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, fold=5, BPPARAM=NULL)
+runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE, fold=5, BPPARAM=SerialParam())
 # Wrapper for svd(), with options for faster calculation by taking the 
 # cross-product for fat or tall matrices.
 {
@@ -11,13 +11,10 @@ runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, d
     nu <- checked$nu
 
     # Setting up the parallelization environment.
-    if (is.null(BPPARAM)) {
-        BPPARAM <- bpparam()
-    } else {
-        old <- bpparam()
-        register(BPPARAM)
-        on.exit(register(old))
-    }
+    old <- bpparam()
+    register(BPPARAM)
+    on.exit(register(old))
+
     if (!bpisup(BPPARAM)) {
         bpstart(BPPARAM)
         on.exit(bpstop(BPPARAM), add=TRUE)
