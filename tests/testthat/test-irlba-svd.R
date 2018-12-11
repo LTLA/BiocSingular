@@ -3,8 +3,6 @@
 
 library(irlba)
 library(BiocParallel)
-old <- bpparam()
-register(SerialParam())
 
 set.seed(9000)
 test_that("IRLBA works on input matrices", {
@@ -162,5 +160,3 @@ test_that("IRLBA fails gracefully with silly inputs", {
     expect_error(expect_warning(runIrlbaSVD(y, nu=1e6), "requested than available"))
     expect_error(expect_warning(runIrlbaSVD(y, nv=1e6), "requested than available"))
 })
-
-register(old)

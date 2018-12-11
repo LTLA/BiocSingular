@@ -1,10 +1,8 @@
 # Tests runRandomSVD().
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-random-svd.R")
 
-library(BiocParallel)
 library(rsvd)
-old <- bpparam()
-register(SerialParam())
+library(BiocParallel)
 
 set.seed(80000)
 test_that("Random SVD works on input matrices", {
@@ -147,5 +145,3 @@ test_that("Random SVD fails gracefully with silly inputs", {
     expect_warning(runRandomSVD(y, nu=1e6), "requested than available")
     expect_warning(runRandomSVD(y, nv=1e6), "requested than available")
 })
-
-register(old)

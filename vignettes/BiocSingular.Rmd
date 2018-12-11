@@ -102,6 +102,7 @@ Internal matrix multiplications can be parallelized by setting the `BPPARAM=` ar
 This can speed up calculations when dealing with very large input matrices, e.g., from the `r Biocpkg("HDF5Array")` package.
 
 ```{r}
+library(BiocParallel)
 i.out2 <- runSVD(dummy, k=10, BSPARAM=ipam, BPPARAM=MulticoreParam(2))
 ```
 
