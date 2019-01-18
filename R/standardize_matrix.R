@@ -8,10 +8,10 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
     } else {
         X <- DelayedArray(x)
         if (!is.null(center)) {
-            X <- sweep(X, 2, center, "-", check.margin=FALSE)
+            X <- sweep(X, 2, center, "-") 
         }
         if (!is.null(scale)) {
-            X <- sweep(X, 2, scale, "/", check.margin=FALSE)
+            X <- sweep(X, 2, scale, "/")
         }
     }
     return(X)
