@@ -24,7 +24,7 @@ This defaults to a \code{\link{ExactParam}} object when \code{NULL}.}
 }
 
 \details{
-Any \code{scale} is applied after \code{center}, and mimics the behaviour of the \code{\link{scale}} function in \pkg{base}.
+This function simply calls \code{\link{runSVD}} with the specified \code{BSPARAM}, and converts the results into a format similar to that returned by \code{\link{prcomp}}.
 }
 
 \value{

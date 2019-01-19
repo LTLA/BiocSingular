@@ -14,9 +14,10 @@ runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL,
     \item{k}{Integer scalar specifying the number of singular values to return.}
     \item{nu}{Integer scalar specifying the number of left singular vectors to return.}
     \item{nv}{Integer scalar specifying the number of right singular vectors to return.}
-    \item{center}{Numeric vector of length equal to \code{ncol(x)}, specifying values to subtract from each column of \code{x}.}
-    \item{scale}{Numeric vector of length equal to \code{ncol(x)}, specifying values to divide each column of \code{x}.
-    This is applied after \code{center} if both are specified.}
+    \item{center}{A logical scalar indicating whether columns should be centered.
+        Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
+    \item{scale}{A logical scalar indicating whether columns should be scaled. 
+        Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
         see \code{?"\link{BiocSingular-options}"}.}
@@ -24,9 +25,6 @@ runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL,
 }
         
 \details{
-Supplying \code{center} or \code{scale} is more efficient than directly scaling \code{x} when computing a cross-product.
-This is because the function will avoid constructing intermediate centered (possibly non-sparse) matrices.
-
 Note that parallelization via \code{BPPARAM} is only applied to the calculation of the cross-product.
 It has no effect for near-square matrices where the SVD is computed directly.
 }

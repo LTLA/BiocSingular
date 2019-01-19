@@ -14,9 +14,10 @@ runRandomSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
     \item{k}{Integer scalar specifying the number of singular values to return.}
     \item{nu}{Integer scalar specifying the number of left singular vectors to return.}
     \item{nv}{Integer scalar specifying the number of right singular vectors to return.}
-    \item{center}{Numeric vector of length equal to \code{ncol(x)}, specifying values to subtract from each column of \code{x}.}
-    \item{scale}{Numeric vector of length equal to \code{ncol(x)}, specifying values to divide each column of \code{x}.
-    This is applied after \code{center} if both are specified.}
+    \item{center}{A logical scalar indicating whether columns of \code{x} should be centered before the PCA is performed.
+        Alternatively, a numeric vector of length \code{ncol(x)} containing the value to subtract from each column of \code{x}.}
+    \item{scale}{A logical scalar indicating whether columns of \code{x} should be scaled to unit variance before the PCA is performed.
+        Alternatively, a numeric vector of length \code{ncol(x)} containing the scaling factor for each column of \code{x}.}
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
     \item{...}{Further arguments to pass to \code{\link{rsvd}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
@@ -25,9 +26,6 @@ runRandomSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
 }
 
 \details{
-Supplying \code{center} or \code{scale} is more efficient than directly scaling \code{x} when computing a cross-product.
-This is because the function will avoid constructing intermediate centered (possibly non-sparse) matrices.
-        
 All multiplication operations in \code{\link{rsvd}} involving \code{x} will be parallelized according to the supplied \code{BPPARAM}.
 
 The dimensionality of the working subspace is defined as the maximum of \code{k}, \code{nu} and \code{nv}, plus the \code{q} specified in \code{...}.

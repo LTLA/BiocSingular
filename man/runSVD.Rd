@@ -22,8 +22,8 @@ This can contain:
         \item{\code{k}: Integer scalar specifying the number of singular values to return.}
         \item{\code{nu}: Integer scalar specifying the number of left singular vectors to return.}
         \item{\code{nv}: Integer scalar specifying the number of right singular vectors to return.}
-        \item{\code{center}: Numeric vector of length equal to \code{ncol(x)}, specifying values to subtract from each column of \code{x}.}
-        \item{\code{scale}: Numeric vector of length equal to \code{ncol(x)}, specifying values to divide each column of \code{x}.}
+        \item{\code{center}: Numeric vector, logical scalar or \code{NULL}, specifying values to subtract from each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
+        \item{\code{scale}: Numeric vector, logical scalar or \code{NULL}, specifying values to divide each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
         \item{\code{BPPARAM}: A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
     }
 Of these, only \code{x} is strictly mandatory, though specifying \code{k}, \code{nu} or \code{nv} is often necessary in practical use. 

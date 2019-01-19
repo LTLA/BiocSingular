@@ -14,9 +14,10 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
     \item{k}{Integer scalar specifying the number of singular values to return.}
     \item{nu}{Integer scalar specifying the number of left singular vectors to return.}
     \item{nv}{Integer scalar specifying the number of right singular vectors to return.}
-    \item{center}{Numeric vector of length equal to \code{ncol(x)}, specifying values to subtract from each column of \code{x}.}
-    \item{scale}{Numeric vector of length equal to \code{ncol(x)}, specifying values to divide each column of \code{x}.
-    This is applied after \code{center} if both are specified.}
+    \item{center}{A logical scalar indicating whether columns should be centered.
+        Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
+    \item{scale}{A logical scalar indicating whether columns should be scaled. 
+        Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
     \item{extra.work}{Integer scalar specifying the additional number of dimensions to use for the working subspace.}
     \item{...}{Further arguments to pass to \code{\link{irlba}}.}
@@ -26,9 +27,6 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
 }
 
 \details{
-Supplying \code{center} or \code{scale} is more efficient than directly scaling \code{x} when computing a cross-product.
-This is because the function will avoid constructing intermediate centered (possibly non-sparse) matrices.
-
 If \code{BPPARAM} has only 1 core \emph{and} \code{x} is an ordinary matrix or \code{dgCMatrix}, this function will use \code{\link{irlba}} with the default \code{fastpath=TRUE}.
 Otherwise, it will use the slower R-based algorithm to take advantage of generic matrix multiplication.
 All multiplication operations involving \code{x} will be parallelized according to the supplied \code{BPPARAM}.

@@ -26,6 +26,23 @@ Setting \code{fold=Inf} means that the cross-product is never computed, which ma
 Setting \code{fold=1} will always compute the cross-product - this is probably unwise. 
 }
 
+\section{Centering and scaling}{
+In general, each SVD function performs the SVD on \code{t((t(x) - C)/S)} where \code{C} and \code{S} are numeric vectors of length equal to \code{ncol(x)}.
+The values of \code{C} and \code{S} are defined according to the \code{center} and \code{scale} options.
+\itemize{
+    \item If \code{center=TRUE}, \code{C} is defined as the column sums of \code{x}.
+        If \code{center=NULL} or \code{FALSE}, all elements of \code{C} are set to zero.
+        If \code{center} is a numeric vector with length equal to \code{ncol(x)}, it is used to directly define \code{C}.
+    \item If \code{scale=TRUE}, the \code{i}th element of \code{S} is defined as the square root of \code{sum((x[,i] - C[i])^2)/(ncol(x)-1)}, for whatever \code{C} was defined above.
+        This mimics the behaviour of \code{\link{scale}}.
+        If \code{scale=NULL} or \code{FALSE}, all elements of \code{S} are set to unity.
+        If \code{scale} is a numeric vector with length equal to \code{ncol(x)}, it is used to directly define \code{S}.
+}
+
+Setting \code{center} or \code{scale} is more memory-efficient than modifiying the input \code{x} directly.
+This is because the function will avoid constructing intermediate centered (possibly non-sparse) matrices.
+}
+
 \section{Deferred centering and scaling}{
 The \pkg{BiocSingular} package has a specialized matrix class that defers centering (and to some extent, scaling) during matrix multiplication.
 The matrix multiplication is performed on the original matrix, and then the centering/scaling operations are applied to the matrix product.
