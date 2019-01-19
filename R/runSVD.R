@@ -1,10 +1,5 @@
 #' @export
 setMethod("runSVD", "missing", function(..., BSPARAM) {
-    runSVD(..., BSPARAM=NULL)
-})
-
-#' @export
-setMethod("runSVD", "NULL", function(..., BSPARAM) {
     runSVD(..., BSPARAM=ExactParam())
 })
 

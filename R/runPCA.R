@@ -1,5 +1,5 @@
 #' @export
-runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, get.pcs=TRUE, ...) 
+runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=ExactParam(), get.rotation=TRUE, get.pcs=TRUE, ...) 
 # Converts SVD results to PCA results.
 {
     svd.out <- runSVD(x, k=rank, 

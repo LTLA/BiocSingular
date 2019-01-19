@@ -1,2 +1,2 @@
 #' @export
-setGeneric("runSVD", signature=c("BSPARAM"), function(..., BSPARAM=NULL) standardGeneric("runSVD"))
+setGeneric("runSVD", signature=c("BSPARAM"), function(..., BSPARAM) standardGeneric("runSVD"))

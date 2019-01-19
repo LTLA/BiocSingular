@@ -5,8 +5,8 @@
 \description{Perform a principal components analysis (PCA) on a target matrix with a specified SVD algorithm.}
 
 \usage{
-runPCA(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, 
-    get.pcs=TRUE, ...) 
+runPCA(x, rank, center=TRUE, scale=FALSE, BSPARAM=ExactParam(), 
+    get.rotation=TRUE, get.pcs=TRUE, ...) 
 }
 
 \arguments{
@@ -16,8 +16,7 @@ runPCA(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE,
 Alternatively, a numeric vector of length \code{ncol(x)} containing the value to subtract from each column of \code{x}.}
 \item{scale}{A logical scalar indicating whether columns of \code{x} should be scaled to unit variance before the PCA is performed.
 Alternatively, a numeric vector of length \code{ncol(x)} containing the scaling factor for each column of \code{x}.}
-\item{BSPARAM}{A \linkS4class{BiocSingularParam} object specifying the algorithm to use.
-This defaults to a \code{\link{ExactParam}} object when \code{NULL}.}
+\item{BSPARAM}{A \linkS4class{BiocSingularParam} object specifying the algorithm to use.}
 \item{get.rotation}{A logical scalar indicating whether rotation vectors should be returned.}
 \item{get.pcs}{A logical scalar indicating whether the principal component scores should be returned.}
 \item{...}{Further arguments to pass to \code{\link{runSVD}}, including \code{BPPARAM} to control parallelization.}

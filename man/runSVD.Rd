@@ -1,7 +1,6 @@
 \name{runSVD}
 \alias{runSVD}
 \alias{runSVD,missing-method}
-\alias{runSVD,NULL-method}
 \alias{runSVD,ExactParam-method}
 \alias{runSVD,IrlbaParam-method}
 \alias{runSVD,RandomParam-method}
@@ -11,7 +10,7 @@
 \description{Perform a singular value decomposition on an input matrix with a specified algorithm.}
 
 \usage{
-runSVD(..., BSPARAM=NULL)
+runSVD(..., BSPARAM)
 }
 
 \arguments{
@@ -34,7 +33,7 @@ Of these, only \code{x} is strictly mandatory, though specifying \code{k}, \code
 \details{
 The class of \code{BSPARAM} will determine the algorithm that is used, see \code{?\linkS4class{BiocSingularParam}} for more details.
 
-If \code{BSPARAM=NULL} or is missing, the method will default to an exact SVD via \code{\link{runExactSVD}}.
+If \code{BSPARAM} or is missing, the method will default to an exact SVD via \code{\link{runExactSVD}}.
 }
 
 \value{
