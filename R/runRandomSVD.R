@@ -28,7 +28,7 @@ runRandomSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=F
         on.exit(bpstop(BPPARAM), add=TRUE)
     }
 
-    x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred)
+    x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred, BPPARAM=BPPARAM)
 
     if (use_crossprod(x, fold)) {
         FUN <- function(x, nu, nv, ...) { 

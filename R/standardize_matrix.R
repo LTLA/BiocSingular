@@ -1,6 +1,7 @@
 #' @importFrom DelayedArray DelayedArray sweep
-#' @importFrom BiocGenerics nrow colMeans colSums t
-standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
+#' @importFrom BiocGenerics nrow colMeans colSums 
+#' @importFrom BiocParallel SerialParam bpnworkers
+standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE, BPPARAM=SerialParam())
 # Creates a deferred or delayed centered and scaled matrix.
 # The two choices have different implications for speed and accuracy.
 {
@@ -26,7 +27,13 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
     }
 
     if (deferred) {
-        X <- bs_matrix(x, center=center, scale=scale)
+        if (bpnworkers(BPPARAM)==1L) {
+            original <- x # exploit original (non-DA) matrix mult functions.
+        } else {
+            original <- DelayedArray(x) # exploit parallelization for DAs.
+        }
+        X <- bs_matrix(original, center=center, scale=scale)
+
     } else {
         X <- DelayedArray(x)
         if (!is.null(center)) {

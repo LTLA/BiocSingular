@@ -30,7 +30,7 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FA
     args <- list(work=max(k, nu, nv) + extra.work, ...)
 
     if (use_crossprod(x, fold)) {
-        x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred)
+        x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred, BPPARAM=BPPARAM)
         res <- do.call(svd_via_crossprod, c(list(x, k=k, nu=nu, nv=nv, FUN=irlba, BPPARAM=BPPARAM), args))
 
     } else {
@@ -42,7 +42,7 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FA
             res <- do.call(irlba, c(list(A=x, center=center, scale=scale), args))
 
         } else {
-            x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred)
+            x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred, BPPARAM=BPPARAM)
             res <- do.call(irlba, c(list(A=x, fastpath=FALSE), args))
         }
 
