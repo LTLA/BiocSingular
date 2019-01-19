@@ -1,28 +1,7 @@
 #' @export
-#' @importFrom DelayedArray DelayedArray sweep
-#' @importFrom BiocGenerics nrow colMeans colSums t
-runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, get.pcs=TRUE, ...) {
-    if (is.logical(center)) {
-        if (center) {
-            center <- colMeans(DelayedArray(x))
-        } else {
-            center <- NULL
-        }
-    }
-
-    if (is.logical(scale)) {
-        if (scale) {
-            sub <- DelayedArray(x)
-            if (!is.null(center)) {
-                sub <- sweep(x, 2, center, "-")
-            }
-            scale <- colSums(sub^2) / (nrow(x) - 1L) # mimic scale() behaviour for any 'center'.
-            scale <- sqrt(scale)
-        } else {
-            scale <- NULL
-        }
-    }
-
+runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=NULL, get.rotation=TRUE, get.pcs=TRUE, ...) 
+# Converts SVD results to PCA results.
+{
     svd.out <- runSVD(x, k=rank, 
         nu=ifelse(get.pcs, rank, 0),
         nv=ifelse(get.rotation, rank, 0),

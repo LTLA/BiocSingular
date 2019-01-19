@@ -1,8 +1,30 @@
 #' @importFrom DelayedArray DelayedArray sweep
+#' @importFrom BiocGenerics nrow colMeans colSums t
 standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE)
 # Creates a deferred or delayed centered and scaled matrix.
 # The two choices have different implications for speed and accuracy.
 {
+    if (is.logical(center)) {
+        if (center) {
+            center <- colMeans(DelayedArray(x))
+        } else {
+            center <- NULL
+        }
+    }
+
+    if (is.logical(scale)) {
+        if (scale) {
+            sub <- DelayedArray(x)
+            if (!is.null(center)) {
+                sub <- sweep(x, 2, center, "-")
+            }
+            scale <- colSums(sub^2) / (nrow(x) - 1L) # mimic scale() behaviour for any 'center'.
+            scale <- sqrt(scale)
+        } else {
+            scale <- NULL
+        }
+    }
+
     if (deferred) {
         X <- bs_matrix(x, center=center, scale=scale)
     } else {
