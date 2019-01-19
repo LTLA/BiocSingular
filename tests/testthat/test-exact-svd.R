@@ -118,4 +118,11 @@ test_that("exact SVD fails gracefully with silly inputs", {
     expect_warning(runExactSVD(y, k=1e6), "requested than available")
     expect_warning(runExactSVD(y, nu=1e6), "requested than available")
     expect_warning(runExactSVD(y, nv=1e6), "requested than available")
+
+    expect_warning(out <- runExactSVD(y, k=Inf), NA)
+    expect_identical(length(out$d), min(dim(y)))
+    expect_warning(runExactSVD(y, nu=Inf), NA)
+    expect_identical(ncol(out$u), min(dim(y)))
+    expect_warning(runExactSVD(y, nv=Inf), NA)
+    expect_identical(ncol(out$v), min(dim(y)))
 })
