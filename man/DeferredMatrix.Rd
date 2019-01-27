@@ -1,6 +1,8 @@
 \name{DeferredMatrix}
 
 \alias{DeferredMatrix}
+\alias{DeferredMatrix-class}
+
 \alias{dim,DeferredMatrix-method}
 \alias{dimnames,DeferredMatrix-method}
 \alias{length,DeferredMatrix-method}

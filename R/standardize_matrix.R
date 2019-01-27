@@ -32,7 +32,7 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE, BPPAR
         } else {
             original <- DelayedArray(x) # exploit parallelization for DAs.
         }
-        X <- bs_matrix(original, center=center, scale=scale)
+        X <- DeferredMatrix(original, center=center, scale=scale)
 
     } else {
         X <- DelayedArray(x)
