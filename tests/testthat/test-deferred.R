@@ -52,7 +52,20 @@ test_that("DeferredMatrix utility functions work as expected", {
         expect_identical(length(test$def), length(test$ref))
         expect_identical(as.matrix(test$def), test$ref)
 
-        # Matrix subsetting works as expected.
+        expect_equal(rowSums(test$def), rowSums(test$ref))
+        expect_equal(colSums(test$def), colSums(test$ref))
+    }
+
+    # Checking erronious inputs.
+    y <- matrix(rnorm(400), ncol=20)
+    expect_error(DeferredMatrix(y, center=1), "length of 'center' must equal")
+    expect_error(DeferredMatrix(y, scale=1), "length of 'scale' must equal")
+})
+
+set.seed(1000011)
+test_that("DeferredMatrix subsetting works as expected", {
+    possibles <- spawn_scenarios()
+    for (test in possibles) {
         i <- sample(nrow(test$def))
         j <- sample(ncol(test$def))
         expect_identical(as.matrix(test$def[i,]), test$ref[i,])
@@ -70,11 +83,6 @@ test_that("DeferredMatrix utility functions work as expected", {
         expect_identical(t(alt[,i]), test$def[i,])
         expect_identical(t(alt[j,]), test$def[,j])
     }
-
-    # Checking erronious inputs.
-    y <- matrix(rnorm(400), ncol=20)
-    expect_error(DeferredMatrix(y, center=1), "length of 'center' must equal")
-    expect_error(DeferredMatrix(y, scale=1), "length of 'scale' must equal")
 })
 
 ##########################
@@ -176,6 +184,12 @@ test_that("DeferredMatrix right crossproduct works as expected", {
     }
 })
 
+test_that("DeferredMatrix dual crossprod fails as expected", {
+    y <- matrix(rnorm(400), ncol=20)
+    bs.y <- DeferredMatrix(y, NULL, NULL)
+    expect_error(crossprod(bs.y, bs.y), "not yet supported")
+})
+
 ##########################
 
 test_that("DeferredMatrix lonely tcrossproduct works as expected", {
@@ -227,3 +241,140 @@ test_that("DeferredMatrix right crossproduct works as expected", {
         expect_equal(tcrossprod(z, bs.y), tcrossprod(z, ref.y))
     }
 })
+
+test_that("DeferredMatrix dual tcrossprod fails as expected", {
+    y <- matrix(rnorm(400), ncol=20)
+    bs.y <- DeferredMatrix(y, NULL, NULL)
+    expect_error(tcrossprod(bs.y, bs.y), "not yet supported")
+})
+
+##########################
+
+test_that("nested DeferredMatrix works as expected", {
+    for (it in 1:4) {
+        # Setting up the scenario, with and without transposition.
+        a1 <- matrix(rnorm(400), ncol=20)
+
+        c1 <- rnorm(20)
+        s1 <- runif(20)
+        r1 <- DeferredMatrix(a1, c1, s1)
+        ref1 <- scale(a1, c1, s1)
+        if (it%%2L==0L) {
+            r1 <- t(r1)
+            ref1 <- t(ref1)
+        }
+        
+        c2 <- rnorm(20)
+        s2 <- runif(20)
+        r2 <- DeferredMatrix(r1, c2, s2)
+        ref2 <- scale(ref1, c2, s2)
+        if (it > 2L) {
+            r2 <- t(r2)
+            ref2 <- t(ref2)
+        }
+
+        attr(ref2, "scaled:center") <- NULL
+        attr(ref2, "scaled:scale") <- NULL
+
+        # Coercion works.
+        expect_equal(ref2, as.matrix(r2))
+
+        # Basic stats work.
+        expect_equal(rowSums(ref2), rowSums(r2))
+        expect_equal(colSums(ref2), colSums(r2))
+       
+        # Multiplication works.        
+        y <- matrix(rnorm(20*2), ncol=2)        
+        expect_equal(ref2 %*% y, r2 %*% y)
+        expect_equal(t(y) %*% ref2, t(y) %*% r2)
+
+        # Cross product.
+        y <- matrix(rnorm(20*2), ncol=2)        
+        expect_equal(crossprod(ref2), crossprod(r2))
+        expect_equal(crossprod(ref2, y), crossprod(r2, y))
+        expect_equal(crossprod(y, ref2), crossprod(y, r2))
+
+        # Transposed cross product.
+        y <- matrix(rnorm(20*2), nrow=2) 
+        expect_equal(tcrossprod(ref2), tcrossprod(r2))
+        expect_equal(tcrossprod(ref2, y), tcrossprod(r2, y))
+        expect_equal(tcrossprod(y, ref2), tcrossprod(y, r2))
+    }
+})
+
+set.seed(1200001)
+test_that("deep testing of tcrossproduct internals: special mult", {
+    NC <- 20
+    NR <- 10
+    c <- runif(NC)
+    s <- runif(NR) # NOT the scale for 'r', but for the parent DeferredMatrix, which has transposed dimensions.
+    r <- matrix(rnorm(NC*NR), ncol=NC)
+
+    ref <- t(matrix(c, NR, NC, byrow=TRUE)) %*% (r/s^2)
+    out <- BiocSingular:::.internal_mult_special(c, s, r)
+    expect_equal(ref, out)
+
+    # Trying with DeferredMatrices.
+    c1 <- runif(NC)
+    s1 <- runif(NC)
+    r1 <- DeferredMatrix(r, c1, s1)
+    out <- BiocSingular:::.internal_mult_special(c, s, r1)
+    ref <- BiocSingular:::.internal_mult_special(c, s, as.matrix(r1))
+    expect_equal(ref, out)
+
+    # Now with transposition.
+    c2 <- runif(NR)
+    s2 <- runif(NR)
+    r2 <- DeferredMatrix(t(r), c2, s2)
+    r2 <- t(r2)
+    out <- BiocSingular:::.internal_mult_special(c, s, r2)
+    ref <- BiocSingular:::.internal_mult_special(c, s, as.matrix(r2))
+    expect_equal(ref, out)
+})
+
+set.seed(1200002)
+test_that("deep testing of tcrossproduct internals: scaled tcrossprod", {
+        library(testthat); library(BiocSingular)
+    NC <- 30
+    NR <- 15
+    s <- runif(NC) 
+    r <- matrix(rnorm(NC*NR), ncol=NC)
+
+    ref <- crossprod(t(r)/s)
+    out <- BiocSingular:::.internal_tcrossprod(r, s)
+    expect_equal(ref, out)
+
+    # Trying with DeferredMatrices.
+    c1 <- runif(NC)
+    s1 <- runif(NC)
+    r1 <- DeferredMatrix(r, c1, s1)
+    out <- BiocSingular:::.internal_tcrossprod(r1, s)
+    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r1), s)
+    expect_equal(ref, out)
+
+    # With transposition.
+    c2 <- runif(NR)
+    s2 <- runif(NR)
+    r2 <- DeferredMatrix(t(r), c2, s2)
+    r2 <- t(r2)
+    out <- BiocSingular:::.internal_tcrossprod(r2, s)
+    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r2), s)
+    expect_equal(ref, out)
+
+    # Now with nested DeferredMatrices.
+    r3 <- DeferredMatrix(r1, rnorm(ncol(r1)), runif(ncol(r1)))
+    out <- BiocSingular:::.internal_tcrossprod(r3, s)
+    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r3), s)
+    expect_equal(ref, out)
+
+    r4 <- DeferredMatrix(r2, rnorm(ncol(r2)), runif(ncol(r2)))
+    out <- BiocSingular:::.internal_tcrossprod(r4, s)
+    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r4), s)
+    expect_equal(ref, out)
+
+    r5 <- t(DeferredMatrix(t(r1), rnorm(nrow(r1)), runif(nrow(r1), 10, 20)))
+    out <- BiocSingular:::.internal_tcrossprod(r5, s)
+    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r5), s)
+    expect_equal(ref, out)
+})
+

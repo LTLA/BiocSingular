@@ -96,9 +96,13 @@ setMethod("t", "DeferredMatrix", function(x) {
 
 #' @export
 #' @importFrom BiocGenerics t
+#' @importFrom methods is
 setMethod("as.matrix", "DeferredMatrix", function(x) {
     out <- get_matrix2(x)
+
     if (use_scale(x) || use_center(x)) {
+        if (is(out, "DeferredMatrix")) out <- as.matrix(out) # can't define '-' and '/' in general.
+
         out <- t(out)
         if (use_center(x)) {
             out <- out - get_center(x)
@@ -106,6 +110,7 @@ setMethod("as.matrix", "DeferredMatrix", function(x) {
         if (use_scale(x)) {
             out <- out / get_scale(x)
         }
+
         if (!is_transposed(x)) out <- t(out)
     } else {
         if (is_transposed(x)) out <- t(out) 
@@ -154,6 +159,35 @@ setMethod("[", c(x="DeferredMatrix", i="ANY", j="ANY", drop="ANY"), function(x, 
         return(drop(as.matrix(x)))
     }
     return(x)
+})
+
+###################################
+# Matrix stats.
+
+#' @export
+#' @importFrom BiocGenerics colSums
+setMethod("colSums", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) {
+    if (is_transposed(x)) {
+        return(rowSums(t(x)))
+    }
+
+    out <- rep(1, nrow(x)) %*% x
+    out <- drop(out)
+    names(out) <- colnames(x)
+    out
+})
+
+#' @export
+#' @importFrom BiocGenerics rowSums
+setMethod("rowSums", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) {
+    if (is_transposed(x)) {
+        return(colSums(t(x)))
+    }
+
+    out <- x %*% rep(1, ncol(x))
+    out <- drop(out)
+    names(out) <- rownames(x)
+    out
 })
 
 ###################################
@@ -231,7 +265,11 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 
     if (use_center(x)) {
         centering <- get_center(x)
-        colsums <- Matrix::colSums(x0)
+        if (is(x0, "DeferredMatrix")) { # TODO: fix when BiocGenerics and Matrix stop fighting each other.
+            colsums <- colSums(x0)
+        } else {
+            colsums <- Matrix::colSums(x0)
+        }
 
         # Minus, then add, then minus, to mitigate cancellation.
         out <- out - outer(centering, colsums)
@@ -288,11 +326,17 @@ setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     out
 })
 
+#' @export
+setMethod("crossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
+    x %*% y # leads to error above.
+})
+
 ###################################
 # Transposed cross-product. 
 
 #' @export
 #' @importFrom Matrix tcrossprod
+#' @importFrom methods is
 setMethod("tcrossprod", c("DeferredMatrix", "missing"), function(x, y) {
     if (is_transposed(x)) {
         return(crossprod(t(x)))
@@ -300,21 +344,30 @@ setMethod("tcrossprod", c("DeferredMatrix", "missing"), function(x, y) {
 
     new.x <- get_matrix2(x)
     if (use_scale(x)) {
-        new.x <- sweep(new.x, 2, get_scale(x), "/", check.margin=FALSE) # Can't avoid this.
+        out <- as.matrix(.internal_tcrossprod(new.x, get_scale(x)))
+    } else {
+        out <- as.matrix(tcrossprod(new.x))
     }
-
-    out <- as.matrix(tcrossprod(new.x))
     
     if (use_center(x)) {
         centering <- get_center(x)
+
         if (use_scale(x)) {
             centering <- centering / get_scale(x)
+            extra <- centering / get_scale(x)
+        } else {
+            extra <- centering
         }
+            
+        # With scaling, the use of 'extra' mimics sweep(new.x, 2, get_scale(x), "/"),
+        # except that the scaling is applied to 'centering' rather than directly to 'new.x'.
+        # Without scaling, 'extra' and 'centering' are interchangeable.
+        component <- tcrossprod(extra, new.x) 
 
         # Minus, then add, then minus, to mitigate cancellation.
-        out <- sweep(out, 2, as.numeric(tcrossprod(centering, new.x)), "-", check.margin=FALSE)
+        out <- sweep(out, 2, as.numeric(component), "-", check.margin=FALSE)
         out <- out + sum(centering^2)
-        out <- out - as.numeric(new.x %*% centering)
+        out <- out - as.numeric(new.x %*% extra)
     }
 
     out
@@ -366,3 +419,92 @@ setMethod("tcrossprod", c("ANY", "DeferredMatrix"), function(x, y) {
 
     out
 })
+
+#' @export
+setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
+    x %*% y # leads to error above.
+})
+
+###################################
+# Extra code for corner-case calculations of the transposed cross-product.
+
+.update_scale <- function(x, s) {
+    if (use_scale(x)) {
+        s <- s * get_scale(x)
+    }
+    x@scale <- s
+    x@use_scale <- TRUE
+    x
+}
+
+#' @importFrom Matrix tcrossprod colSums
+#' @importFrom methods is
+.internal_tcrossprod <- function(x, scale.) 
+# Tries to compute tcrossprod(sweep(x, 2, scale, "/")) when 'x' is a DeferredMatrix.
+# 'scale' can be assumed to be non-NULL here.
+{
+    if (!is(x, "DeferredMatrix")) {
+        x <- sweep(x, 2, scale., "/", check.margin=FALSE) 
+        return(tcrossprod(x))
+    }
+
+    if (!is_transposed(x)) {
+        x <- .update_scale(x, scale.)
+        return(tcrossprod(x))
+    }
+
+    inner <- get_matrix2(x)
+    if (is(inner, "DeferredMatrix")) {
+        if (is_transposed(inner)) {
+            component1 <- crossprod(.update_scale(inner, scale.))
+        } else {
+            component1 <- .internal_tcrossprod(t(inner), scale.) # recurses. 
+        }
+    } else {
+        component1 <- crossprod(inner/scale.)
+    }
+           
+    if (use_center(x)) {
+        centering <- get_center(x)
+        component2 <- .internal_mult_special(centering, scale., inner)
+        component3 <- t(component2)
+        component4 <- outer(centering, centering) * sum(1/scale.^2)
+        final <- (component1 - component2) + (component4 - component3)
+    } else {
+        final <- component1
+    }
+
+    if (use_scale(x)) {
+        x.scale <- get_scale(x)
+        final <- final / x.scale
+        final <- sweep(final, 2, x.scale, "/", check.margin=FALSE) 
+    }
+
+    final 
+}
+
+.internal_mult_special <- function(center, scale., Z)
+# Computes C^T * S^2 * Z where C is a matrix of 'centers' copied byrow=TRUE;
+# S is a diagonal matrix filled with 'scale'; and 'Z' is a DeferredMatrix.
+{
+    if (!is(Z, "DeferredMatrix")) {
+        return(outer(center, colSums(Z/scale.^2)))
+    }
+        
+    if (is_transposed(Z)) {
+        Z <- .update_scale(Z, scale.^2)
+        return(outer(center, colSums(Z)))
+    }
+
+    output <- .internal_mult_special(center, scale., get_matrix2(Z)) # recurses.
+
+    if (use_center(Z)) {
+        output <- output - outer(center, get_center(Z)) * sum(1/scale.^2)
+    }
+
+    if (use_scale(Z)) {
+        output <- sweep(output, 2, get_scale(Z), "/")
+    }
+
+    output
+}
