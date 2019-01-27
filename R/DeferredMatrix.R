@@ -107,6 +107,7 @@ setMethod("as.matrix", "DeferredMatrix", function(x) {
 ###################################
 # Matrix subset.
 
+#' @export
 setMethod("[", c(x="DeferredMatrix", i="ANY", j="ANY", drop="ANY"), function(x, i, j, ..., drop=TRUE) {
     if (is_transposed(x)) {
         x <- t(x)
@@ -178,7 +179,7 @@ setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
 
 #' @export
 #' @importFrom BiocGenerics t
-#' @importFrom BiocGenerics rowSums
+#' @importFrom Matrix rowSums
 setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
     if (is_transposed(y)) {
         if (!is.null(dim(x))) x <- t(x) # as vectors don't quite behave as 1-column matrices here.
@@ -210,8 +211,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 # Cross-product. 
 
 #' @export
-#' @importFrom BiocGenerics colSums
-#' @importFrom Matrix crossprod
+#' @importFrom Matrix crossprod colSums
 setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
     if (is_transposed(x)) {
         return(tcrossprod(t(x)))
@@ -238,8 +238,7 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 })
 
 #' @export
-#' @importFrom BiocGenerics colSums
-#' @importFrom Matrix crossprod
+#' @importFrom Matrix crossprod colSums
 setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
     if (is_transposed(x)) {
         return(t(x) %*% y)
@@ -260,8 +259,7 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
 })
 
 #' @export
-#' @importFrom BiocGenerics colSums
-#' @importFrom Matrix crossprod
+#' @importFrom Matrix crossprod colSums
 setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     if (is_transposed(y)) {
         return(t(t(y) %*% x))
