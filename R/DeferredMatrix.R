@@ -189,7 +189,6 @@ setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
 
 #' @export
 #' @importFrom BiocGenerics t
-#' @importFrom Matrix rowSums
 setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
     if (is_transposed(y)) {
         if (!is.null(dim(x))) x <- t(x) # as vectors don't quite behave as 1-column matrices here.
@@ -202,7 +201,7 @@ setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
         if (is.null(dim(x))) {
             out <- out - get_center(y) * sum(x)
         } else {
-            out <- out - outer(rowSums(x), get_center(y), "*")
+            out <- out - outer(Matrix::rowSums(x), get_center(y), "*")
         }
     }
 
@@ -221,7 +220,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 # Cross-product. 
 
 #' @export
-#' @importFrom Matrix crossprod colSums
+#' @importFrom Matrix crossprod 
 setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
     if (is_transposed(x)) {
         return(tcrossprod(t(x)))
@@ -232,7 +231,7 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 
     if (use_center(x)) {
         centering <- get_center(x)
-        colsums <- colSums(x0)
+        colsums <- Matrix::colSums(x0)
 
         # Minus, then add, then minus, to mitigate cancellation.
         out <- out - outer(centering, colsums)
@@ -248,7 +247,7 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 })
 
 #' @export
-#' @importFrom Matrix crossprod colSums
+#' @importFrom Matrix crossprod
 setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
     if (is_transposed(x)) {
         return(t(x) %*% y)
@@ -259,7 +258,7 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
         if (is.null(dim(y))) {
             out <- out - get_center(x) * sum(y)
         } else {
-            out <- out - outer(get_center(x), colSums(y))
+            out <- out - outer(get_center(x), Matrix::colSums(y))
         }
     }
     if (use_scale(x)) {
@@ -269,7 +268,7 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
 })
 
 #' @export
-#' @importFrom Matrix crossprod colSums
+#' @importFrom Matrix crossprod 
 setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     if (is_transposed(y)) {
         return(t(t(y) %*% x))
@@ -280,7 +279,7 @@ setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
         if (is.null(dim(x))) {
             out <- sweep(out, 2, sum(x) * get_center(y), "-", check.margin=FALSE)
         } else {
-            out <- out - outer(colSums(x), get_center(y))
+            out <- out - outer(Matrix::colSums(x), get_center(y))
         }
     }
     if (use_scale(y)) {

@@ -1,6 +1,5 @@
 #' @importFrom DelayedArray DelayedArray sweep
-#' @importFrom BiocGenerics nrow 
-#' @importFrom Matrix colSums colMeans
+#' @importFrom BiocGenerics nrow colMeans colSums 
 #' @importFrom BiocParallel SerialParam bpnworkers
 standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE, BPPARAM=SerialParam())
 # Creates a deferred or delayed centered and scaled matrix.
