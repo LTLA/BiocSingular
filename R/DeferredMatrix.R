@@ -42,6 +42,16 @@ setValidity2("DeferredMatrix", function(object) {
     return(TRUE)
 })
 
+#' @export
+#' @importFrom methods show
+setMethod("show", "DeferredMatrix", function(object) {
+    cat(sprintf("%i x %i DeferredMatrix object", nrow(object), ncol(object)),
+        sprintf("representation: %s", class(get_matrix2(object))),
+        sprintf("centering: %s", if (use_center(object)) "yes" else "no"),
+        sprintf("scaling: %s", if (use_scale(object)) "yes" else "no"),
+    sep="\n")
+})
+
 ###################################
 # Getters. 
 
