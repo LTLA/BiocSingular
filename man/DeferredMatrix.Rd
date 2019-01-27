@@ -13,6 +13,9 @@
 
 \alias{[,DeferredMatrix,ANY,ANY,ANY-method}
 
+\alias{colSums,DeferredMatrix-method}
+\alias{rowSums,DeferredMatrix-method}
+
 \alias{\%*\%,ANY,DeferredMatrix-method}
 \alias{\%*\%,DeferredMatrix,ANY-method}
 \alias{\%*\%,DeferredMatrix,DeferredMatrix-method}
@@ -20,10 +23,12 @@
 \alias{crossprod,DeferredMatrix,missing-method}
 \alias{crossprod,DeferredMatrix,ANY-method}
 \alias{crossprod,ANY,DeferredMatrix-method}
+\alias{crossprod,DeferredMatrix,DeferredMatrix-method}
 
 \alias{tcrossprod,DeferredMatrix,missing-method}
 \alias{tcrossprod,DeferredMatrix,ANY-method}
 \alias{tcrossprod,ANY,DeferredMatrix-method}
+\alias{tcrossprod,DeferredMatrix,DeferredMatrix-method}
 
 \docType{class}
 
@@ -60,6 +65,9 @@ Matrix subsetting is supported in both dimensions and will return a DeferredMatr
 
 Matrix multiplication via \code{\%*\%}, \code{crossprod} and \code{tcrossprod} are supported.
 Note that, for the time being, multiplying two DeferredMatrix objects is not yet supported.
+
+Calculation of row and column sums is supported by \code{colSums} and \code{rowSums}.
+Other matrix statistics are not yet supported.
 }
 
 \author{
