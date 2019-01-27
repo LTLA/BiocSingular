@@ -1,12 +1,5 @@
 \name{BiocSingular options}
 \alias{BiocSingular-options}
-\alias{\%*\%,ANY,bs_matrix-method}
-\alias{\%*\%,bs_matrix,ANY-method}
-\alias{\%*\%,bs_matrix,bs_matrix-method}
-\alias{dim,bs_matrix-method}
-\alias{dimnames,bs_matrix-method}
-\alias{length,bs_matrix-method}
-\docType{class}
 
 \title{Global SVD options}
 \description{An overview of the available options when performing SVD with any algorithm.}
