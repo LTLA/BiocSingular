@@ -437,7 +437,7 @@ setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     x
 }
 
-#' @importFrom Matrix tcrossprod colSums
+#' @importFrom Matrix tcrossprod 
 #' @importFrom methods is
 .internal_tcrossprod <- function(x, scale.) 
 # Tries to compute tcrossprod(sweep(x, 2, scale, "/")) when 'x' is a DeferredMatrix.
