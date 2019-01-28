@@ -351,7 +351,6 @@ test_that("deep testing of tcrossproduct internals: special mult", {
 
 set.seed(1200002)
 test_that("deep testing of tcrossproduct internals: scaled tcrossprod", {
-        library(testthat); library(BiocSingular)
     NC <- 30
     NR <- 15
     s <- runif(NC) 
@@ -395,3 +394,20 @@ test_that("deep testing of tcrossproduct internals: scaled tcrossprod", {
     expect_equal(ref, out)
 })
 
+##########################
+
+library(DelayedArray)
+test_that("DelayedMatrix wrapping works", {
+    possibles <- spawn_scenarios(80, 50)
+    for (test in possibles) {
+        X <- DelayedArray(test$def)
+        expect_equal(as.matrix(X^2), test$ref^2)
+        expect_equal(as.matrix(X + 1), test$ref + 1)
+
+        v <- nrow(X)
+        expect_equal(as.matrix(X + v), test$ref + v)
+        expect_equal(as.matrix(X * v), test$ref * v)
+
+        expect_identical(type(X), "double")
+    }
+})

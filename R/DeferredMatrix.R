@@ -521,3 +521,18 @@ setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 
     output
 }
+
+###################################
+# For DelayedArray calculations.
+
+#' @export
+#' @importFrom DelayedArray extract_array
+setMethod("extract_array", "DeferredMatrix", function(x, index) {
+    if (!is.null(index[[1]])) {
+        x <- x[index[[1]],,drop=FALSE]
+    } 
+    if (!is.null(index[[2]])) {
+        x <- x[,index[[2]],drop=FALSE]
+    }
+    as.matrix(x)
+})

@@ -31,6 +31,8 @@
 \alias{tcrossprod,ANY,DeferredMatrix-method}
 \alias{tcrossprod,DeferredMatrix,DeferredMatrix-method}
 
+\alias{extract_array,DeferredMatrix-method}
+
 \docType{class}
 
 \title{The DeferredMatrix class}
@@ -62,13 +64,15 @@ Calling \code{as.matrix} will return an ordinary R matrix with centering and sca
 Calling \code{t} will indicate that the matrix is to be transposed, along with any scaling/centering operations.
 This can effectively be used to allow centering/scaling on the rows if the input \code{x} is transposed.
 
-Matrix subsetting is supported in both dimensions and will return a DeferredMatrix of the specified dimensions.
+Matrix subsetting will return a DeferredMatrix of the specified dimensions.
 
 Matrix multiplication via \code{\%*\%}, \code{crossprod} and \code{tcrossprod} are supported.
-Note that, for the time being, multiplying two DeferredMatrix objects is not yet supported.
+Multiplying two DeferredMatrix objects is not yet supported.
 
 Calculation of row and column sums is supported by \code{colSums} and \code{rowSums}.
 Other matrix statistics are not yet supported.
+
+DeferredMatrix objects can be wrapped in \code{\link{DelayedArray}} instances to perform otherwise unsupported calculations via block processing.
 }
 
 \author{
