@@ -101,10 +101,14 @@ setMethod("t", "DeferredMatrix", function(x) {
     x
 })
 
+###################################
+# Matrix coercion. 
+
 #' @export
+#' @method as.matrix DeferredMatrix
 #' @importFrom BiocGenerics t
 #' @importFrom methods is
-setMethod("as.matrix", "DeferredMatrix", function(x) {
+as.matrix.DeferredMatrix <- function(x, ...) {
     out <- get_matrix2(x)
 
     if (use_scale(x) || use_center(x)) {
@@ -129,7 +133,10 @@ setMethod("as.matrix", "DeferredMatrix", function(x) {
     }
 
     as.matrix(out)
-})
+}
+
+#' @export
+setMethod("as.matrix", "DeferredMatrix", as.matrix.DeferredMatrix)
 
 ###################################
 # Matrix subset.

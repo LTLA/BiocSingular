@@ -10,6 +10,7 @@
 \alias{show,DeferredMatrix-method}
 
 \alias{as.matrix,DeferredMatrix-method}
+\alias{as.matrix.DeferredMatrix}
 \alias{t,DeferredMatrix-method}
 
 \alias{[,DeferredMatrix,ANY,ANY,ANY-method}
