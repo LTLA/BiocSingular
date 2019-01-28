@@ -5,7 +5,7 @@
 
 \alias{dim,DeferredMatrix-method}
 \alias{dimnames,DeferredMatrix-method}
-\alias{dimnames<-,DeferredMatrix-method}
+\alias{dimnames<-,DeferredMatrix,ANY-method}
 \alias{length,DeferredMatrix-method}
 \alias{show,DeferredMatrix-method}
 
