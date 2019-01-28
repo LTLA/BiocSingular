@@ -85,6 +85,13 @@ setMethod("dimnames", "DeferredMatrix", function(x) {
 })
 
 #' @export
+setReplaceMethod("dimnames", "DeferredMatrix", function(x, value) {
+    if (is_transposed(x)) value <- rev(value)
+    dimnames(x@.matrix) <- value
+    x
+})
+
+#' @export
 setMethod("length", "DeferredMatrix", function(x) length(get_matrix2(x)))
 
 #' @export
@@ -101,14 +108,19 @@ setMethod("as.matrix", "DeferredMatrix", function(x) {
     out <- get_matrix2(x)
 
     if (use_scale(x) || use_center(x)) {
-        if (is(out, "DeferredMatrix")) out <- as.matrix(out) # can't define '-' and '/' in general.
+        if (is(out, "DeferredMatrix")) {
+            # can't define '-' and '/' in general, so we might as well realize it now.
+            out <- as.matrix(out)
+        }
 
         out <- t(out)
-        if (use_center(x)) {
-            out <- out - get_center(x)
-        }
-        if (use_scale(x)) {
-            out <- out / get_scale(x)
+        if (nrow(out)) { # avoid undefined <Matrix> - numeric(0) with Matrix classes.
+            if (use_center(x)) {
+                out <- out - get_center(x)
+            }
+            if (use_scale(x)) {
+                out <- out / get_scale(x)
+            }
         }
 
         if (!is_transposed(x)) out <- t(out)
@@ -140,10 +152,11 @@ setMethod("[", c(x="DeferredMatrix", i="ANY", j="ANY", drop="ANY"), function(x, 
         }
             
         if (!missing(j)) {
-            x@.matrix <- get_matrix2(x)[,j,drop=FALSE]
             if (is.character(j)) {
                 j <- match(j, colnames(x))
             }
+
+            x@.matrix <- get_matrix2(x)[,j,drop=FALSE]
             
             if (use_scale(x)) {
                 x@scale <- get_scale(x)[j]

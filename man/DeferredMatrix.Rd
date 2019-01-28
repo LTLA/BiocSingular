@@ -5,6 +5,7 @@
 
 \alias{dim,DeferredMatrix-method}
 \alias{dimnames,DeferredMatrix-method}
+\alias{dimnames<-,DeferredMatrix-method}
 \alias{length,DeferredMatrix-method}
 \alias{show,DeferredMatrix-method}
 
@@ -54,7 +55,7 @@ A DeferredMatrix object equivalent to \code{t((t(x) - center)/scale)}.
 }
 
 \section{Available methods}{
-DeferredMatrix objects support standard operations like \code{dim}, \code{dimnames}, \code{length} and \code{show}.
+DeferredMatrix objects support standard operations like \code{dim}, \code{dimnames}, \code{dimnames<-}, \code{length} and \code{show}.
 
 Calling \code{as.matrix} will return an ordinary R matrix with centering and scaling operations applied.
 

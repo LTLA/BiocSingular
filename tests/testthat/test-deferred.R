@@ -54,6 +54,11 @@ test_that("DeferredMatrix utility functions work as expected", {
 
         expect_equal(rowSums(test$def), rowSums(test$ref))
         expect_equal(colSums(test$def), colSums(test$ref))
+
+        # Checking column names getting and setting.
+        spawn_names <- sprintf("THING_%i", seq_len(ncol(test$def)))
+        colnames(test$def) <- spawn_names
+        expect_identical(spawn_names, colnames(test$def))
     }
 
     # Checking erronious inputs.
@@ -72,6 +77,11 @@ test_that("DeferredMatrix subsetting works as expected", {
         expect_identical(as.matrix(test$def[,j]), test$ref[,j])
         expect_identical(as.matrix(test$def[i,j]), test$ref[i,j])
         
+        # Works with zero dimensions.
+        expect_identical(as.matrix(test$def[0,]), test$ref[0,])
+        expect_identical(as.matrix(test$def[,0]), test$ref[,0])
+        expect_identical(as.matrix(test$def[0,0]), test$ref[0,0])
+        
         # Dimension dropping works as expected.
         expect_identical(test$def[i[1],], test$ref[i[1],])
         expect_identical(test$def[,j[1]], test$ref[,j[1]])
@@ -82,6 +92,13 @@ test_that("DeferredMatrix subsetting works as expected", {
         alt <- t(test$def)
         expect_identical(t(alt[,i]), test$def[i,])
         expect_identical(t(alt[j,]), test$def[,j])
+
+        # Subsetting behaves with column names.
+        spawn_names <- sprintf("THING_%i", seq_len(ncol(test$def)))
+        colnames(test$def) <- spawn_names
+        colnames(test$ref) <- spawn_names
+        ch <- sample(spawn_names)
+        expect_identical(as.matrix(test$def[,ch]), test$ref[,ch])
     }
 })
 
