@@ -1,18 +1,23 @@
-bsp_fold <- function(object) object@fold
-bsp_deferred <- function(object) object@deferred
-bsp_args <- function(object) object@args
+#' @export
+bsfold <- function(object) object@fold
 
-setValidity("BiocSingularParam", function(object) {
+#' @export
+bsdeferred <- function(object) object@deferred
+
+bsargs <- function(object) object@args
+
+#' @importFrom S4Vectors setValidity2
+setValidity2("BiocSingularParam", function(object) {
     msg <- character(0)
 
-    if (length(bsp_fold(object))!=1L) {
+    if (length(bsfold(object))!=1L) {
         msg <- c(msg, "'fold' should be a numeric scalar")
     }
-    if (bsp_fold(object) < 1) {
+    if (bsfold(object) < 1) {
         msg <- c(msg, "'fold' should be no less than 1")
     }
 
-    if (length(bsp_deferred(object))!=1L) {
+    if (length(bsdeferred(object))!=1L) {
         msg <- c(msg, "'deferred' should be a numeric scalar")
     }
 
@@ -26,8 +31,8 @@ setValidity("BiocSingularParam", function(object) {
 #' @importFrom methods show 
 setMethod("show", "BiocSingularParam", function(object) {
     cat(sprintf("class: %s\n", class(object)))
-    cat(sprintf("cross-product fold-threshold: %.2f\n", bsp_fold(object)))
-    cat(sprintf("deferred centering/scaling: %s\n", ifelse(bsp_deferred(object), "on", "off")))
+    cat(sprintf("cross-product fold-threshold: %.2f\n", bsfold(object)))
+    cat(sprintf("deferred centering/scaling: %s\n", ifelse(bsdeferred(object), "on", "off")))
 })
 
 #' @export
@@ -60,9 +65,9 @@ setValidity("IrlbaParam", function(object) {
 setMethod("show", "IrlbaParam", function(object) {
     callNextMethod()
     cat(sprintf("extra workspace: %i\n", ip_extra(object)))
-    extra.names <- names(bsp_args(object))
+    extra.names <- names(bsargs(object))
     if (length(extra.names) > 3) extra.names <- c(extra.names[seq_len(3)], "...")
-    cat(sprintf("additional arguments(%i): %s\n", length(bsp_args(object)), paste(extra.names, collapse=", ")))
+    cat(sprintf("additional arguments(%i): %s\n", length(bsargs(object)), paste(extra.names, collapse=", ")))
 })
 
 #' @export
@@ -75,7 +80,7 @@ RandomParam <- function(deferred=FALSE, fold=5, ...) {
 #' @importFrom methods show 
 setMethod("show", "RandomParam", function(object) {
     callNextMethod()
-    extra.names <- names(bsp_args(object))
+    extra.names <- names(bsargs(object))
     if (length(extra.names) > 3) extra.names <- c(extra.names[seq_len(3)], "...")
-    cat(sprintf("additional arguments(%i): %s\n", length(bsp_args(object)), paste(extra.names, collapse=", ")))
+    cat(sprintf("additional arguments(%i): %s\n", length(bsargs(object)), paste(extra.names, collapse=", ")))
 })

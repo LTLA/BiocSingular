@@ -13,8 +13,10 @@
 \alias{show,RandomParam-method}
 
 \docType{class}
-
 \alias{show,BiocSingularParam-method}
+
+\alias{bsfold}
+\alias{bsdeferred}
 
 \title{BiocSingularParam classes}
 \description{Classes for specifying the type of singular value decomposition (SVD) algorithm and associated parameters.}
@@ -26,11 +28,9 @@ IrlbaParam(deferred=FALSE, fold=5, extra.work=7, ...)
 
 RandomParam(deferred=FALSE, fold=5, ...)
     
-\S4method{show}{BiocSingularParam}(object)
+bsfold(object)
 
-\S4method{show}{IrlbaParam}(object)
-
-\S4method{show}{RandomParam}(object)
+bsdeferred(object)
 }
 
 \arguments{
@@ -38,7 +38,7 @@ RandomParam(deferred=FALSE, fold=5, ...)
     \item{fold}{Numeric scalar specifying the minimum fold-difference for cross-product calculation, see \code{?"\link{BiocSingular-options}"}.}
     \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
     \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}.}
-    \item{object}{An ExactParam object.}
+    \item{object}{A BiocSingularParam object.}
 }
 
 \details{
@@ -56,17 +56,14 @@ See the associated documentation pages for more details.
 
 \section{Methods}{
 \describe{
-\item{\code{show(object)}:}{Display the class of a BiocSingularParam \code{object}.
-Also shows the minimum fold-difference between dimensions required to perform the SVD on the cross-product rather than directly on the matrix;
-whether or not centering or scaling operations are to be deferred;
-and additional parameters, where available.}
+\item{\code{show(object)}:}{Display the class of a BiocSingularParam \code{object}, and a summary of the set parameters.}
+\item{\code{bsfold(object)}:}{Return a numeric scalar specifying the fold-difference for cross-product calculation.}
+\item{\code{bsdeferred(object)}:}{Return a logical scalar indicating whether centering and scaling should be deferred.}
 }
 }
 
 \value{
 The constructors return a BiocSingularParam subclass of the same type, containing the specified parameters.
-
-The \code{show} method prints the class of and a summary of the set parameters in each object.
 }
 
 \seealso{
