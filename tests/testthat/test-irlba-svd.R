@@ -109,7 +109,7 @@ set.seed(9004)
 test_that("IRLBA works with centering and scaling", {
     y <- matrix(rnorm(10000), ncol=50)
     center <- runif(ncol(y))
-    scale <- NULL # runif(ncol(y)) # irlba seems to be broken with scaling.
+    scale <- runif(ncol(y))
 
     set.seed(100)
     ref <- irlba(y, k=5, center=center, scale=scale, tol=1e-8)
@@ -117,7 +117,7 @@ test_that("IRLBA works with centering and scaling", {
     out <- runIrlbaSVD(y, k=5, center=center, scale=scale, fold=Inf, tol=1e-8) 
     expect_equal_svd(out, ref)
 
-    ry <- scale(y, center=center, scale=FALSE)
+    ry <- scale(y, center=center, scale=scale)
     set.seed(100)
     ref2 <- irlba(ry, nv=5, nu=5, tol=1e-8)
     expect_equal_svd(out, ref2)
@@ -125,9 +125,9 @@ test_that("IRLBA works with centering and scaling", {
     # Works with the cross-product.
     y <- matrix(rnorm(10000), ncol=20)
     center <- runif(ncol(y))
-    scale <- NULL #runif(ncol(y))
+    scale <- runif(ncol(y))
     
-    ry <- scale(y, center=center, scale=FALSE)
+    ry <- scale(y, center=center, scale=scale)
     set.seed(200)
     ref <- irlba(ry, nu=5, nv=5, tol=1e-8)
     set.seed(200)
@@ -136,14 +136,14 @@ test_that("IRLBA works with centering and scaling", {
 
     # Works with the alternative multiplication.
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, BPPARAM=MulticoreParam(2), tol=1e-8)
+    out <- runIrlbaSVD(ry, k=5, BPPARAM=MulticoreParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)
 
-    # Works with deffered operations (which also requires parallelization).
+    # Works with deferred operations (which also requires parallelization).
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=MulticoreParam(2), tol=1e-8)
+    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=MulticoreParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)
