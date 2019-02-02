@@ -37,9 +37,10 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FA
         args$nu <- nu
         args$nv <- max(k, nv)
 
-        if (bpnworkers(BPPARAM)==1L && (is.matrix(x) || is(x, "dgCMatrix"))) {
-            # Try to use 'fastpath=TRUE' if possible.
-            res <- do.call(irlba, c(list(A=x, center=center, scale=scale), args))
+        if (bpnworkers(BPPARAM)==1L) {
+            # Use irlba's native 'center' and 'scale', avoid overhead of Delayed/DeferredMatrix wrapper in 'standardize_matrix'.
+            # Also try to use 'fastpath=TRUE' if possible, depending on the class of 'x'.
+            res <- do.call(irlba, c(args, list(A=x, center=center, scale=scale)))
 
         } else {
             x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred, BPPARAM=BPPARAM)
