@@ -27,9 +27,10 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
 }
 
 \details{
-If \code{BPPARAM} has only 1 core \emph{and} \code{x} is an ordinary matrix or \code{dgCMatrix}, this function will use \code{\link{irlba}} with the default \code{fastpath=TRUE}.
-Otherwise, it will use the slower R-based algorithm to take advantage of generic matrix multiplication.
-All multiplication operations involving \code{x} will be parallelized according to the supplied \code{BPPARAM}.
+If \code{BPPARAM} has only 1 worker and a cross-product is not being computed, this function will use \code{\link{irlba}}'s own \code{center} and \code{scale} arguments.
+This is effectively equivalent to deferred centering and scaling, despite the setting of \code{deferred=FALSE}.
+
+For multiple workers, this function will parallelize all multiplication operations involving \code{x} according to the supplied \code{BPPARAM}.
 
 The total dimensionality of the working subspace is defined as the maximum of \code{k}, \code{nu} and \code{nv}, plus the \code{extra.work}.
 }
