@@ -7,7 +7,7 @@ svd_via_crossprod <- function(x, k, nu=k, nv=k, FUN=svd, ...)
 # We assume that any centering/scaling has already been applied to 'x'.
 {
     if (nrow(x) > ncol(x)) {
-        y <- crossprod(x)
+        y <- as.matrix(crossprod(x))
         res <- FUN(y, nu=0, nv=max(nu, nv, k), ...)
         res$d <- sqrt(res$d)
 
@@ -16,7 +16,7 @@ svd_via_crossprod <- function(x, k, nu=k, nv=k, FUN=svd, ...)
         res$v <- as.matrix(res$v[,seq_len(nv),drop=FALSE])
 
     } else {
-        y <- tcrossprod(x)
+        y <- as.matrix(tcrossprod(x))
         res <- FUN(y, nu=max(nu, nv, k), nv=0, ...)
         res$d <- sqrt(res$d)
 
