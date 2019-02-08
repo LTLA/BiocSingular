@@ -1,6 +1,6 @@
 #' @export
 setMethod("runSVD", "missing", function(..., BSPARAM) {
-    runSVD(..., BSPARAM=ExactParam())
+    runSVD(..., BSPARAM=BSPARAM)
 })
 
 #' @export
