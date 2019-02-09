@@ -39,7 +39,8 @@
 
 \title{The DeferredMatrix class}
 \description{
-Methods for the DeferredMatrix class, supporting deferred centering and scaling.
+Definitions of the DeferredMatrixSeed and DeferredMatrix classes and their associated methods.
+These classes are designed to support deferred centering and scaling of the columns prior to a principal components analysis.
 }
 
 \usage{
