@@ -37,9 +37,10 @@ This is because the function will avoid constructing intermediate centered (poss
 }
 
 \section{Deferred centering and scaling}{
-The \pkg{BiocSingular} package has a specialized matrix class that defers centering (and to some extent, scaling) during matrix multiplication.
+Many of the SVD algorithms (and computation of the cross-product) involve repeated matrix multiplications.
+The \pkg{BiocSingular} package has a specialized \linkS4class{DeferredMatrix} class that defers centering (and to some extent, scaling) during matrix multiplication.
 The matrix multiplication is performed on the original matrix, and then the centering/scaling operations are applied to the matrix product.
-This allows direct use of the \code{\%*\%} method for each matrix representation, to exploit features of the underlying matrix representation for greater speed.
+This allows direct use of the \code{\%*\%} method for each matrix representation, to exploit features of the underlying representation (e.g., sparsity) for greater speed.
 
 Unfortunately, the speed-up with deferred centering comes at the cost of increasing the risk of catastrophic cancellation.
 The procedure requires subtraction of one large intermediate number from another to obtain the values of the final matrix product.
