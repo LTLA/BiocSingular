@@ -1,6 +1,6 @@
 Package: BiocSingular
-Version: 0.99.2
-Date: 2019-02-08
+Version: 0.99.3
+Date: 2019-02-09
 Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
