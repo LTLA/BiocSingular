@@ -99,17 +99,17 @@ setMethod("extract_array", "DeferredMatrixSeed", function(x, index) {
 ###################################
 # Other utilities. 
 
-setReplaceMethod("dimnames", "DeferredMatrixSeed", function(x, value) {
+rename_DeferredMatrixSeed <- function(x, value) {
     if (is_transposed(x)) value <- rev(value)
     dimnames(x@.matrix) <- value
     x
-})
+}
 
 #' @importFrom BiocGenerics t
-setMethod("t", "DeferredMatrixSeed", function(x) {
+transpose_DeferredMatrixSeed <- function(x) {
     x@transposed <- !is_transposed(x)
     x
-})
+}
 
 #' @importFrom BiocGenerics t
 #' @importFrom methods is
@@ -118,7 +118,10 @@ realize_DeferredMatrixSeed <- function(x, ...) {
 
     if (use_scale(x) || use_center(x)) {
         if (is(out, "DeferredMatrix")) {
-            # we can't define '-' and '/' so we might as well realize it now.
+            # Any '-' and '/' would collapse this to a DelayedArray, 
+            # which would then call extract_array, which would then 
+            # call realize_DeferredMatrixSeed, forming an infinite loop.
+            # So we might as well realize it now.
             out <- realize_DeferredMatrixSeed(seed(out))
         }
 
@@ -143,8 +146,9 @@ realize_DeferredMatrixSeed <- function(x, ...) {
 #' @importFrom BiocGenerics t
 subset_DeferredMatrixSeed <- function(x, i, j) {
     if (is_transposed(x)) {
-        x2 <- subset_DeferredMatrixSeed(t(x), i=j, j=i)
-        return(t(x2))
+        x2 <- transpose_DeferredMatrixSeed(x)
+        x2 <- subset_DeferredMatrixSeed(x2, i=j, j=i)
+        return(transpose_DeferredMatrixSeed(x2))
     }
 
     if (!is.null(i)) {
@@ -207,17 +211,14 @@ setMethod("DelayedArray", "DeferredMatrixSeed",
 #' @export
 #' @importFrom DelayedArray DelayedArray seed
 setReplaceMethod("dimnames", "DeferredMatrix", function(x, value) {
-    x_seed <- seed(x)
-    dimnames(x_seed) <- value
-    DelayedArray(x_seed)
+    DelayedArray(rename_DeferredMatrixSeed(seed(x), value))
 })
 
 #' @export
 #' @importFrom BiocGenerics t
 #' @importFrom DelayedArray DelayedArray seed
 setMethod("t", "DeferredMatrix", function(x) {
-    x_seed <- seed(x)
-    DelayedArray(t(x_seed))
+    DelayedArray(transpose_DeferredMatrixSeed(seed(x)))
 })
 
 #' @export
