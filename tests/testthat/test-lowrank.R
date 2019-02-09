@@ -19,7 +19,7 @@ spawn_scenarios <- function(NR=50, NC=20, NP=10) {
             }
 
             ref <- as.matrix(rot %*% t(comp))
-            lrm <- LowRankMatrix(comp, rot)
+            lrm <- LowRankMatrix(rot, comp)
             collected <- c(collected, list(list(ref=ref, lrm=lrm)))
         }
     }

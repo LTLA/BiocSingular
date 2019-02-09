@@ -8,12 +8,12 @@
 
 #' @export
 #' @import methods
-setClass("LowRankMatrixSeed", slots=c(components="ANY", rotation="ANY"))
+setClass("LowRankMatrixSeed", slots=c(rotation="ANY", components="ANY"))
 
 #' @export
 #' @importFrom methods new
-LowRankMatrixSeed <- function(components, rotation) {
-    new("LowRankMatrixSeed", components=components, rotation=rotation)
+LowRankMatrixSeed <- function(rotation, components) {
+    new("LowRankMatrixSeed", rotation=rotation, components=components)
 }
 
 #' @importFrom S4Vectors setValidity2
@@ -45,9 +45,9 @@ setMethod("show", "LowRankMatrixSeed", function(object) {
 ###################################
 # Internal getters.
 
-get_components <- function(x) x@components
-
 get_rotation <- function(x) x@rotation
+
+get_components <- function(x) x@components
 
 ###################################
 # DelayedArray support utilities. 
@@ -85,13 +85,13 @@ subset_LowRankMatrixSeed <- function(x, i, j) {
         C <- C[j,,drop=FALSE]
     }
 
-    LowRankMatrixSeed(C, R)
+    LowRankMatrixSeed(R, C)
 }
 
 transpose_LowRankMatrixSeed <- function(x) {
     C <- get_components(x)
     R <- get_rotation(x)
-    LowRankMatrixSeed(R, C)
+    LowRankMatrixSeed(C, R)
 }
 
 rename_LowRankMatrixSeed <- function(x, value) {
@@ -99,7 +99,7 @@ rename_LowRankMatrixSeed <- function(x, value) {
     rownames(R) <- value[[1]]
     C <- get_components(x)
     rownames(C) <- value[[2]]
-    LowRankMatrixSeed(C, R)
+    LowRankMatrixSeed(R, C)
 }
 
 ###################################
@@ -118,11 +118,11 @@ setClass("LowRankMatrix",
 #' @export
 #' @importFrom methods new is
 #' @importFrom DelayedArray DelayedArray
-LowRankMatrix <- function(components, rotation) {
-    if (is(components, "LowRankMatrixSeed")) {
-        seed <- components
+LowRankMatrix <- function(rotation, components) {
+    if (is(rotation, "LowRankMatrixSeed")) {
+        seed <- rotation 
     } else {
-        seed <- LowRankMatrixSeed(components, rotation)
+        seed <- LowRankMatrixSeed(rotation, components)
     }
     DelayedArray(seed)
 }
