@@ -3,13 +3,13 @@ title: Singular value decomposition for Bioconductor packages
 author: 
 - name: Aaron Lun
   affiliation: Cancer Research UK Cambridge Institute, Cambridge, United Kingdom
-date: "Revised: 17 October 2018"
+date: "Revised: 9 February 2019"
 output:
   BiocStyle::html_document:
     toc_float: true
 package: BiocSingular 
 vignette: >
-  %\VignetteIndexEntry{SVD and PCA for Bioconductor}
+  %\VignetteIndexEntry{1. SVD and PCA} 
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}    
 ---
@@ -74,12 +74,34 @@ This provides an automated mechanism for deciding whether or not a cross-product
 ```{r}
 epam <- ExactParam(fold=10)
 epam
-e.out2 <- runSVD(dummy, k=10, BSPARAM=epam)
+cr.out <- runSVD(dummy, k=10, BSPARAM=epam)
 ```
 
 Setting `fold=1` will compute the cross-product for all matrices, even for square matrices where the gains are negligible.
 Setting `fold=Inf` will never compute the cross-product for any matrix.
 The default is to use `fold=5`.
+
+# Centering and/or scaling
+
+Centering and scaling of the input matrix can be performed with the `center=` and `scale=` arguments, respectively.
+These should be numeric vectors of length equal to the number of rows of the input matrix.
+The SVD will then be effectively performed on `t(t(dummy)-center)/scale)`.
+
+```{r}
+cs.out <- runSVD(dummy, k=10, scale=runif(ncol(dummy)), 
+    center=rnorm(ncol(dummy)))
+```
+
+Many of the approximate algorithms (and computation of the cross-product) involve matrix multiplications.
+By default, any centering and scaling is applied before any multiplication.
+However, it is possible to "defer" the centering and scaling such that the multiplication can make use of features of the underlying matrix representation (e.g., sparsity).
+This enables faster calculations at the expense of numerical stability.
+
+```{r}
+set.seed(2000)
+def.out <- runSVD(dummy, k=10, scale=runif(ncol(dummy)), 
+    center=rnorm(ncol(dummy)), BSPARAM=IrlbaParam(deferred=TRUE))
+```
 
 # Other SVD-related options
 
@@ -94,24 +116,17 @@ ipam
 ... which will be used in the `irlba()` function when `runSVD()` is called:
 
 ```{r}
-set.seed(1000)
-i.out2 <- runSVD(dummy, k=10, BSPARAM=ipam)
+set.seed(3000)
+i.out <- runSVD(dummy, k=10, BSPARAM=ipam)
 ```
 
 Internal matrix multiplications can be parallelized by setting the `BPPARAM=` argument.
 This can speed up calculations when dealing with very large input matrices, e.g., from the `r Biocpkg("HDF5Array")` package.
 
 ```{r}
+set.seed(4000)
 library(BiocParallel)
-i.out2 <- runSVD(dummy, k=10, BSPARAM=ipam, BPPARAM=MulticoreParam(2))
-```
-
-Centering and scaling of the input matrix can be performed with the `center=` and `scale=` arguments, respectively.
-These should be numeric vectors of length equal to the number of rows of the input matrix.
-The SVD will then be effectively performed on `t(t(dummy)-center)/scale)`, though some extra work is involved to avoid constructing this intermediate matrix.
-
-```{r}
-i.out3 <- runSVD(dummy, k=10, scale=runif(ncol(dummy)), center=rnorm(ncol(dummy)))
+i.out <- runSVD(dummy, k=10, BSPARAM=ipam, BPPARAM=MulticoreParam(2))
 ```
 
 The number of left or right singular vectors to return can be directly controlled with the `nv=` and `nu=` arguments.
