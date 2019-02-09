@@ -64,9 +64,12 @@ test_that("DeferredMatrix utility functions work as expected", {
     possibles <- spawn_scenarios()
     for (test in possibles) {
         expect_s4_class(test$def, "DeferredMatrix")
+        expect_identical(test$def, DeferredMatrix(DelayedArray::seed(test$def)))
 
         expect_identical(dim(test$def), dim(test$ref))
-        expect_identical(length(test$def), length(test$ref))
+        expect_identical(extract_array(test$def, list(1:10, 1:10)), test$ref[1:10, 1:10])
+        expect_identical(extract_array(test$def, list(1:10, NULL)), test$ref[1:10,])
+        expect_identical(extract_array(test$def, list(NULL, 1:10)), test$ref[,1:10])
         expect_identical(as.matrix(test$def), test$ref)
 
         expect_equal(rowSums(test$def), rowSums(test$ref))
@@ -182,8 +185,8 @@ expect_equal_product <- function(x, y) {
     X <- as.matrix(x)
 
     # standardize NULL dimnames.
-    if (!is.null(dimnames(X)) && lengths(dimnames(X))==0) dimnames(X) <- NULL 
-    if (!is.null(dimnames(y)) && lengths(dimnames(y))==0) dimnames(y) <- NULL 
+    if (all(lengths(dimnames(X))==0L)) dimnames(X) <- NULL 
+    if (all(lengths(dimnames(y))==0L)) dimnames(y) <- NULL 
     expect_equal(X, y)
 }
 
