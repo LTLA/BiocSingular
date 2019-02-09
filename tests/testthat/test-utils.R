@@ -36,7 +36,7 @@ test_that("standardize_matrix works correctly", {
 
             out <- BiocSingular:::standardize_matrix(A, center=center, scale=scale, deferred=TRUE, BPPARAM=BiocParallel::MulticoreParam(2))
             expect_s4_class(out, "DeferredMatrix")
-            expect_s4_class(out@.matrix, "DelayedArray")
+            expect_s4_class(DelayedArray::seed(out)@.matrix, "DelayedArray")
             expect_equivalent(as.matrix(out), ref)
         }
     }
