@@ -333,9 +333,191 @@ setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
     DelayedArray(out)
 })
 
+#' @export
+#' @importFrom BiocGenerics t
+#' @importFrom DelayedArray seed DelayedArray
 setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
-    stop("multiplication of two 'DeferredMatrix' objects is not yet supported")
+    x_seed <- seed(x)
+    y_seed <- seed(y)
+
+    if (!is_transposed(x_seed)) {
+        if (!is_transposed(y_seed)) {
+            res <- .multiply_u2u(x_seed, y_seed)
+        } else {
+            res <- .multiply_u2t(x_seed, y_seed)
+        }
+    } else {
+        if (!is_transposed(y_seed)) {
+            res <- .multiply_t2u(x_seed, y_seed)
+        } else {
+            res <- .multiply_u2u(y_seed, x_seed)
+            res <- t(res)
+        }
+    }
+
+    DelayedArray(res)
 })
+
+###################################
+# DefMat %*% DefMat utilities.
+
+#' @importFrom Matrix drop
+.multiply_u2u <- function(x_seed, y_seed) 
+# Considering the problem of (X - C_x)S_x (Y - C_y)S_y.
+{
+    # Computing X S_x Y S_y
+    x0 <- get_matrix2(x_seed)
+    if (use_scale(x_seed)) {
+        x0 <- DeferredMatrix(x0, scale=get_scale(x_seed))
+    } 
+
+    result <- as.matrix(x0 %*% get_matrix2(y_seed))
+    if (use_scale(y_seed)) {
+        result <- sweep(result, 2, get_scale(y_seed), "/", check.margin=FALSE)
+    }
+
+    # Computing C_x S_x Y S_y, and subtracting it from 'result'.
+    if (use_center(x_seed)) {
+        x.center <- get_center(x_seed)
+        if (use_scale(x_seed)) {
+            x.center <- x.center / get_scale(x_seed)
+        }
+
+        component2 <- drop(x.center %*% get_matrix2(y_seed))
+        if (use_scale(y_seed)) {
+            component2 <- component2 / get_scale(y_seed)
+        }
+
+        result <- sweep(result, 2, component2, "-", check.margin=FALSE)
+    }
+
+    # Computing C_x S_x C_y S_y, and adding it to 'result'.
+    if (use_center(x_seed) && use_center(y_seed)) {
+        x.center <- get_center(x_seed)
+        if (use_scale(x_seed)) {
+            x.center <- x.center / get_scale(x_seed)
+        }
+
+        y.center <- get_center(y_seed)
+        if (use_scale(y_seed)) {
+            y.center <- y.center / get_scale(y_seed)
+        }
+
+        component4 <- sum(x.center) * y.center
+        result <- sweep(result, 2, component4, "+", check.margin=FALSE)
+    }
+
+    # Computing X S_x C_y S_y, and subtracting it from 'result'.
+    # This is done last to avoid subtracting large values.
+    if (use_center(y_seed)) {
+        y.center <- get_center(y_seed)
+        if (use_scale(y_seed)) {
+            y.center <- y.center / get_scale(y_seed)
+        }
+
+        component3 <- outer(rowSums(x0), y.center)
+        result <- result - component3
+    }
+
+    result
+}
+
+#' @importFrom Matrix tcrossprod drop
+.multiply_u2t <- function(x_seed, y_seed) 
+# Considering the problem of (X - C_x)S_x S_y(Y' - C_y')
+{
+    # Computing X S_x S_y Y'
+    x0 <- get_matrix2(x_seed)
+    if (use_scale(x_seed) || use_scale(y_seed)) {
+        scaling <- 1
+        if (use_scale(x_seed)) {
+            scaling <- scaling * get_scale(x_seed)
+        }
+        if (use_scale(y_seed)) {
+            scaling <- scaling * get_scale(y_seed)
+        }
+        x0 <- DeferredMatrix(x0, scale=scaling)
+    }
+    result <- as.matrix(tcrossprod(x0, get_matrix2(y_seed)))
+
+    # Computing C_x S_x S_y Y', and subtracting it from 'result'.
+    if (use_center(x_seed)) {
+        x.center <- get_center(x_seed)
+        if (use_scale(x_seed)) {
+            x.center <- x.center / get_scale(x_seed)
+        }
+        if (use_scale(y_seed)) {
+            x.center <- x.center / get_scale(y_seed)
+        }
+
+        component2 <- drop(tcrossprod(x.center, get_matrix2(y_seed)))
+        result <- sweep(result, 2, component2, "-", check.margin=FALSE)
+    }
+
+    # Computing C_x S_x S_y C_y', and adding it to 'result'.
+    if (use_center(x_seed) && use_center(y_seed)) {
+        x.center <- get_center(x_seed)
+        if (use_scale(x_seed)) {
+            x.center <- x.center / get_scale(x_seed)
+        }
+
+        y.center <- get_center(y_seed)
+        if (use_scale(y_seed)) {
+            y.center <- y.center / get_scale(y_seed)
+        }
+
+        component4 <- sum(x.center*y.center)
+        result <- result + component4
+    }
+
+    # Computing X S_x S_y C_y', and subtracting it from 'result'.
+    # This is done last to avoid subtracting large values.
+    if (use_center(y_seed)) {
+        component3 <- drop(x0 %*% get_center(y_seed))
+        result <- result - component3
+    }
+
+    result
+}
+
+#' @importFrom Matrix crossprod
+.multiply_t2u <- function(x_seed, y_seed) 
+# Considering the problem of S_x(X' - C_x') (Y - C_y)S_y
+{
+    # C mputing X' Y 
+    result <- as.matrix(crossprod(get_matrix2(x_seed), get_matrix2(y_seed)))
+
+    # Computing C_x' Y, and subtracting it from 'result'.
+    if (use_center(x_seed)) {
+        x.center <- get_center(x_seed)
+        component2 <- outer(x.center, .safe_colSums(get_matrix2(y_seed)))
+        result <- result - component2
+    }
+
+    # Computing C_x' C_y, and adding it to 'result'.
+    if (use_center(x_seed) && use_center(y_seed)) {
+        x.center <- get_center(x_seed)
+        y.center <- get_center(y_seed)
+        component4 <- outer(x.center, y.center) * nrow(y_seed)
+        result <- result + component4
+    }
+
+    # Computing X' C_y, and subtracting it from 'result'.
+    # This is done last to avoid subtracting large values.
+    if (use_center(y_seed)) {
+        component3 <- outer(colSums(get_matrix2(x_seed)), get_center(y_seed))
+        result <- result - component3
+    }
+
+    if (use_scale(x_seed)) {
+        result <- result / get_scale(x_seed)
+    } 
+    if (use_scale(y_seed)) {
+        result <- sweep(result, 2, get_scale(y_seed), "/", check.margin=FALSE)
+    }
+
+    result
+}
 
 ###################################
 # Cross-product. 
@@ -430,7 +612,7 @@ setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
 
 #' @export
 setMethod("crossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
-    x %*% y # leads to error above.
+    t(x) %*% y
 })
 
 ###################################
@@ -535,7 +717,7 @@ setMethod("tcrossprod", c("ANY", "DeferredMatrix"), function(x, y) {
 
 #' @export
 setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
-    x %*% y # leads to error above.
+    x %*% t(y)
 })
 
 ###################################
