@@ -81,9 +81,9 @@ Several functions are specialized for greater efficiency when operating on Defer
 \itemize{
     \item Subsetting, transposition and replacement of row/column names.
         These will return a new DeferredMatrix rather than a DelayedMatrix.
-    \item Matrix multiplication via \code{\%*\%}, \code{crossprod} and \code{tcrossprod} - see comments in \code{?"\link{BiocSingular-options}"}.
+    \item Matrix multiplication via \code{\%*\%}, \code{crossprod} and \code{tcrossprod}.
         These functions will return a DelayedMatrix.
-        Multiplying two DeferredMatrix objects is not yet supported.
+        Also see \code{?"\link{BiocSingular-options}"}.
     \item Calculation of row and column sums and means by \code{colSums}, \code{rowSums}, etc. 
 }
 

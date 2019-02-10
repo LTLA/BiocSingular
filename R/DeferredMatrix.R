@@ -304,6 +304,14 @@ setMethod("rowMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) ro
 # We assume that the non-'DeferredMatrix' argument is small and can be modified cheaply.
 # We also assume that the matrix product is small and can be modified cheaply.
 # This allows centering and scaling to be applied *after* multiplication.
+#
+# Here are some ground rules for how these functions must work:
+#  - NO arithmetic operations shall be applied to a DeferredMatrix.
+#    This includes nested DeferredMatrices that are present in '.matrix'.
+#  - NO addition/subtraction operations shall be applied to '.matrix'.
+#    This is necessary to avoid loss of sparsity.
+#  - NO division/multiplication operations should be applied to '.matrix'.
+#    Exceptions are only allowed when this is unavoidable, e.g., in '.internal_tcrossprod'.
 
 #' @export
 #' @importFrom BiocGenerics t
@@ -755,7 +763,7 @@ setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 #' @importFrom methods is
 #' @importFrom DelayedArray seed
 .internal_tcrossprod <- function(x, scale.) 
-# Computes tcrossprod(sweep(x, 2, scale, "/")) when 'x' is a DeferredMatrix.
+# Computes tcrossprod(sweep(x, 2, scale, "/")) when 'x' is a matrix-like object.
 # 'scale' can be assumed to be non-NULL here.
 # This will always return a dense ordinary matrix.
 {
