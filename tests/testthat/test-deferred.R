@@ -1,6 +1,29 @@
 # Tests the DeferredMatrix implementation.
 # library(testthat); library(BiocSingular); source("test-deferred.R")
 
+scale_and_center <- function(y, ref, code) {
+    center <- scale <- NULL
+
+    if (code==1L) {
+        center <- colMeans(ref)
+        scale <- runif(ncol(ref))
+        ref <- scale(ref, center=center, scale=scale)
+    } else if (code==2L) {
+        center <- rnorm(ncol(ref))
+        ref <- scale(ref, center=center, scale=FALSE)
+    } else if (code==3L) {
+        scale <- runif(ncol(ref))
+        ref <- scale(ref, center=FALSE, scale=scale)
+    }
+
+    # Getting rid of excess attributes.
+    attr(ref, "scaled:center") <- NULL
+    attr(ref, "scaled:scale") <- NULL
+
+    def <- DeferredMatrix(y, center=center, scale=scale)
+    list(def=def, ref=ref)
+}
+
 spawn_scenarios_basic <- function(NR, NC, CREATOR, REALIZER) {
     output <- vector("list", 8)
     counter <- 1L
@@ -14,31 +37,14 @@ spawn_scenarios_basic <- function(NR, NC, CREATOR, REALIZER) {
                 y <- CREATOR(NR, NC)
             }
             ref <- REALIZER(y) 
-            center <- scale <- NULL
-    
-            if (it==1L) {
-                center <- colMeans(ref)
-                scale <- runif(ncol(ref))
-                ref <- scale(ref, center=center, scale=scale)
-            } else if (it==2L) {
-                center <- rnorm(ncol(ref))
-                ref <- scale(ref, center=center, scale=FALSE)
-            } else if (it==3L) {
-                scale <- runif(ncol(ref))
-                ref <- scale(ref, center=FALSE, scale=scale)
-            }
-  
-            # Getting rid of excess attributes.
-            attr(ref, "scaled:center") <- NULL
-            attr(ref, "scaled:scale") <- NULL
 
-            def <- DeferredMatrix(y, center=center, scale=scale)
+            adjusted <- scale_and_center(y, ref, it) 
             if (trans) {
-                def <- t(def)
-                ref <- t(ref)
+                adjusted$def <- t(adjusted$def)
+                adjusted$ref <- t(adjusted$ref)
             }
             
-            output[[counter]] <- list(ref=ref, def=def)
+            output[[counter]] <- adjusted
             counter <- counter+1L
         }
     }
@@ -373,86 +379,109 @@ test_that("DeferredMatrix dual tcrossprod works as expected", {
 
 ##########################
 
+wrap_in_DefMat <- function(input, reference) 
+# Wrapping an input matrix in a DeferredMatrix.
+{
+    output <- vector("list", 8)
+    counter <- 1L
+
+    for (trans in c(FALSE, TRUE)) {
+        for (it in 1:4) {
+            if (trans) { 
+                y <- t(input)
+                ref <- t(reference)
+            } else {
+                ref <- reference
+                y <- input
+            }
+
+            adjusted <- scale_and_center(y, ref, it)
+            if (trans) {
+                adjusted$def <- t(adjusted$def)
+                adjusted$ref <- t(adjusted$ref)
+            }
+
+            output[[counter]] <- adjusted
+            counter <- counter+1L
+        }
+    }
+    output
+}
+
 test_that("nested DeferredMatrix works as expected", {
-    for (it in 1:4) {
-        # Setting up the scenario, with and without transposition.
-        a1 <- matrix(rnorm(400), ncol=20)
+    basic <- matrix(rnorm(400), ncol=20)
 
-        c1 <- rnorm(20)
-        s1 <- runif(20)
-        r1 <- DeferredMatrix(a1, c1, s1)
-        ref1 <- scale(a1, c1, s1)
-        if (it%%2L==0L) {
-            r1 <- t(r1)
-            ref1 <- t(ref1)
-        }
-        
-        c2 <- rnorm(20)
-        s2 <- runif(20)
-        r2 <- DeferredMatrix(r1, c2, s2)
-        ref2 <- scale(ref1, c2, s2)
-        if (it > 2L) {
-            r2 <- t(r2)
-            ref2 <- t(ref2)
+    available <- list(list(def=basic, ref=basic))
+    for (nesting in 1:2) {
+        # Creating nested DefMats with and without scaling/centering/transposition.
+        next_available <- vector("list", length(available))
+        for (i in seq_along(available)) {
+            current <- available[[i]]
+            next_available[[i]] <- wrap_in_DefMat(current$def, current$ref)
         }
 
-        attr(ref2, "scaled:center") <- NULL
-        attr(ref2, "scaled:scale") <- NULL
+        # Testing each one of the newly created DefMats.
+        available <- unlist(next_available, recursive=FALSE)
+        for (i in seq_along(available)) {
+            test <- available[[i]]
 
-        # Coercion works.
-        expect_equal(ref2, as.matrix(r2))
+            # Coercion works.
+            expect_equal(as.matrix(test$def), test$ref)
 
-        # Basic stats work.
-        expect_equal(rowSums(ref2), rowSums(r2))
-        expect_equal(colSums(ref2), colSums(r2))
-       
-        # Multiplication works.        
-        y <- matrix(rnorm(20*2), ncol=2)        
-        expect_equal_product(r2 %*% y, ref2 %*% y)
-        expect_equal_product(t(y) %*% r2, t(y) %*% ref2)
+            # Basic stats work.
+            expect_equal(rowSums(test$ref), rowSums(test$def))
+            expect_equal(colSums(test$ref), colSums(test$def))
 
-        # Cross product.
-        y <- matrix(rnorm(20*2), ncol=2)        
-        expect_equal_product(crossprod(r2), crossprod(ref2))
-        expect_equal_product(crossprod(r2, y), crossprod(ref2, y))
-        expect_equal_product(crossprod(y, r2), crossprod(y, ref2))
+            # Multiplication works.
+            y <- matrix(rnorm(20*2), ncol=2)
+            expect_equal_product(test$def %*% y, test$ref %*% y)
+            expect_equal_product(t(y) %*% test$def, t(y) %*% test$ref)
 
-        # Transposed cross product.
-        y <- matrix(rnorm(20*2), nrow=2) 
-        expect_equal_product(tcrossprod(r2), tcrossprod(ref2))
-        expect_equal_product(tcrossprod(r2, y), tcrossprod(ref2, y))
-        expect_equal_product(tcrossprod(y, r2), tcrossprod(y, ref2))
+            # Cross product.
+            y <- matrix(rnorm(20*2), ncol=2)
+            expect_equal_product(crossprod(test$def), crossprod(test$ref))
+            expect_equal_product(crossprod(test$def, y), crossprod(test$ref, y))
+            expect_equal_product(crossprod(y, test$def), crossprod(y, test$ref))
+
+            # Transposed cross product.
+            y <- matrix(rnorm(20*2), nrow=2) 
+            expect_equal_product(tcrossprod(test$def), tcrossprod(test$ref))
+            expect_equal_product(tcrossprod(test$def, y), tcrossprod(test$ref, y))
+            expect_equal_product(tcrossprod(y, test$def), tcrossprod(y, test$ref))
+        }
     }
 })
 
 set.seed(1200001)
 test_that("deep testing of tcrossproduct internals: special mult", {
-    NC <- 20
-    NR <- 10
+    NR <- 20
+    NC <- 10
+    basic <- matrix(rnorm(NC*NR), ncol=NC)
     c <- runif(NC)
-    s <- runif(NR) # NOT the scale for 'r', but for the parent DeferredMatrix, which has transposed dimensions.
-    r <- matrix(rnorm(NC*NR), ncol=NC)
+    s <- runif(NR)
 
-    ref <- t(matrix(c, NR, NC, byrow=TRUE)) %*% (r/s^2)
-    out <- BiocSingular:::.internal_mult_special(c, s, r)
+    ref <- t(matrix(c, NR, NC, byrow=TRUE)) %*% (basic/s^2)
+    out <- BiocSingular:::.internal_mult_special(c, s, basic)
     expect_equal(ref, out)
 
-    # Trying with DeferredMatrices.
-    c1 <- runif(NC)
-    s1 <- runif(NC)
-    r1 <- DeferredMatrix(r, c1, s1)
-    out <- BiocSingular:::.internal_mult_special(c, s, r1)
-    ref <- BiocSingular:::.internal_mult_special(c, s, as.matrix(r1))
-    expect_equal(ref, out)
+    available <- list(list(def=basic, ref=basic))
+    for (nesting in 1:2) {
+        # Creating nested DefMats with and without scaling/centering/transposition.
+        next_available <- vector("list", length(available))
+        for (i in seq_along(available)) {
+            current <- available[[i]]
+            next_available[[i]] <- wrap_in_DefMat(current$def, current$ref)
+        }
 
-    # Now with transposition.
-    c2 <- runif(NR)
-    s2 <- runif(NR)
-    r2 <- DeferredMatrix(t(r), c2, s2)
-    r2 <- t(r2)
-    out <- BiocSingular:::.internal_mult_special(c, s, r2)
-    ref <- BiocSingular:::.internal_mult_special(c, s, as.matrix(r2))
-    expect_equal(ref, out)
+        # Testing each one of the newly created nested DefMats.
+        available <- unlist(next_available, recursive=FALSE)
+        for (i in seq_along(available)) {
+            test <- available[[i]]
+            ref <- t(matrix(c, NR, NC, byrow=TRUE)) %*% (test$ref/s^2)
+            out <- BiocSingular:::.internal_mult_special(c, s, test$def)
+            expect_equal(ref, out)
+        }
+    }
 })
 
 set.seed(1200002)
@@ -460,44 +489,30 @@ test_that("deep testing of tcrossproduct internals: scaled tcrossprod", {
     NC <- 30
     NR <- 15
     s <- runif(NC) 
-    r <- matrix(rnorm(NC*NR), ncol=NC)
+    basic <- matrix(rnorm(NC*NR), ncol=NC)
 
-    ref <- crossprod(t(r)/s)
-    out <- BiocSingular:::.internal_tcrossprod(r, s)
+    ref <- crossprod(t(basic)/s)
+    out <- BiocSingular:::.internal_tcrossprod(basic, s)
     expect_equal(ref, out)
 
-    # Trying with DeferredMatrices.
-    c1 <- runif(NC)
-    s1 <- runif(NC)
-    r1 <- DeferredMatrix(r, c1, s1)
-    out <- BiocSingular:::.internal_tcrossprod(r1, s)
-    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r1), s)
-    expect_equal(out, ref)
+    available <- list(list(def=basic, ref=basic))
+    for (nesting in 1:2) {
+        # Creating nested DefMats with and without scaling/centering/transposition.
+        next_available <- vector("list", length(available))
+        for (i in seq_along(available)) {
+            current <- available[[i]]
+            next_available[[i]] <- wrap_in_DefMat(current$def, current$ref)
+        }
 
-    # With transposition.
-    c2 <- runif(NR)
-    s2 <- runif(NR)
-    r2 <- DeferredMatrix(t(r), c2, s2)
-    r2 <- t(r2)
-    out <- BiocSingular:::.internal_tcrossprod(r2, s)
-    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r2), s)
-    expect_equal(out, ref)
-
-    # Now with nested DeferredMatrices.
-    r3 <- DeferredMatrix(r1, rnorm(ncol(r1)), runif(ncol(r1))) # no transposition anywhere.
-    out <- BiocSingular:::.internal_tcrossprod(r3, s)
-    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r3), s)
-    expect_equal(out, ref)
-
-    r4 <- DeferredMatrix(r2, rnorm(ncol(r2)), runif(ncol(r2))) # inner matrix is transposed.
-    out <- BiocSingular:::.internal_tcrossprod(r4, s)
-    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r4), s)
-    expect_equal(out, ref)
-
-    r5 <- t(DeferredMatrix(t(r1), rnorm(nrow(r1)), runif(nrow(r1), 10, 20))) # inner and outer matrices are transposed.
-    out <- BiocSingular:::.internal_tcrossprod(r5, s)
-    ref <- BiocSingular:::.internal_tcrossprod(as.matrix(r5), s)
-    expect_equal(ref, out)
+        # Testing each one of the newly created nested DefMats.
+        available <- unlist(next_available, recursive=FALSE)
+        for (i in seq_along(available)) {
+            test <- available[[i]]
+            ref <- crossprod(t(test$ref)/s)
+            out <- BiocSingular:::.internal_tcrossprod(test$def, s)
+            expect_equal(ref, out)
+        }
+    }
 })
 
 ##########################
