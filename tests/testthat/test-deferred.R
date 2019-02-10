@@ -7,7 +7,12 @@ spawn_scenarios_basic <- function(NR, NC, CREATOR, REALIZER) {
 
     for (trans in c(FALSE, TRUE)) {
         for (it in 1:4) {
-            y <- CREATOR(NR, NC)
+            if (trans) { 
+                # Ensure output matrix has NR rows and NC columns after t().
+                y <- CREATOR(NC, NR)
+            } else {
+                y <- CREATOR(NR, NC)
+            }
             ref <- REALIZER(y) 
             center <- scale <- NULL
     
@@ -144,9 +149,9 @@ setClass("CrippledMatrix", slots=c(x="matrix"))
 
 setMethod("dim", c("CrippledMatrix"), function(x) dim(x@x))
 
-setMethod(Matrix::colSums, c("CrippledMatrix"), function(x) colSums(x@x))
+setMethod("colSums", c("CrippledMatrix"), function(x) colSums(x@x))
 
-setMethod(Matrix::rowSums, c("CrippledMatrix"), function(x) rowSums(x@x))
+setMethod("rowSums", c("CrippledMatrix"), function(x) rowSums(x@x))
 
 setMethod("sweep", c("CrippledMatrix"), function (x, MARGIN, STATS, FUN = "-", check.margin = TRUE, ...) {
     sweep(x@x, MARGIN, STATS, FUN, check.margin, ...)
@@ -232,10 +237,23 @@ test_that("DeferredMatrix left multiplication works as expected", {
     }
 })
 
-test_that("DeferredMatrix dual multiplication fails as expected", {
-    y <- matrix(rnorm(400), ncol=20)
-    bs.y <- DeferredMatrix(y, NULL, NULL)
-    expect_error(bs.y %*% bs.y, "not yet supported")
+test_that("DeferredMatrix dual multiplication works as expected", {
+    # Not using the CrippledMatrix here; some scaling of the inner matrix is unavoidable
+    # when the inner matrix is _not_ a DeferredMatrix but is being multiplied by one.
+    possibles1 <- spawn_scenarios(10, 20)
+    for (test1 in possibles1) {
+        possibles2 <- spawn_scenarios(20, 15)
+        for (test2 in possibles2) {
+
+            expect_equal_product(test1$def %*% test2$def, test1$ref %*% test2$ref)
+
+# Restore once Matrix cleans up its act.
+#            expect_equal_product(test1$def[0,] %*% test2$def, test1$ref[0,] %*% test2$ref)
+#            expect_equal_product(test1$def %*% test2$def[,0], test1$ref %*% test2$ref[,0])
+#            expect_equal_product(test1$def[,0] %*% test2$def[0,], test1$ref[,0] %*% test2$ref[0,])
+#            expect_equal_product(test1$def[0,] %*% test2$def[,0], test1$ref[0,] %*% test2$ref[,0])
+        }
+    }
 })
 
 ##########################
@@ -289,10 +307,10 @@ test_that("DeferredMatrix right crossproduct works as expected", {
     }
 })
 
-test_that("DeferredMatrix dual crossprod fails as expected", {
+test_that("DeferredMatrix dual crossprod works as expected", {
     y <- matrix(rnorm(400), ncol=20)
     bs.y <- DeferredMatrix(y, NULL, NULL)
-    expect_error(crossprod(bs.y, bs.y), "not yet supported")
+    expect_identical(crossprod(bs.y, bs.y), crossprod(bs.y))
 })
 
 ##########################
@@ -347,10 +365,10 @@ test_that("DeferredMatrix right tcrossproduct works as expected", {
     }
 })
 
-test_that("DeferredMatrix dual tcrossprod fails as expected", {
+test_that("DeferredMatrix dual tcrossprod works as expected", {
     y <- matrix(rnorm(400), ncol=20)
     bs.y <- DeferredMatrix(y, NULL, NULL)
-    expect_error(tcrossprod(bs.y, bs.y), "not yet supported")
+    expect_identical(tcrossprod(bs.y, bs.y), tcrossprod(bs.y))
 })
 
 ##########################
