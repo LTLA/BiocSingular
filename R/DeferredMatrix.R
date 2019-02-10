@@ -175,6 +175,27 @@ subset_DeferredMatrixSeed <- function(x, i, j) {
 }
 
 ###################################
+# Hacks to overcome the deficiencies of "Matrix".
+
+#' @importFrom BiocGenerics colSums
+.safe_colSums <- function(x) {
+    if (is(x, "Matrix")) {
+        Matrix::colSums(x)
+    } else {
+        colSums(x)
+    }    
+}
+
+#' @importFrom BiocGenerics rowSums
+.safe_rowSums <- function(x) {
+    if (is(x, "Matrix")) {
+        Matrix::rowSums(x)
+    } else {
+        rowSums(x)
+    }
+}
+
+###################################
 ###################################
 ###################################
 # Constructing the matrix.
@@ -294,7 +315,7 @@ setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
     }
 
     if (use_scale(x_seed)) {
-        y <- y / get_scale(x_seed) 
+        y <- y / get_scale(x_seed)
     }
 
     out <- as.matrix(get_matrix2(x_seed) %*% y)
@@ -322,7 +343,7 @@ setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
         if (is.null(dim(x))) {
             out <- out - get_center(y_seed) * sum(x)
         } else {
-            out <- out - outer(Matrix::rowSums(x), get_center(y_seed), "*")
+            out <- out - outer(.safe_rowSums(x), get_center(y_seed), "*")
         }
     }
 
@@ -415,7 +436,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
             y.center <- y.center / get_scale(y_seed)
         }
 
-        component3 <- outer(rowSums(x0), y.center)
+        component3 <- outer(.safe_rowSums(x0), y.center)
         result <- result - component3
     }
 
@@ -505,7 +526,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     # Computing X' C_y, and subtracting it from 'result'.
     # This is done last to avoid subtracting large values.
     if (use_center(y_seed)) {
-        component3 <- outer(colSums(get_matrix2(x_seed)), get_center(y_seed))
+        component3 <- outer(.safe_colSums(get_matrix2(x_seed)), get_center(y_seed))
         result <- result - component3
     }
 
@@ -536,11 +557,7 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 
     if (use_center(x_seed)) {
         centering <- get_center(x_seed)
-        if (is(x0, "DeferredMatrix")) { # TODO: fix when BiocGenerics and Matrix stop fighting each other.
-            colsums <- colSums(x0)
-        } else {
-            colsums <- Matrix::colSums(x0)
-        }
+        colsums <- .safe_colSums(x0)
 
         # Minus, then add, then minus, to mitigate cancellation.
         out <- out - outer(centering, colsums)
@@ -572,7 +589,7 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
         if (is.null(dim(y))) {
             out <- out - get_center(x_seed) * sum(y)
         } else {
-            out <- out - outer(get_center(x_seed), Matrix::colSums(y))
+            out <- out - outer(get_center(x_seed), .safe_colSums(y))
         }
     }
     
@@ -599,7 +616,7 @@ setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
         if (is.null(dim(x))) {
             out <- sweep(out, 2, sum(x) * get_center(y_seed), "-", check.margin=FALSE)
         } else {
-            out <- out - outer(Matrix::colSums(x), get_center(y_seed))
+            out <- out - outer(.safe_colSums(x), get_center(y_seed))
         }
     }
 
@@ -785,20 +802,19 @@ setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 
 #' @importFrom methods is
 #' @importFrom DelayedArray seed
-#' @importFrom BiocGenerics colSums
 .internal_mult_special <- function(center, scale., Z)
 # Computes C^T * S^2 * Z where C is a matrix of 'centers' copied byrow=TRUE;
 # S is a diagonal matrix filled with '1/scale'; and 'Z' is a DeferredMatrix.
 # This will always return a dense ordinary matrix.
 {
     if (!is(Z, "DeferredMatrix")) {
-        return(outer(center, colSums(Z/scale.^2)))
+        return(outer(center, .safe_colSums(Z / scale.^2)))
     }
     
     Z_seed <- seed(Z)
     if (is_transposed(Z_seed)) {
         Z <- .update_scale(Z, scale.^2)
-        return(outer(center, colSums(Z)))
+        return(outer(center, .safe_colSums(Z)))
     }
 
     output <- .internal_mult_special(center, scale., get_matrix2(Z_seed)) # recurses.
