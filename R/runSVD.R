@@ -1,19 +1,39 @@
 #' @export
-setMethod("runSVD", "missing", function(..., BSPARAM) {
-    runSVD(..., BSPARAM=BSPARAM)
+#' @importFrom BiocParallel SerialParam
+setMethod("runSVD", "missing", function(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), ..., BSPARAM) {
+    runSVD(x=x, k=k, nu=nu, nv=nv, center=center, scale=scale, BPPARAM=BPPARAM, ..., BSPARAM=BSPARAM)
 })
 
 #' @export
-setMethod("runSVD", "ExactParam", function(..., BSPARAM) {
-    runExactSVD(..., deferred=bsdeferred(BSPARAM), fold=bsfold(BSPARAM))
+#' @importFrom BiocParallel SerialParam
+setMethod("runSVD", "ExactParam", function(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), ..., BSPARAM) {
+    runExactSVD(x=x, k=k, nu=nu, nv=nv, center=center, scale=scale, BPPARAM=BPPARAM, ..., deferred=bsdeferred(BSPARAM), fold=bsfold(BSPARAM))
 })
 
 #' @export
-setMethod("runSVD", "IrlbaParam", function(..., BSPARAM) {
-    do.call(runIrlbaSVD, c(list(..., deferred=bsdeferred(BSPARAM), fold=bsfold(BSPARAM), extra.work=ip_extra(BSPARAM)), bsargs(BSPARAM)))
+#' @importFrom BiocParallel SerialParam
+setMethod("runSVD", "IrlbaParam", function(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), ..., BSPARAM) {
+    do.call(runIrlbaSVD, 
+        c(
+            list(
+                x=x, k=k, nu=nu, nv=nv, center=center, scale=scale, BPPARAM=BPPARAM, ...,
+                deferred=bsdeferred(BSPARAM), fold=bsfold(BSPARAM), extra.work=ip_extra(BSPARAM)
+            ), 
+            bsargs(BSPARAM)
+         )
+    )
 })
 
 #' @export
-setMethod("runSVD", "RandomParam", function(..., BSPARAM) {
-    do.call(runRandomSVD, c(list(..., deferred=bsdeferred(BSPARAM), fold=bsfold(BSPARAM)), bsargs(BSPARAM)))
+#' @importFrom BiocParallel SerialParam
+setMethod("runSVD", "RandomParam", function(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), ..., BSPARAM) {
+    do.call(runRandomSVD, 
+        c(
+            list(
+                x=x, k=k, nu=nu, nv=nv, center=center, scale=scale, BPPARAM=BPPARAM, ...,
+                deferred=bsdeferred(BSPARAM), fold=bsfold(BSPARAM)
+            ), 
+            bsargs(BSPARAM)
+        )
+    )
 })

@@ -1,2 +1,6 @@
 #' @export
-setGeneric("runSVD", signature=c("BSPARAM"), function(..., BSPARAM=ExactParam()) standardGeneric("runSVD"))
+#' @importFrom BiocParallel SerialParam
+setGeneric("runSVD", signature=c("BSPARAM"), 
+    function(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), ..., BSPARAM=ExactParam()) 
+        standardGeneric("runSVD")
+)

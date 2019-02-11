@@ -10,23 +10,19 @@
 \description{Perform a singular value decomposition on an input matrix with a specified algorithm.}
 
 \usage{
-runSVD(..., BSPARAM=ExactParam())
+runSVD(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), 
+    ..., BSPARAM=ExactParam())
 }
 
 \arguments{
-\item{...}{Further arguments to pass to individual functions.
-This can contain:
-    \itemize{
-        \item{\code{x}: A numeric matrix-like object to use in the SVD.}
-        \item{\code{k}: Integer scalar specifying the number of singular values to return.}
-        \item{\code{nu}: Integer scalar specifying the number of left singular vectors to return.}
-        \item{\code{nv}: Integer scalar specifying the number of right singular vectors to return.}
-        \item{\code{center}: Numeric vector, logical scalar or \code{NULL}, specifying values to subtract from each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
-        \item{\code{scale}: Numeric vector, logical scalar or \code{NULL}, specifying values to divide each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
-        \item{\code{BPPARAM}: A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
-    }
-Of these, only \code{x} is strictly mandatory, though specifying \code{k}, \code{nu} or \code{nv} is often necessary in practical use. 
-}
+\item{x}{A numeric matrix-like object to use in the SVD.}
+\item{k}{Integer scalar specifying the number of singular values to return.}
+\item{nu}{Integer scalar specifying the number of left singular vectors to return.}
+\item{nv}{Integer scalar specifying the number of right singular vectors to return.}
+\item{center}{Numeric vector, logical scalar or \code{NULL}, specifying values to subtract from each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
+\item{scale}{Numeric vector, logical scalar or \code{NULL}, specifying values to divide each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
+\item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+\item{...}{Further arguments to pass to specific methods.}
 \item{BSPARAM}{A \linkS4class{BiocSingularParam} object specifying the type of algorithm to run.}
 }
 
@@ -57,16 +53,16 @@ Aaron Lun
 \examples{
 a <- matrix(rnorm(100000), ncol=20)
 
-out.exact0 <- runSVD(a)
+out.exact0 <- runSVD(a, k=4)
 str(out.exact0)
 
-out.exact <- runSVD(a, BSPARAM=ExactParam())
+out.exact <- runSVD(a, k=4, BSPARAM=ExactParam())
 str(out.exact)
 
-out.irlba <- runSVD(a, BSPARAM=IrlbaParam())
+out.irlba <- runSVD(a, k=4, BSPARAM=IrlbaParam())
 str(out.exact)
 
-out.random <- runSVD(a, BSPARAM=RandomParam())
+out.random <- runSVD(a, k=4, BSPARAM=RandomParam())
 str(out.random)
 }
 
