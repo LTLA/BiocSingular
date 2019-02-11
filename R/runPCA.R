@@ -1,11 +1,11 @@
 #' @export
-runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=ExactParam(), get.rotation=TRUE, get.pcs=TRUE, ...) 
+setMethod("runPCA", "ANY", function(x, rank, center=TRUE, scale=FALSE, get.rotation=TRUE, get.pcs=TRUE, ...) 
 # Converts SVD results to PCA results.
 {
     svd.out <- runSVD(x, k=rank, 
         nu=ifelse(get.pcs, rank, 0),
         nv=ifelse(get.rotation, rank, 0),
-        center=center, scale=scale, BSPARAM=BSPARAM, ...)
+        center=center, scale=scale, ...)
 
     out <- list(sdev=svd.out$d / sqrt(nrow(x) - 1))
     if (get.rotation) {
@@ -17,4 +17,4 @@ runPCA <- function(x, rank, center=TRUE, scale=FALSE, BSPARAM=ExactParam(), get.
         colnames(out$x) <- sprintf("PC%i", seq_len(ncol(out$x)))
     }
     out                          
-}
+})
