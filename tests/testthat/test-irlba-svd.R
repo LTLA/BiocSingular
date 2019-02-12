@@ -122,6 +122,17 @@ test_that("IRLBA works with centering and scaling", {
     ref2 <- irlba(ry, nv=5, nu=5, tol=1e-8)
     expect_equal_svd(out, ref2)
 
+    # Works with logical values.
+    ry <- scale(y, center=TRUE, scale=TRUE)
+    set.seed(300)
+    ref <- irlba(ry, nu=5, nv=5, tol=1e-8)
+    set.seed(300)
+    out <- runIrlbaSVD(y, k=5, center=TRUE, scale=TRUE, fold=1, tol=1e-8)
+    expect_equal_svd(out, ref, tol=1e-6)
+})
+
+set.seed(9004)
+test_that("IRLBA centering and scaling interact happily with other modes", {
     # Works with the cross-product.
     y <- matrix(rnorm(10000), ncol=20)
     center <- runif(ncol(y))
@@ -143,7 +154,7 @@ test_that("IRLBA works with centering and scaling", {
 
     # Works with deferred operations (which also requires parallelization).
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=MulticoreParam(2), tol=1e-8, fold=Inf)
+    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=MulticoreParam(1), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)

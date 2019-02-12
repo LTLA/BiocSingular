@@ -38,9 +38,11 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FA
         args$nv <- max(k, nv)
 
         if (bpnworkers(BPPARAM)==1L) {
+            stats <- .compute_center_and_scale(x, center, scale)
+
             # Use irlba's native 'center' and 'scale', avoid overhead of Delayed/DeferredMatrix wrapper in 'standardize_matrix'.
             # Also try to use 'fastpath=TRUE' if possible, depending on the class of 'x'.
-            res <- do.call(irlba, c(args, list(A=x, center=center, scale=scale)))
+            res <- do.call(irlba, c(args, list(A=x, center=stats$center, scale=stats$scale)))
 
         } else {
             x <- standardize_matrix(x, center=center, scale=scale, deferred=deferred, BPPARAM=BPPARAM)
