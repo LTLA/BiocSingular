@@ -130,12 +130,12 @@ i.out <- runSVD(dummy, k=10, BSPARAM=ipam, BPPARAM=MulticoreParam(2))
 ```
 
 The number of left or right singular vectors to return can be directly controlled with the `nv=` and `nu=` arguments.
-This can avoid wasting time in computing these vectors when they are not strictly necessary.
+This can avoid wasting time in computing these vectors when they are not required.
 
 # Running the PCA
 
 The main practical purpose of the SVD is to perform PCAs.
-This is achieved with the `runPCA()` wrapper function, which also accepts `BSPARAM=` argument specifying the type of algorithm to use:
+This is achieved with the `runPCA()` wrapper function, which also accepts a `BSPARAM=` argument specifying the type of algorithm to use:
 
 ```{r}
 pcs.out <- runPCA(dummy, rank=10, BSPARAM=ExactParam())
@@ -149,7 +149,7 @@ head(pcs.out$x)
 ```
 
 Column centering is performed by default with `center=TRUE`.
-Standardization can be enabled with `scale=TRUE`.
+Standardization of each column can be enabled with `scale=TRUE`.
 Alternatively, numeric vectors can be passed to either argument for subtraction from and scaling of each column.
 
 # Session information

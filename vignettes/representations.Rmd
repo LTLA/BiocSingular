@@ -99,7 +99,7 @@ summary(recon[,1])
 summary(recon[2,])
 ```
 
-Again, most operations will cause the `DeferredMatrix` to collapse gracefully into `DelayedMatrix` for further processing.
+Again, most operations will cause the `LowRankMatrix` to collapse gracefully into `DelayedMatrix` for further processing.
 
 # Session information
 
