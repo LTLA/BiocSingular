@@ -41,12 +41,8 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE, BPPAR
 
     if (is.logical(scale)) {
         if (scale) {
-            sub <- DelayedArray(x)
-            if (!is.null(center)) {
-                sub <- sweep(x, 2, center, "-")
-            }
-            scale <- colSums(sub^2) / (nrow(x) - 1L) # mimic scale() behaviour for any 'center'.
-            scale <- sqrt(scale)
+            # mimic scale() behaviour for any 'center'.
+            scale <- compute_scale(x, center)
         } else {
             scale <- NULL
         }
