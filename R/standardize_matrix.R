@@ -29,11 +29,11 @@ standardize_matrix <- function(x, center=NULL, scale=NULL, deferred=FALSE, BPPAR
 }
 
 #' @importFrom DelayedArray DelayedArray sweep
-#' @importFrom BiocGenerics colMeans colSums 
+#' @importFrom BiocGenerics colSums 
 .compute_center_and_scale <- function(x, center, scale) {
     if (is.logical(center)) {
         if (center) {
-            center <- colMeans(DelayedArray(x))
+            center <- .safe_colSums(x)/nrow(x)
         } else {
             center <- NULL
         }
