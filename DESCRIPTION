@@ -1,5 +1,5 @@
 Package: BiocSingular
-Version: 0.99.9
+Version: 0.99.10
 Date: 2019-02-19
 Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
@@ -16,4 +16,5 @@ Description: Implements exact and approximate methods for singular value
 License: GPL-3
 LinkingTo: Rcpp, beachmat, Rhdf5lib
 VignetteBuilder: knitr
+SystemRequirements: C++11
 RoxygenNote: 6.1.1
