@@ -15,6 +15,30 @@ test_that("use_crossprod works correctly", {
     expect_false(BiocSingular:::use_crossprod(matrix(0, nrow=100, ncol=10), Inf))
 })
 
+test_that("scale calculations work correctly", {
+    for (it in 1:2) {
+        if (it==1L) {
+            A <- matrix(runif(2000), 50, 40)
+        } else {
+            A <- Matrix::rsparsematrix(50, 40, density=0.1)
+        }
+
+        out <- BiocSingular:::compute_scale(A, NULL)
+        ref <- sqrt(Matrix::colSums(A^2)/(nrow(A)-1))
+        expect_equal(out, ref)
+
+        center <- rnorm(ncol(A))
+        out <- BiocSingular:::compute_scale(A, center)
+        B <- sweep(A, 2, center, "-")
+        ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
+        expect_equal(out, ref)
+
+        expect_identical(BiocSingular:::compute_scale(A[,0], numeric(0)), numeric(0))
+        expect_identical(BiocSingular:::compute_scale(A[0,], NULL), rep(NA_real_, ncol(A)))
+        expect_error(BiocSingular:::compute_scale(A, 1), "should be equal")
+    }
+})
+
 test_that("standardize_matrix works correctly", {
     A <- matrix(runif(2000), 50, 40)
 
