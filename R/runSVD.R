@@ -3,7 +3,7 @@
 # Generates the function to be used in the method,
 # to avoid re-typing the whole signature.
 {
-    function(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), ..., BSPARAM) {
+    function(x, k, nu=k, nv=k, center=FALSE, scale=FALSE, BPPARAM=SerialParam(), ..., BSPARAM) {
         do.call(FUN, 
             c(
                 list(x=x, k=k, nu=nu, nv=nv, center=center, scale=scale, BPPARAM=BPPARAM, ...),

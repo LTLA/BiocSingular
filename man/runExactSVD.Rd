@@ -5,7 +5,7 @@
 \description{Perform an exact singular value decomposition.}
 
 \usage{
-runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=NULL, scale=NULL, 
+runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=FALSE, scale=FALSE, 
     deferred=FALSE, fold=5, BPPARAM=SerialParam())
 }
 

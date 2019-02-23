@@ -10,7 +10,7 @@
 \description{Perform a singular value decomposition on an input matrix with a specified algorithm.}
 
 \usage{
-runSVD(x, k, nu=k, nv=k, center=NULL, scale=NULL, BPPARAM=SerialParam(), 
+runSVD(x, k, nu=k, nv=k, center=FALSE, scale=FALSE, BPPARAM=SerialParam(), 
     ..., BSPARAM=ExactParam())
 }
 

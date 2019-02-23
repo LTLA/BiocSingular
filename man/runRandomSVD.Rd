@@ -5,7 +5,7 @@
 \description{Perform a randomized singular value decomposition.}
 
 \usage{
-runRandomSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
+runRandomSVD(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE,
     ..., fold=5, BPPARAM=SerialParam())
 }
 
@@ -14,10 +14,10 @@ runRandomSVD(x, k=5, nu=k, nv=k, center=NULL, scale=NULL, deferred=FALSE,
     \item{k}{Integer scalar specifying the number of singular values to return.}
     \item{nu}{Integer scalar specifying the number of left singular vectors to return.}
     \item{nv}{Integer scalar specifying the number of right singular vectors to return.}
-    \item{center}{A logical scalar indicating whether columns of \code{x} should be centered before the PCA is performed.
-        Alternatively, a numeric vector of length \code{ncol(x)} containing the value to subtract from each column of \code{x}.}
-    \item{scale}{A logical scalar indicating whether columns of \code{x} should be scaled to unit variance before the PCA is performed.
-        Alternatively, a numeric vector of length \code{ncol(x)} containing the scaling factor for each column of \code{x}.}
+    \item{center}{A logical scalar indicating whether columns should be centered.
+        Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
+    \item{scale}{A logical scalar indicating whether columns should be scaled. 
+        Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
     \item{...}{Further arguments to pass to \code{\link{rsvd}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
