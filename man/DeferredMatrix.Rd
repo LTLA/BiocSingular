@@ -52,7 +52,7 @@ DeferredMatrix(x, center=NULL, scale=NULL)
 \arguments{
 \item{x}{A matrix-like object.
 
-For the \code{DeferredMatrix} constructor, this can alternatively be a DeferredMatrixSeed.}
+This can alternatively be a DeferredMatrixSeed, in which case any values of \code{center} and \code{scale} are ignored.}
 \item{center}{A numeric vector of length equal to \code{ncol(x)}, where each element is to be subtracted from the corresponding column of \code{x}.
 A \code{NULL} value indicates that no subtraction is to be performed.}
 \item{scale}{A numeric vector of length equal to \code{ncol(x)}, where each element is to divide from the corresponding column of \code{x} (after subtraction).

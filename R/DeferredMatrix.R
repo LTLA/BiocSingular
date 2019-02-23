@@ -11,8 +11,14 @@
 setClass("DeferredMatrixSeed", slots=c(.matrix="ANY", center="numeric", scale="numeric", use_center="logical", use_scale="logical", transposed="logical"))
 
 #' @export
-#' @importFrom methods new
+#' @importFrom methods new is
 DeferredMatrixSeed <- function(x, center=NULL, scale=NULL) {
+    if (missing(x)) {
+        x <- matrix(0, 0, 0)
+    } else if (is(x, "DeferredMatrixSeed")) {
+        return(x)
+    } 
+
     use_center <- !is.null(center)
     use_scale <- !is.null(scale)
     new("DeferredMatrixSeed", .matrix=x, center=as.numeric(center), scale=as.numeric(scale), use_center=use_center, use_scale=use_scale, transposed=FALSE)
@@ -209,15 +215,9 @@ setClass("DeferredMatrix",
 )
 
 #' @export
-#' @importFrom methods new is
 #' @importFrom DelayedArray DelayedArray
 DeferredMatrix <- function(x, center=NULL, scale=NULL) {
-    if (is(x, "DeferredMatrixSeed")) {
-        seed <- x
-    } else {
-        seed <- DeferredMatrixSeed(x, center=center, scale=scale)
-    }
-    DelayedArray(seed)
+    DelayedArray(DeferredMatrixSeed(x, center=center, scale=scale))
 }
 
 #' @export

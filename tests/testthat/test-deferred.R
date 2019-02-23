@@ -100,6 +100,16 @@ test_that("DeferredMatrix utility functions work as expected", {
         expect_s4_class(test$def, "DeferredMatrix") # still a DefMat!
     }
 
+})
+
+set.seed(10000101)
+test_that("DeferredMatrix silly inputs work as expected", {
+    default <- DeferredMatrix()
+    expect_identical(dim(default), c(0L, 0L))
+    val <- as.matrix(default)
+    dimnames(val) <- NULL
+    expect_identical(val, matrix(0,0,0))
+
     # Checking erronious inputs.
     y <- matrix(rnorm(400), ncol=20)
     expect_error(DeferredMatrix(y, center=1), "length of 'center' must equal")
