@@ -33,7 +33,7 @@ LowRankMatrix(rotation, components)
 \arguments{
 \item{rotation}{A matrix-like object where each row corresponds to a row of the LowRankMatrix object.
 
-For the \code{LowRankMatrix} constructor, this can alternatively be a LowRankMatrixSeed, in which case \code{components} does not need to be specified.}
+This can alternatively be a LowRankMatrixSeed, in which case any value of \code{components} is ignored.}
 \item{components}{A matrix-like object where each row corresponds to a column of the LowRankMatrix object.}
 }
 

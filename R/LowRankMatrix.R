@@ -11,8 +11,20 @@
 setClass("LowRankMatrixSeed", slots=c(rotation="ANY", components="ANY"))
 
 #' @export
-#' @importFrom methods new
+#' @importFrom methods new is
 LowRankMatrixSeed <- function(rotation, components) {
+    if (missing(rotation)) {
+        if (missing(components)) {
+            rotation <- components <- matrix(0, 0, 0)
+        } else {
+            rotation <- matrix(0, 0, ncol(components))
+        }
+    } else if (is(rotation, "LowRankMatrixSeed")) {
+        return(rotation) # directly returning the seed already.
+    } else if (missing(components)) {
+        components <- matrix(0, 0, ncol(rotation))
+    }
+
     new("LowRankMatrixSeed", rotation=rotation, components=components)
 }
 
@@ -116,15 +128,9 @@ setClass("LowRankMatrix",
 )
 
 #' @export
-#' @importFrom methods new is
 #' @importFrom DelayedArray DelayedArray
 LowRankMatrix <- function(rotation, components) {
-    if (is(rotation, "LowRankMatrixSeed")) {
-        seed <- rotation 
-    } else {
-        seed <- LowRankMatrixSeed(rotation, components)
-    }
-    DelayedArray(seed)
+    DelayedArray(LowRankMatrixSeed(rotation, components))
 }
 
 #' @export

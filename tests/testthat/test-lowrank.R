@@ -59,10 +59,6 @@ test_that("LowRankMatrix utility functions work as expected", {
         expect_identical(spawn_names, colnames(test$lrm))
         expect_s4_class(test$lrm, "LowRankMatrix") # still a LRMat!
     }
-
-    # Checking erronious inputs.
-    expect_error(LowRankMatrix(1, 1), "must be matrix-like")
-    expect_error(LowRankMatrix(cbind(1:5), cbind(1:5, 2:6)), "must be the same")
 })
 
 set.seed(500002)
@@ -103,6 +99,32 @@ test_that("LowRankMatrix subsetting works as expected", {
         ch <- sample(spawn_names)
         expect_identical_and_lrmmat(test$lrm[,ch], test$ref[,ch])
     }
+})
+
+set.seed(500003)
+test_that("Silly inputs into LowRankMatrix work as expected", {
+    # Default constructor works with different inputs.
+    default <- LowRankMatrix()
+    expect_identical(dim(default), c(0L, 0L))
+    val <- as.matrix(default)
+    dimnames(val) <- NULL
+    expect_identical(val, matrix(0, 0, 0))
+
+    default <- LowRankMatrix(rotation=cbind(1:5))
+    expect_identical(dim(default), c(5L, 0L))
+    val <- as.matrix(default)
+    dimnames(val) <- NULL
+    expect_identical(val, matrix(0, 5, 0))
+    
+    default <- LowRankMatrix(components=cbind(1:5))
+    expect_identical(dim(default), c(0L, 5L))
+    val <- as.matrix(default)
+    dimnames(val) <- NULL
+    expect_identical(val, matrix(0, 0, 5))
+
+    # Checking erronious inputs.
+    expect_error(LowRankMatrix(1, 1), "must be matrix-like")
+    expect_error(LowRankMatrix(cbind(1:5), cbind(1:5, 2:6)), "must be the same")
 })
 
 ##########################
