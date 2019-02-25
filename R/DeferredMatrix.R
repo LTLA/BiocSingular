@@ -132,13 +132,11 @@ realize_DeferredMatrixSeed <- function(x, ...) {
         }
 
         out <- t(out)
-        if (nrow(out) && ncol(out)) { # avoid undefined <Matrix> - numeric(0) with Matrix classes.
-            if (use_center(x)) {
-                out <- out - get_center(x)
-            }
-            if (use_scale(x)) {
-                out <- out / get_scale(x)
-            }
+        if (use_center(x)) {
+            out <- out - get_center(x)
+        }
+        if (use_scale(x)) {
+            out <- out / get_scale(x)
         }
 
         if (!is_transposed(x)) out <- t(out)

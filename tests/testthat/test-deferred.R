@@ -263,11 +263,11 @@ test_that("DeferredMatrix dual multiplication works as expected", {
 
             expect_equal_product(test1$def %*% test2$def, test1$ref %*% test2$ref)
 
-# Restore once Matrix cleans up its act.
-#            expect_equal_product(test1$def[0,] %*% test2$def, test1$ref[0,] %*% test2$ref)
-#            expect_equal_product(test1$def %*% test2$def[,0], test1$ref %*% test2$ref[,0])
-#            expect_equal_product(test1$def[,0] %*% test2$def[0,], test1$ref[,0] %*% test2$ref[0,])
-#            expect_equal_product(test1$def[0,] %*% test2$def[,0], test1$ref[0,] %*% test2$ref[,0])
+            # Checking that zero-dimension behaviour is as expected.
+            expect_equal_product(test1$def[0,] %*% test2$def, test1$ref[0,] %*% test2$ref)
+            expect_equal_product(test1$def %*% test2$def[,0], test1$ref %*% test2$ref[,0])
+            expect_equal_product(test1$def[,0] %*% test2$def[0,], test1$ref[,0] %*% test2$ref[0,])
+            expect_equal_product(test1$def[0,] %*% test2$def[,0], test1$ref[0,] %*% test2$ref[,0])
         }
     }
 })
