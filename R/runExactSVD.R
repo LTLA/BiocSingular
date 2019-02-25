@@ -1,7 +1,7 @@
 #' @export
 #' @importFrom BiocParallel bpstart bpstop bpisup bpparam register SerialParam
 #' @importFrom utils head
-runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE, fold=5, BPPARAM=SerialParam())
+runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE, fold=Inf, BPPARAM=SerialParam())
 # Wrapper for svd(), with options for faster calculation by taking the 
 # cross-product for fat or tall matrices.
 {

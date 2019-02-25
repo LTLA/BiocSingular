@@ -6,7 +6,7 @@
 
 \usage{
 runRandomSVD(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE,
-    ..., fold=5, BPPARAM=SerialParam())
+    ..., fold=Inf, BPPARAM=SerialParam())
 }
 
 \arguments{

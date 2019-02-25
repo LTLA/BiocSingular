@@ -4,7 +4,7 @@
 #' @importFrom utils head
 #' @importClassesFrom DelayedArray DelayedMatrix
 #' @importFrom methods is
-runRandomSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE, ..., fold=5, BPPARAM=SerialParam())
+runRandomSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE, ..., fold=Inf, BPPARAM=SerialParam())
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
     if (nu==0 && nv==0 && k==0) {

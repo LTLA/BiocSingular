@@ -6,7 +6,7 @@
 
 \usage{
 runIrlbaSVD(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE,
-    extra.work=7, ..., fold=5, BPPARAM=SerialParam())
+    extra.work=7, ..., fold=Inf, BPPARAM=SerialParam())
 }
 
 \arguments{

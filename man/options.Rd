@@ -13,10 +13,9 @@ Calculation of the cross-product only involves one read across the entire data s
 while direct application of approximate methods like \code{\link{irlba}} or \code{\link{rsvd}} would need to access the data multiple times.
 
 The various \pkg{BiocSingular} SVD functions allow users to specify the minimum fold difference (via the \code{fold} argument) at which a cross-product should be computed. 
-The default is to require a difference of 5-fold between the two dimensions.
-This avoids an unnecessary calculation of the cross-product when the matrix is already close to square-shaped.
-Setting \code{fold=Inf} means that the cross-product is never computed, which may be useful when even the cross-product is too large to handle in memory.
-Setting \code{fold=1} will always compute the cross-product - this is probably unwise. 
+Setting \code{fold=1} will always compute the cross-product for any matrix - this is probably unwise. 
+By contrast, setting \code{fold=Inf} means that the cross-product is never computed.
+This is currently the default in all functions, to provide the most expected behaviour unless specifically instructed otherwise.
 }
 
 \section{Centering and scaling}{

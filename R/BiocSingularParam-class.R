@@ -37,13 +37,13 @@ setMethod("show", "BiocSingularParam", function(object) {
 
 #' @export
 #' @importFrom methods new
-ExactParam <- function(deferred=FALSE, fold=5) {
+ExactParam <- function(deferred=FALSE, fold=Inf) {
     new("ExactParam", deferred=as.logical(deferred), fold=as.numeric(fold))
 }
 
 #' @export
 #' @importFrom methods new
-IrlbaParam <- function(deferred=FALSE, fold=5, extra.work=7, ...) {
+IrlbaParam <- function(deferred=FALSE, fold=Inf, extra.work=7, ...) {
     new("IrlbaParam", deferred=as.logical(deferred), fold=as.numeric(fold), extra.work=as.integer(extra.work), args=list(...))
 }
 
@@ -72,7 +72,7 @@ setMethod("show", "IrlbaParam", function(object) {
 
 #' @export
 #' @importFrom methods new
-RandomParam <- function(deferred=FALSE, fold=5, ...) {
+RandomParam <- function(deferred=FALSE, fold=Inf, ...) {
     new("RandomParam", deferred=as.logical(deferred), fold=as.numeric(fold), args=list(...))
 }
 

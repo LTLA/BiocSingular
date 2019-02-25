@@ -6,7 +6,7 @@
 
 \usage{
 runExactSVD(x, k=min(dim(x)), nu=k, nv=k, center=FALSE, scale=FALSE, 
-    deferred=FALSE, fold=5, BPPARAM=SerialParam())
+    deferred=FALSE, fold=Inf, BPPARAM=SerialParam())
 }
 
 \arguments{

@@ -22,11 +22,11 @@
 \description{Classes for specifying the type of singular value decomposition (SVD) algorithm and associated parameters.}
 
 \usage{
-ExactParam(deferred=FALSE, fold=5)
+ExactParam(deferred=FALSE, fold=Inf)
 
-IrlbaParam(deferred=FALSE, fold=5, extra.work=7, ...)
+IrlbaParam(deferred=FALSE, fold=Inf, extra.work=7, ...)
 
-RandomParam(deferred=FALSE, fold=5, ...)
+RandomParam(deferred=FALSE, fold=Inf, ...)
     
 bsfold(object)
 
