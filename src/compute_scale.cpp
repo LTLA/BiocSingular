@@ -27,16 +27,15 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
     Rcpp::NumericVector tmp(nrows);
 
     for (size_t i=0; i<ncols; ++i) {
-        auto colIt=dptr->get_const_col(i, tmp.begin());
+        dptr->get_col(i, tmp.begin());
 
         double& current=output[i];
-        for (size_t j=0; j<nrows; ++j, ++colIt) {
+        for (size_t j=0; j<nrows; ++j) {
+            double val=tmp[j];
             if (do_center) {
-                const double diff=*colIt - numeric_centers[i];
-                current+=diff*diff;
-            } else {
-                current+=(*colIt) * (*colIt);
+                val-=numeric_centers[i];
             }
+            current+=val*val;
         }
 
         current/=nrows-1;
