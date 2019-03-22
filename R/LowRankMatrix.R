@@ -7,10 +7,6 @@
 # Constructing the seed.
 
 #' @export
-#' @import methods
-setClass("LowRankMatrixSeed", slots=c(rotation="ANY", components="ANY"))
-
-#' @export
 #' @importFrom methods new is
 LowRankMatrixSeed <- function(rotation, components) {
     if (missing(rotation)) {
@@ -118,14 +114,6 @@ rename_LowRankMatrixSeed <- function(x, value) {
 ###################################
 ###################################
 # Constructing the matrix.
-
-#' @export
-#' @importClassesFrom DelayedArray DelayedMatrix
-#' @import methods
-setClass("LowRankMatrix",
-    contains="DelayedMatrix",
-    representation(seed="LowRankMatrixSeed")
-)
 
 #' @export
 #' @importFrom DelayedArray DelayedArray
