@@ -16,11 +16,15 @@ test_that("use_crossprod works correctly", {
 })
 
 test_that("scale calculations work correctly", {
-    for (it in 1:2) {
+    for (it in 1:4) {
         if (it==1L) {
             A <- matrix(runif(2000), 50, 40)
-        } else {
+        } else if (it==2L) {
+            A <- matrix(rpois(2000, lambda=5), 50, 40)
+        } else if (it==3L) {
             A <- Matrix::rsparsematrix(50, 40, density=0.1)
+        } else {
+            A <- as(Matrix::rsparsematrix(50, 40, density=0.1), "dgTMatrix")
         }
 
         out <- BiocSingular:::compute_scale(A, NULL)

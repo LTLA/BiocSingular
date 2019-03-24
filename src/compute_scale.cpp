@@ -1,14 +1,14 @@
 #include "Rcpp.h"
 #include "beachmat/numeric_matrix.h"
+#include "beachmat/integer_matrix.h"
+#include "beachmat/utils/const_column.h"
 #include <cmath>
 
-//' @useDynLib BiocSingular
-//' @importFrom Rcpp sourceCpp
-// [[Rcpp::export(rng=false)]]
-Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
-    auto dptr=beachmat::create_numeric_matrix(mat);
-    size_t ncols=dptr->get_ncol();
-    size_t nrows=dptr->get_nrow();
+template<class M>
+Rcpp::NumericVector compute_scale_internal(Rcpp::RObject mat, Rcpp::RObject centering) {
+    auto ptr=beachmat::create_matrix<M>(mat);
+    size_t ncols=ptr->get_ncol();
+    size_t nrows=ptr->get_nrow();
 
     if (nrows<=1) {
         return Rcpp::NumericVector(ncols, R_NaReal);
@@ -24,19 +24,24 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
     }
 
     Rcpp::NumericVector output(ncols);
-    Rcpp::NumericVector tmp(nrows);
+    beachmat::const_column<M> col_holder(ptr.get());
 
     for (size_t i=0; i<ncols; ++i) {
-        auto colIt=dptr->get_const_col(i, tmp.begin());
+        col_holder.fill(i);
+        auto n=col_holder.get_n();
+        auto vals=col_holder.get_values();
 
         double& current=output[i];
-        for (size_t j=0; j<nrows; ++j, ++colIt) {
+        for (size_t j=0; j<n; ++j, ++vals) {
+            double val=*vals;
             if (do_center) {
-                const double diff=*colIt - numeric_centers[i];
-                current+=diff*diff;
-            } else {
-                current+=(*colIt) * (*colIt);
+                val-=numeric_centers[i];
             }
+            current+=val*val;
+        }
+
+        if (do_center && col_holder.is_sparse()) { // adding the contribution of the zeroes.
+            current += (nrows - n) * (numeric_centers[i] * numeric_centers[i]);
         }
 
         current/=nrows-1;
@@ -44,4 +49,16 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
     }
     
     return output;
+}
+
+//' @useDynLib BiocSingular
+//' @importFrom Rcpp sourceCpp
+// [[Rcpp::export(rng=false)]]
+Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
+    auto rtype=beachmat::find_sexp_type(mat);
+    if (rtype==INTSXP) {
+        return compute_scale_internal<beachmat::integer_matrix>(mat, centering);
+    } else {
+        return compute_scale_internal<beachmat::numeric_matrix>(mat, centering);
+    }
 }

@@ -7,10 +7,6 @@
 # Constructing the seed.
 
 #' @export
-#' @import methods
-setClass("DeferredMatrixSeed", slots=c(.matrix="ANY", center="numeric", scale="numeric", use_center="logical", use_scale="logical", transposed="logical"))
-
-#' @export
 #' @importFrom methods new is
 DeferredMatrixSeed <- function(x, center=NULL, scale=NULL) {
     if (missing(x)) {
@@ -203,14 +199,6 @@ subset_DeferredMatrixSeed <- function(x, i, j) {
 ###################################
 ###################################
 # Constructing the matrix.
-
-#' @export
-#' @importClassesFrom DelayedArray DelayedMatrix
-#' @import methods
-setClass("DeferredMatrix",
-    contains="DelayedMatrix",
-    representation(seed="DeferredMatrixSeed")
-)
 
 #' @export
 #' @importFrom DelayedArray DelayedArray
