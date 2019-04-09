@@ -2,7 +2,6 @@
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-irlba-svd.R")
 
 library(irlba)
-library(BiocParallel)
 
 set.seed(9000)
 test_that("IRLBA works on input matrices", {
@@ -91,14 +90,14 @@ test_that("IRLBA works with alternative multiplication", {
     # Lower tol to avoid numeric precision issues.
     y <- matrix(rnorm(50000), ncol=100)
     set.seed(100)
-    out <- runIrlbaSVD(y, k=5, BPPARAM=MulticoreParam(2), tol=1e-8, fold=Inf)
+    out <- runIrlbaSVD(y, k=5, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, tol=1e-8)
     expect_equal_svd(out, ref[c("d", "u", "v")], tol=1e-6)
 
     # Handles truncation.
     set.seed(100)
-    out <- runIrlbaSVD(y, k=5, nv=2, nu=3, BPPARAM=MulticoreParam(2), tol=1e-8, fold=Inf)
+    out <- runIrlbaSVD(y, k=5, nv=2, nu=3, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, nu=3, tol=1e-8)
     ref$v <- ref$v[,1:2]
@@ -147,14 +146,15 @@ test_that("IRLBA centering and scaling interact happily with other modes", {
 
     # Works with the alternative multiplication.
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, BPPARAM=MulticoreParam(2), tol=1e-8, fold=Inf)
+    out <- runIrlbaSVD(ry, k=5, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)
 
-    # Works with deferred operations (which also requires parallelization).
+    # Works with our deferred multiplication (which also requires parallelization,
+    # in order to not just use irlba's deferred methods directly).
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=MulticoreParam(1), tol=1e-8, fold=Inf)
+    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
     ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)

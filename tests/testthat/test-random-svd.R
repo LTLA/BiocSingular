@@ -2,7 +2,6 @@
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-random-svd.R")
 
 library(rsvd)
-library(BiocParallel)
 
 set.seed(80000)
 test_that("Random SVD works on input matrices", {
@@ -90,14 +89,14 @@ test_that("Random SVD works with parallelization", {
     set.seed(100)
     ref <- runRandomSVD(y, k=5, fold=Inf, p=50, q=20)
     set.seed(100)
-    out <- runRandomSVD(y, k=5, BPPARAM=MulticoreParam(2), fold=Inf, p=50, q=20)
+    out <- runRandomSVD(y, k=5, BPPARAM=safeBPParam(2), fold=Inf, p=50, q=20)
     expect_equal_svd(ref, out, tol=1e-6)
 
     # Handles truncation.
     set.seed(100)
     ref <- runRandomSVD(y, k=5, nv=2, nu=3, fold=Inf, p=50, q=20)
     set.seed(100)
-    out <- runRandomSVD(y, k=5, nv=2, nu=3, BPPARAM=MulticoreParam(2), fold=Inf, p=50, q=20)
+    out <- runRandomSVD(y, k=5, nv=2, nu=3, BPPARAM=safeBPParam(2), fold=Inf, p=50, q=20)
     expect_equal_svd(out, ref[c("d", "u", "v")], tol=1e-6)
 })
 
