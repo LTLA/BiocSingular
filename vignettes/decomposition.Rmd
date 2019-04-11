@@ -126,7 +126,7 @@ This can speed up calculations when dealing with very large input matrices, e.g.
 ```{r}
 set.seed(4000)
 library(BiocParallel)
-i.out <- runSVD(dummy, k=10, BSPARAM=ipam, BPPARAM=MulticoreParam(2))
+i.out <- runSVD(dummy, k=10, BSPARAM=ipam, BPPARAM=bpparam())
 ```
 
 The number of left or right singular vectors to return can be directly controlled with the `nv=` and `nu=` arguments.
