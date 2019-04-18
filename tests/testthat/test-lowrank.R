@@ -27,6 +27,30 @@ spawn_scenarios <- function(NR=50, NC=20, NP=10) {
     collected
 }
 
+test_that("a little check on windows 32-bit", {
+    possibles <- spawn_scenarios()
+
+    test <- DelayedArray::seed(possibles[[1]]$lrm)
+    rot <- test@rotation
+    comp <- test@components
+    expect_identical(as.matrix(tcrossprod(rot, comp)), as.matrix(rot %*% t(comp)))
+
+    test <- DelayedArray::seed(possibles[[2]]$lrm)
+    rot <- test@rotation
+    comp <- test@components
+    expect_identical(as.matrix(tcrossprod(rot, comp)), as.matrix(rot %*% t(comp)))
+
+    test <- DelayedArray::seed(possibles[[3]]$lrm)
+    rot <- test@rotation
+    comp <- test@components
+    expect_identical(as.matrix(tcrossprod(rot, comp)), as.matrix(rot %*% t(comp)))
+
+    test <- DelayedArray::seed(possibles[[4]]$lrm)
+    rot <- test@rotation
+    comp <- test@components
+    expect_identical(as.matrix(tcrossprod(rot, comp)), as.matrix(rot %*% t(comp)))
+})
+
 ##########################
 
 expect_identical_unnamed <- function(x, y) {
@@ -37,6 +61,7 @@ expect_identical_unnamed <- function(x, y) {
 
 set.seed(500001)
 test_that("LowRankMatrix utility functions work as expected", {
+    skip_on_os("windows")
     possibles <- spawn_scenarios()
     for (test in possibles) {
         expect_s4_class(test$lrm, "LowRankMatrix")
@@ -63,6 +88,7 @@ test_that("LowRankMatrix utility functions work as expected", {
 
 set.seed(500002)
 test_that("LowRankMatrix subsetting works as expected", {
+    skip_on_os("windows")
     expect_identical_and_lrmmat <- function(x, y) {
         expect_s4_class(x, "LowRankMatrix") # class is correctly preserved by direct seed modification.
         expect_identical_unnamed(as.matrix(x), y)
@@ -103,6 +129,7 @@ test_that("LowRankMatrix subsetting works as expected", {
 
 set.seed(500003)
 test_that("Silly inputs into LowRankMatrix work as expected", {
+    skip_on_os("windows")
     # Default constructor works with different inputs.
     default <- LowRankMatrix()
     expect_identical(dim(default), c(0L, 0L))
@@ -131,6 +158,7 @@ test_that("Silly inputs into LowRankMatrix work as expected", {
 
 library(DelayedArray)
 test_that("DelayedMatrix wrapping works", {
+    skip_on_os("windows")
     possibles <- spawn_scenarios(80, 50)
     for (test in possibles) {
         expect_identical_unnamed(as.matrix(test$lrm+1), test$ref+1)
