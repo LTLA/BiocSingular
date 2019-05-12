@@ -107,13 +107,12 @@ rename_DeferredMatrixSeed <- function(x, value) {
     x
 }
 
-#' @importFrom BiocGenerics t
 transpose_DeferredMatrixSeed <- function(x) {
     x@transposed <- !is_transposed(x)
     x
 }
 
-#' @importFrom BiocGenerics t
+#' @importFrom Matrix t
 #' @importFrom methods is
 realize_DeferredMatrixSeed <- function(x, ...) {
     out <- get_matrix2(x)
@@ -143,7 +142,6 @@ realize_DeferredMatrixSeed <- function(x, ...) {
     as.matrix(out)
 }
 
-#' @importFrom BiocGenerics t
 subset_DeferredMatrixSeed <- function(x, i, j) {
     if (is_transposed(x)) {
         x2 <- transpose_DeferredMatrixSeed(x)
@@ -175,27 +173,6 @@ subset_DeferredMatrixSeed <- function(x, i, j) {
 }
 
 ###################################
-# Hacks to overcome the deficiencies of "Matrix".
-
-#' @importFrom BiocGenerics colSums
-.safe_colSums <- function(x) {
-    if (is(x, "Matrix")) {
-        Matrix::colSums(x)
-    } else {
-        colSums(x)
-    }    
-}
-
-#' @importFrom BiocGenerics rowSums
-.safe_rowSums <- function(x) {
-    if (is(x, "Matrix")) {
-        Matrix::rowSums(x)
-    } else {
-        rowSums(x)
-    }
-}
-
-###################################
 ###################################
 ###################################
 # Constructing the matrix.
@@ -222,7 +199,6 @@ setReplaceMethod("dimnames", "DeferredMatrix", function(x, value) {
 })
 
 #' @export
-#' @importFrom BiocGenerics t
 #' @importFrom DelayedArray DelayedArray seed
 setMethod("t", "DeferredMatrix", function(x) {
     DelayedArray(transpose_DeferredMatrixSeed(seed(x)))
@@ -245,8 +221,7 @@ setMethod("[", "DeferredMatrix", function(x, i, j, ..., drop=TRUE) {
 # Basic matrix stats.
 
 #' @export
-#' @importFrom BiocGenerics colSums
-#' @importFrom Matrix drop
+#' @importFrom Matrix colSums rowSums drop
 setMethod("colSums", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) {
     if (is_transposed(seed(x))) {
         return(rowSums(t(x)))
@@ -259,8 +234,7 @@ setMethod("colSums", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) {
 })
 
 #' @export
-#' @importFrom BiocGenerics rowSums
-#' @importFrom Matrix drop
+#' @importFrom Matrix colSums rowSums drop
 setMethod("rowSums", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) {
     if (is_transposed(seed(x))) {
         return(colSums(t(x)))
@@ -273,11 +247,11 @@ setMethod("rowSums", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) {
 })
 
 #' @export
-#' @importFrom BiocGenerics colMeans
+#' @importFrom Matrix colMeans colSums
 setMethod("colMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) colSums(x)/nrow(x))
 
 #' @export
-#' @importFrom BiocGenerics rowMeans
+#' @importFrom Matrix rowMeans rowSums
 setMethod("rowMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) rowSums(x)/ncol(x))
 
 ###################################
@@ -300,7 +274,7 @@ setMethod("rowMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) ro
 #    Exceptions are only allowed when this is unavoidable, e.g., in '.internal_tcrossprod'.
 
 #' @export
-#' @importFrom BiocGenerics t
+#' @importFrom Matrix t
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
     x_seed <- seed(x)
@@ -322,7 +296,7 @@ setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
 })
 
 #' @export
-#' @importFrom BiocGenerics t
+#' @importFrom Matrix t rowSums
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
     y_seed <- seed(y)
@@ -337,7 +311,7 @@ setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
         if (is.null(dim(x))) {
             out <- out - get_center(y_seed) * sum(x)
         } else {
-            out <- out - outer(.safe_rowSums(x), get_center(y_seed), "*")
+            out <- out - outer(rowSums(x), get_center(y_seed), "*")
         }
     }
 
@@ -349,7 +323,7 @@ setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
 })
 
 #' @export
-#' @importFrom BiocGenerics t
+#' @importFrom Matrix t
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     x_seed <- seed(x)
@@ -376,7 +350,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 ###################################
 # DefMat %*% DefMat utilities.
 
-#' @importFrom Matrix drop
+#' @importFrom Matrix drop rowSums
 .multiply_u2u <- function(x_seed, y_seed) 
 # Considering the problem of (X - C_x)S_x (Y - C_y)S_y.
 {
@@ -430,7 +404,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
             y.center <- y.center / get_scale(y_seed)
         }
 
-        component3 <- outer(.safe_rowSums(x0), y.center)
+        component3 <- outer(rowSums(x0), y.center)
         result <- result - component3
     }
 
@@ -495,7 +469,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     result
 }
 
-#' @importFrom Matrix crossprod
+#' @importFrom Matrix crossprod colSums
 .multiply_t2u <- function(x_seed, y_seed) 
 # Considering the problem of S_x(X' - C_x') (Y - C_y)S_y
 {
@@ -505,7 +479,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     # Computing C_x' Y, and subtracting it from 'result'.
     if (use_center(x_seed)) {
         x.center <- get_center(x_seed)
-        component2 <- outer(x.center, .safe_colSums(get_matrix2(y_seed)))
+        component2 <- outer(x.center, colSums(get_matrix2(y_seed)))
         result <- result - component2
     }
 
@@ -520,7 +494,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     # Computing X' C_y, and subtracting it from 'result'.
     # This is done last to avoid subtracting large values.
     if (use_center(y_seed)) {
-        component3 <- outer(.safe_colSums(get_matrix2(x_seed)), get_center(y_seed))
+        component3 <- outer(colSums(get_matrix2(x_seed)), get_center(y_seed))
         result <- result - component3
     }
 
@@ -538,7 +512,7 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 # Cross-product. 
 
 #' @export
-#' @importFrom Matrix crossprod tcrossprod 
+#' @importFrom Matrix crossprod tcrossprod colSums
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
     x_seed <- seed(x)
@@ -551,7 +525,7 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 
     if (use_center(x_seed)) {
         centering <- get_center(x_seed)
-        colsums <- .safe_colSums(x0)
+        colsums <- colSums(x0)
 
         # Minus, then add, then minus, to mitigate cancellation.
         out <- out - outer(centering, colsums)
@@ -568,9 +542,8 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
 })
 
 #' @export
-#' @importFrom Matrix crossprod
+#' @importFrom Matrix crossprod colSums t
 #' @importFrom DelayedArray seed DelayedArray
-#' @importFrom BiocGenerics t
 setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
@@ -583,7 +556,7 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
         if (is.null(dim(y))) {
             out <- out - get_center(x_seed) * sum(y)
         } else {
-            out <- out - outer(get_center(x_seed), .safe_colSums(y))
+            out <- out - outer(get_center(x_seed), colSums(y))
         }
     }
     
@@ -595,9 +568,8 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
 })
 
 #' @export
-#' @importFrom Matrix crossprod 
+#' @importFrom Matrix crossprod t
 #' @importFrom DelayedArray seed DelayedArray
-#' @importFrom BiocGenerics t
 setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     y_seed <- seed(y)
     if (is_transposed(y_seed)) {
@@ -610,7 +582,7 @@ setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
         if (is.null(dim(x))) {
             out <- sweep(out, 2, sum(x) * get_center(y_seed), "-", check.margin=FALSE)
         } else {
-            out <- out - outer(.safe_colSums(x), get_center(y_seed))
+            out <- out - outer(colSums(x), get_center(y_seed))
         }
     }
 
@@ -630,9 +602,8 @@ setMethod("crossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 # Transposed cross-product. 
 
 #' @export
-#' @importFrom Matrix tcrossprod
+#' @importFrom Matrix tcrossprod t
 #' @importFrom DelayedArray seed DelayedArray
-#' @importFrom BiocGenerics t
 setMethod("tcrossprod", c("DeferredMatrix", "missing"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
@@ -672,9 +643,8 @@ setMethod("tcrossprod", c("DeferredMatrix", "missing"), function(x, y) {
 })
 
 #' @export
-#' @importFrom Matrix tcrossprod
+#' @importFrom Matrix tcrossprod t
 #' @importFrom DelayedArray seed DelayedArray
-#' @importFrom BiocGenerics t
 setMethod("tcrossprod", c("DeferredMatrix", "ANY"), function(x, y) {
     if (is.null(dim(y))) { # for consistency with base::tcrossprod.
         stop("non-conformable arguments")
@@ -700,9 +670,8 @@ setMethod("tcrossprod", c("DeferredMatrix", "ANY"), function(x, y) {
 })
 
 #' @export
-#' @importFrom Matrix tcrossprod
+#' @importFrom Matrix tcrossprod t
 #' @importFrom DelayedArray seed DelayedArray
-#' @importFrom BiocGenerics t
 setMethod("tcrossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     y_seed <- seed(y) 
     if (is_transposed(y_seed)) {
@@ -802,13 +771,13 @@ setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 # This will always return a dense ordinary matrix.
 {
     if (!is(Z, "DeferredMatrix")) {
-        return(outer(center, .safe_colSums(Z / scale.^2)))
+        return(outer(center, colSums(Z / scale.^2)))
     }
     
     Z_seed <- seed(Z)
     if (is_transposed(Z_seed)) {
         Z <- .update_scale(Z, scale.^2)
-        return(outer(center, .safe_colSums(Z)))
+        return(outer(center, colSums(Z)))
     }
 
     output <- .internal_mult_special(center, scale., get_matrix2(Z_seed)) # recurses.

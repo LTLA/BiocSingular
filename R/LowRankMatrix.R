@@ -137,7 +137,7 @@ setReplaceMethod("dimnames", "LowRankMatrix", function(x, value) {
 })
 
 #' @export
-#' @importFrom BiocGenerics t
+#' @importFrom Matrix t
 #' @importFrom DelayedArray DelayedArray seed
 setMethod("t", "LowRankMatrix", function(x) {
     DelayedArray(transpose_LowRankMatrixSeed(seed(x)))
