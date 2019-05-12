@@ -1,12 +1,26 @@
 Package: BiocSingular
-Version: 1.1.0
-Date: 2019-04-19
+Version: 1.1.1
+Date: 2019-05-12
 Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
-Imports: BiocGenerics, S4Vectors, Matrix, methods, utils, DelayedArray, 
-        BiocParallel, irlba, rsvd, Rcpp
-Suggests: testthat, BiocStyle, knitr, rmarkdown, beachmat
+Imports: 
+    BiocGenerics, 
+    S4Vectors, 
+    Matrix, 
+    methods, 
+    utils, 
+    DelayedArray, 
+    BiocParallel, 
+    irlba, 
+    rsvd, 
+    Rcpp
+Suggests: 
+    testthat, 
+    BiocStyle, 
+    knitr, 
+    rmarkdown, 
+    beachmat
 biocViews: Software, DimensionReduction, PrincipalComponent
 Description: Implements exact and approximate methods for singular value
         decomposition and principal components analysis, in a framework that
