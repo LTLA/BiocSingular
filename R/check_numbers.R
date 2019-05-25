@@ -1,11 +1,10 @@
-check_numbers <- function(x, k, nv, nu) 
+check_numbers <- function(x, k, nv, nu, limit=min(dim(x))) 
 # Sanity checks for 'k', 'nv' and 'nu'.
 {
     if (k < 0 || nv < 0 || nu < 0) {
         stop("number of requested singular values/vectors must be non-negative")
     }
 
-    limit <- min(dim(x))
     if (is.infinite(k)) { 
         k <- limit
     }

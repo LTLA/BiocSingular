@@ -167,7 +167,7 @@ test_that("IRLBA fails gracefully with silly inputs", {
     expect_error(runIrlbaSVD(y, nu=-1), "non-negative")
     expect_error(runIrlbaSVD(y, nv=-1), "non-negative")
 
-    expect_error(expect_warning(runIrlbaSVD(y, k=1e6), "requested than available"))
-    expect_error(expect_warning(runIrlbaSVD(y, nu=1e6), "requested than available"))
-    expect_error(expect_warning(runIrlbaSVD(y, nv=1e6), "requested than available"))
+    expect_warning(runIrlbaSVD(y, k=1e6), "requested than available")
+    expect_warning(runIrlbaSVD(y, nu=1e6), "requested than available")
+    expect_warning(runIrlbaSVD(y, nv=1e6), "requested than available")
 })

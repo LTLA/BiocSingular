@@ -12,7 +12,9 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=
                     v=matrix(0, ncol(x), 0)))
     }
 
-    checked <- check_numbers(x, k=k, nu=nu, nv=nv)
+    # irlba() errors when asking for exactly the maximum number of SVs,
+    # hence the lowered 'limit'.
+    checked <- check_numbers(k=k, nu=nu, nv=nv, limit=min(dim(x))-1L)
     k <- checked$k
     nv <- checked$nv
     nu <- checked$nu
