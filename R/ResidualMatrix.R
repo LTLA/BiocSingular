@@ -187,5 +187,79 @@ setMethod("[", "ResidualMatrix", function(x, i, j, ..., drop=TRUE) {
             x <- t(x)
         }
     }
+    x
+})
+
+###################################
+# Basic matrix stats.
+
+#' @export
+#' @importFrom Matrix colSums rowSums drop
+setMethod("colSums", "ResidualMatrix", function(x, na.rm = FALSE, dims = 1L) {
+    if (is_transposed(seed(x))) {
+        return(rowSums(t(x)))
+    }
+
+    out <- rep(1, nrow(x)) %*% x
+    out <- drop(out)
+    names(out) <- colnames(x)
     out
+})
+
+#' @export
+#' @importFrom Matrix colSums rowSums drop
+setMethod("rowSums", "ResidualMatrix", function(x, na.rm = FALSE, dims = 1L) {
+    if (is_transposed(seed(x))) {
+        return(colSums(t(x)))
+    }
+
+    out <- x %*% rep(1, ncol(x))
+    out <- drop(out)
+    names(out) <- rownames(x)
+    out
+})
+
+#' @export
+#' @importFrom Matrix colMeans colSums
+setMethod("colMeans", "ResidualMatrix", function(x, na.rm = FALSE, dims = 1L) colSums(x)/nrow(x))
+
+#' @export
+#' @importFrom Matrix rowMeans rowSums
+setMethod("rowMeans", "ResidualMatrix", function(x, na.rm = FALSE, dims = 1L) rowSums(x)/ncol(x))
+
+###################################
+# Matrix multiplication.
+
+#' @export
+#' @importFrom Matrix crossprod t
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("%*%", c("ResidualMatrix", "ANY"), function(x, y) {
+    x_seed <- seed(x)
+    if (is_transposed(x_seed)) {
+        return(t(t(y) %*% t(x)))    
+    }
+
+    X <- get_matrix2(x_seed)
+    component1 <- X %*% y
+    Q <- get_Q(x_seed)
+    component2 <- Q %*% crossprod(Q, component1)
+
+    DelayedArray(component1 - component2)
+})
+
+#' @export
+#' @importFrom Matrix tcrossprod t
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("%*%", c("ANY", "ResidualMatrix"), function(x, y) {
+    y_seed <- seed(y)
+    if (is_transposed(y_seed)) {
+        return(t(t(y) %*% t(x)))    
+    }
+
+    Y <- get_matrix2(y_seed)
+    component1 <- x %*% Y
+    Q <- get_Q(y_seed)
+    component2 <- tcrossprod(x %*% Q, Q) %*% Y
+
+    DelayedArray(component1 - component2)
 })
