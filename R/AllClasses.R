@@ -32,7 +32,7 @@ setClass("LowRankMatrix",
 )
 
 #' @export
-setClass("ResidualMatrixSeed", slots=c(.matrix="ANY", QR="ANY", Q="matrix", transposed="logical"))
+setClass("ResidualMatrixSeed", slots=c(.matrix="ANY", Q="matrix", transposed="logical"))
 
 #' @export
 #' @importClassesFrom DelayedArray DelayedMatrix

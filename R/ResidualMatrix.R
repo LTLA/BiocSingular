@@ -17,7 +17,7 @@ ResidualMatrixSeed <- function(x, design=matrix(1, ncol(x), 1)) {
 
     QR <- qr(design)
     Q <- qr.Q(QR)
-    new("ResidualMatrixSeed", .matrix=x, QR=QR, Q=Q, transposed=FALSE)
+    new("ResidualMatrixSeed", .matrix=x, Q=Q, transposed=FALSE)
 }
 
 #' @importFrom S4Vectors setValidity2
@@ -32,14 +32,6 @@ setValidity2("ResidualMatrixSeed", function(object) {
     }
     if (!is.numeric(Q)) {
         msg <- c(msg, "'Q' should be a numeric matrix")
-    }
-
-    QR <- get_QR(object)
-    if (!is(QR, "qr")) {
-        msg <- c(msg, "'QR' should be a list of class 'qr'")
-    } 
-    if (nrow(x)!=nrow(QR$qr)) {
-        msg <- c(msg, "'nrow(QR$qr)' and 'nrow(x)' are not the same")
     }
 
     if (length(is_transposed(object))!=1L) {
@@ -62,8 +54,6 @@ setMethod("show", "ResidualMatrixSeed", function(object) {
 ###################################
 # Internal getters.
 
-get_QR <- function(x) x@QR
-
 get_Q <- function(x) x@Q
 
 ###################################
@@ -85,19 +75,17 @@ setMethod("dimnames", "ResidualMatrixSeed", function(x) {
 
 #' @export
 #' @importFrom DelayedArray extract_array
-#' @importFrom Matrix t 
+#' @importFrom Matrix t crossprod
 setMethod("extract_array", "ResidualMatrixSeed", function(x, index) {
     if (was_transposed <- is_transposed(x)) {
         x <- transpose_ResidualMatrixSeed(x)
         index <- rev(index)
     }
-	x2 <- subset_ResidualMatrixSeed(x, index[[2]])
+	x2 <- subset_ResidualMatrixSeed(x, index[[1]], index[[2]])
 
-    resid <- qr.resid(get_QR(x2), get_matrix2(x2))
-    dimnames(resid) <- dimnames(x2)
-    if (!is.null(index[[1]])) {
-        resid <- resid[index[[1]],,drop=FALSE]
-    }
+    mat <- get_matrix2(x2)
+    Q <- get_Q(x2)
+    resid <- mat - Q %*% crossprod(Q, mat)
     if (was_transposed) {
         resid <- t(resid)
     }
@@ -107,12 +95,19 @@ setMethod("extract_array", "ResidualMatrixSeed", function(x, index) {
 ###################################
 # Additional utilities for efficiency.
 
-subset_ResidualMatrixSeed <- function(x, j) {
-    if (is.null(j)) {
-        x
-    } else {
-        initialize(x, .matrix=get_matrix2(x)[,j,drop=FALSE])
+subset_ResidualMatrixSeed <- function(x, i, j) {
+    mat <- get_matrix2(x)
+    Q <- get_Q(x)
+
+    if (!is.null(i)) {
+        mat <- mat[i,,drop=FALSE]
+        Q <- Q[i,,drop=FALSE]
     }
+    if (!is.null(j)) {
+        mat <- mat[,j,drop=FALSE]
+    }
+
+    initialize(x, .matrix=mat, Q=Q)
 }
 
 transpose_ResidualMatrixSeed <- function(x) {
@@ -172,22 +167,11 @@ setMethod("[", "ResidualMatrix", function(x, i, j, ..., drop=TRUE) {
         j <- tmp
     }
 
-    rseed <- subset_ResidualMatrixSeed(rseed, j)
-    x <- DelayedArray(rseed)
-
-    if (is.null(i)) {
-        if (was_transposed) {
-            rseed <- tranpose_ResidualMatrixSeed(rseed)
-        }
-        x <- DelayedArray(rseed)
-    } else {
-        x <- DelayedArray(rseed)
-        x <- callNextMethod(x=x, i=i) # Becomes a DelayedMatrix.
-        if (was_transposed) {
-            x <- t(x)
-        }
+    rseed <- subset_ResidualMatrixSeed(rseed, i, j)
+    if (was_transposed) {
+        rseed <- transposedResidualMatrixSeed(rseed)
     }
-    x
+    DelayedArray(rseed)
 })
 
 ###################################
