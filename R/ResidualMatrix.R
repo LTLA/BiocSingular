@@ -8,6 +8,7 @@
 
 #' @export
 #' @importFrom methods new is
+#' @importFrom Matrix crossprod
 ResidualMatrixSeed <- function(x, design=matrix(1, ncol(x), 1)) {
     if (missing(x)) {
         x <- matrix(0, 0, 0)
@@ -17,7 +18,7 @@ ResidualMatrixSeed <- function(x, design=matrix(1, ncol(x), 1)) {
 
     QR <- qr(design)
     Q <- qr.Q(QR)
-    new("ResidualMatrixSeed", .matrix=x, Q=Q, transposed=FALSE)
+    new("ResidualMatrixSeed", .matrix=x, Q=Q, Qty=crossprod(Q, x), transposed=FALSE)
 }
 
 #' @importFrom S4Vectors setValidity2
@@ -32,6 +33,17 @@ setValidity2("ResidualMatrixSeed", function(object) {
     }
     if (!is.numeric(Q)) {
         msg <- c(msg, "'Q' should be a numeric matrix")
+    }
+
+    Qty <- get_Qty(object)
+    if (ncol(x)!=ncol(Qty)) {
+        msg <- c(msg, "'ncol(x)' and 'ncol(Qty)' are not the same")
+    }
+    if (ncol(Q)!=nrow(Qty)) {
+        msg <- c(msg, "'ncol(Q)' and 'nrow(Qty)' are not the same")
+    }
+    if (!is.numeric(Q)) {
+        msg <- c(msg, "'Qty' should be a numeric matrix")
     }
 
     if (length(is_transposed(object))!=1L) {
@@ -55,6 +67,8 @@ setMethod("show", "ResidualMatrixSeed", function(object) {
 # Internal getters.
 
 get_Q <- function(x) x@Q
+
+get_Qty <- function(x) x@Qty
 
 ###################################
 # DelayedArray support utilities. 
@@ -82,10 +96,7 @@ setMethod("extract_array", "ResidualMatrixSeed", function(x, index) {
         index <- rev(index)
     }
 	x2 <- subset_ResidualMatrixSeed(x, index[[1]], index[[2]])
-
-    mat <- get_matrix2(x2)
-    Q <- get_Q(x2)
-    resid <- mat - Q %*% crossprod(Q, mat)
+    resid <- get_matrix2(x2) - get_Q(x2) %*% get_Qty(x2)
     if (was_transposed) {
         resid <- t(resid)
     }
@@ -98,6 +109,7 @@ setMethod("extract_array", "ResidualMatrixSeed", function(x, index) {
 subset_ResidualMatrixSeed <- function(x, i, j) {
     mat <- get_matrix2(x)
     Q <- get_Q(x)
+    Qty <- get_Qty(x)
 
     if (!is.null(i)) {
         mat <- mat[i,,drop=FALSE]
@@ -105,13 +117,14 @@ subset_ResidualMatrixSeed <- function(x, i, j) {
     }
     if (!is.null(j)) {
         mat <- mat[,j,drop=FALSE]
+        Qty <- Qty[,j,drop=FALSE]
     }
 
-    initialize(x, .matrix=mat, Q=Q)
+    initialize(x, .matrix=mat, Q=Q, Qty=Qty)
 }
 
 transpose_ResidualMatrixSeed <- function(x) {
-    initialize(x, transposed=!get_transposed(x))
+    initialize(x, transposed=!is_transposed(x))
 }
 
 rename_ResidualMatrixSeed <- function(x, value) {
@@ -214,36 +227,190 @@ setMethod("rowMeans", "ResidualMatrix", function(x, na.rm = FALSE, dims = 1L) ro
 ###################################
 # Matrix multiplication.
 
+# Note that "%*%" methods should NOT call other matrix multiplication methods
+# directly on their ResidualMatrix arguments. Rather, any ResidualMatrix should
+# be broken down into the seed or the underlying matrix before further multiplication.
+# This reduces the risk of infinite S4 recursion when 'y' is also an S4 matrix class. 
+
 #' @export
-#' @importFrom Matrix crossprod t
+#' @importFrom Matrix t
 #' @importFrom DelayedArray DelayedArray seed
 setMethod("%*%", c("ResidualMatrix", "ANY"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
-        return(t(t(y) %*% t(x)))    
+        out <- t(.leftmult_ResidualMatrix(y, x_seed))
+    } else {
+        out <- .rightmult_ResidualMatrix(x_seed, y)
     }
-
-    X <- get_matrix2(x_seed)
-    component1 <- X %*% y
-    Q <- get_Q(x_seed)
-    component2 <- Q %*% crossprod(Q, component1)
-
-    DelayedArray(component1 - component2)
+    DelayedArray(out)
 })
 
+#' @importFrom Matrix crossprod
+.rightmult_ResidualMatrix <- function(x_seed, y) {
+    # Order of operations chosen to minimize size of intermediates,
+    # under the assumption that ncol(y) is very small.
+    get_matrix2(x_seed) %*% y - get_Q(x_seed) %*% (get_Qty(x_seed) %*% y)
+}
+
 #' @export
-#' @importFrom Matrix tcrossprod t
+#' @importFrom Matrix t
 #' @importFrom DelayedArray DelayedArray seed
 setMethod("%*%", c("ANY", "ResidualMatrix"), function(x, y) {
     y_seed <- seed(y)
     if (is_transposed(y_seed)) {
-        return(t(t(y) %*% t(x)))    
+        out <- t(.rightmult_ResidualMatrix(y_seed, x))
+    } else {
+        out <- .leftmult_ResidualMatrix(x, y_seed)
     }
-
-    Y <- get_matrix2(y_seed)
-    component1 <- x %*% Y
-    Q <- get_Q(y_seed)
-    component2 <- tcrossprod(x %*% Q, Q) %*% Y
-
-    DelayedArray(component1 - component2)
+    DelayedArray(out)
 })
+
+#' @importFrom Matrix tcrossprod
+.leftmult_ResidualMatrix <- function(x, y_seed) {
+    # Order of operations chosen to minimize size of intermediates,
+    # under the assumption that nrow(x) is very small.
+    x %*% get_matrix2(y_seed) - (x %*% get_Q(y_seed)) %*% get_Qty(y_seed)
+}
+
+###################################
+# Crossproduct.
+
+#' @export
+#' @importFrom Matrix crossprod t
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("crossprod", c("ResidualMatrix", "missing"), function(x, y) {
+    x_seed <- seed(x)
+    if (is_transposed(x_seed)) {
+        out <- t(.tcrossprod_ResidualMatrix(x_seed))
+    } else {
+        out <- .crossprod_ResidualMatrix(x_seed)
+    }
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix crossprod 
+.crossprod_ResidualMatrix <- function(x_seed) {
+    mat <- get_matrix2(x_seed)
+    Qty <- get_Qty(x_seed)
+    Q <- get_Q(x_seed)
+
+    # We assume that nrow(Q) >> ncol(Q) and nrow(mat) >> ncol(mat) 
+    # in order for this to be efficient.
+    ytQQty <- crossprod(Qty)
+    QtQ <- crossprod(Q)
+
+    # Using this addition order to minimize numeric instability.
+    (crossprod(mat) - ytQQty) + (crossprod(Qty, QtQ %*% Qty) - ytQQty)
+}
+
+#' @export
+#' @importFrom Matrix crossprod t
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("crossprod", c("ResidualMatrix", "ANY"), function(x, y) {
+    x_seed <- seed(x)
+    if (is_transposed(x_seed)) {
+        out <- t(.leftcross_ResidualMatrix(y, x_seed))
+    } else {
+        out <- .rightcross_ResidualMatrix(x_seed, y)
+    }
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix crossprod
+.rightcross_ResidualMatrix <- function(x_seed, y) {
+    # Order of operations chosen to minimize size of intermediates,
+    # under the assumption that ncol(y) is very small.
+    crossprod(get_matrix2(x_seed), y) - crossprod(get_Qty(x_seed), crossprod(get_Q(x_seed), y))
+}
+
+#' @export
+#' @importFrom Matrix crossprod t
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("crossprod", c("ANY", "ResidualMatrix"), function(x, y) {
+    y_seed <- seed(y)
+    if (is_transposed(y_seed)) {
+        out <- t(.rightcross_ResidualMatrix(y_seed, x))
+    } else {
+        out <- .leftcross_ResidualMatrix(x, y_seed)
+    }
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix crossprod
+.leftcross_ResidualMatrix <- function(x, y_seed) {
+    # Order of operations chosen to minimize size of intermediates,
+    # under the assumption that ncol(x) is very small.
+    crossprod(x, get_matrix2(y_seed)) - crossprod(x, get_Q(y_seed)) %*% get_Qty(y_seed)
+}
+
+###################################
+# Transposed crossproduct.
+
+#' @export
+#' @importFrom Matrix tcrossprod t
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("tcrossprod", c("ResidualMatrix", "missing"), function(x, y) {
+    x_seed <- seed(x)
+    if (is_transposed(x_seed)) {
+        out <- t(.crossprod_ResidualMatrix(x_seed))
+    } else {
+        out <- .tcp_ResidualMatrix(x_seed)
+    }
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix tcrossprod 
+.tcp_ResidualMatrix <- function(x_seed) {
+    mat <- get_matrix2(x_seed)
+    Qty <- get_Qty(x_seed)
+    Q <- get_Q(x_seed)
+
+    # We assume that ncol(mat) >> nrow(mat) for this to be efficient.
+    # We also try to avoid constructing QQt under the assumption that 
+    # nrow(Q) >> ncol(Q) for Q derived from a full-rank design matrix.
+    QQtyyt<- Q %*% tcrossprod(Qty, mat)
+    QQtyytQQt <- tcrossprod(QQtyyt %*% Q, Q)
+
+    # Using this addition order to minimize numeric instability.
+    (tcrossprod(mat) - QQtyyt) + (QQtyytQQt - t(QQtyyt))
+}
+
+#' @export
+#' @importFrom Matrix tcrossprod
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("tcrossprod", c("ResidualMatrix", "ANY"), function(x, y) {
+    x_seed <- seed(x)
+    if (is_transposed(x_seed)) {
+        out <- t(.lefttcp_ResidualMatrix(y, x_seed))
+    } else {
+        out <- .righttcp_ResidualMatrix(x_seed, y)
+    }
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix tcrossprod
+.righttcp_ResidualMatrix <- function(x_seed, y) {
+    # Order of operations chosen to minimize size of intermediates,
+    # assuming that nrow(y) is very small.
+    tcrossprod(get_matrix2(x_seed), y) - get_Q(x_seed) %*% tcrossprod(get_Qty(x_seed), y)
+}
+
+#' @export
+#' @importFrom Matrix tcrossprod
+#' @importFrom DelayedArray DelayedArray seed
+setMethod("tcrossprod", c("ANY", "ResidualMatrix"), function(x, y) {
+    y_seed <- seed(y)
+    if (is_transposed(y_seed)) {
+        out <- t(.righttcp_ResidualMatrix(y_seed, x))
+    } else {
+        out <- .lefttcp_ResidualMatrix(x, y_seed)
+    }
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix tcrossprod
+.lefttcp_ResidualMatrix <- function(x, y_seed) {
+    # Order of operations chosen to minimize size of intermediates.
+    # assuming that nrow(x) is very small.
+    tcrossprod(x, get_matrix2(y_seed)) - tcrossprod(tcrossprod(x, get_Qty(y_seed)), get_Q(y_seed))
+}
