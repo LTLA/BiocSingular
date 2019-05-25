@@ -30,3 +30,13 @@ setClass("LowRankMatrix",
     contains="DelayedMatrix",
     representation(seed="LowRankMatrixSeed")
 )
+
+#' @export
+setClass("ResidualMatrixSeed", slots=c(.matrix="ANY", QR="ANY", Q="matrix", transposed="logical"))
+
+#' @export
+#' @importClassesFrom DelayedArray DelayedMatrix
+setClass("ResidualMatrix",
+    contains="DelayedMatrix",
+    representation(seed="ResidualMatrixSeed")
+)
