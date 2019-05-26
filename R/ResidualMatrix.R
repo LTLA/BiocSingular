@@ -298,6 +298,12 @@ setMethod("%*%", c("ResidualMatrix", "ResidualMatrix"), function(x, y) {
     DelayedArray(out)
 })
 
+# Unlike DeferredMatrix, we are happy to delegate to the left/right %*% 
+# for dual ResidualMatrix multiplication. This is because there are no
+# operations that will collapse a ResidualMatrix instance to a DelayedMatrix
+# prior to multiplication. Thus, we do not have to worry about writing
+# specialized methods to avoid the overhead of DelayedMatrix multiplication.
+
 ###################################
 # Crossproduct.
 

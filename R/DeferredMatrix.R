@@ -266,14 +266,25 @@ setMethod("rowMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) ro
 # This allows centering and scaling to be applied *after* multiplication.
 #
 # Here are some ground rules for how these functions must work:
+#
 #  - NO arithmetic operations shall be applied to a DeferredMatrix.
 #    This includes nested DeferredMatrices that are present in '.matrix'.
+#    Such operations collapses the DeferredMatrix to a DelayedMatrix, 
+#    resulting in slow block processing during multiplication.
+# 
 #  - NO addition/subtraction operations shall be applied to '.matrix'.
-#    This is necessary to avoid loss of sparsity.
+#    This is necessary to avoid loss of sparsity for sparse '.matrix',
+#    as well as to avoid block processing for DeferredMatrix '.matrix'.
+# 
 #  - NO division/multiplication operations should be applied to '.matrix'.
+#    This is largely a consequence of the first point above.
 #    Exceptions are only allowed when this is unavoidable, e.g., in '.internal_tcrossprod'.
-#  - NO calling of %*% or crossprod to an input DeferredMatrix.
-#    Multiplication should be applied to '.matrix', to avoid infinite S4 recursion.
+#
+#  - NO calling of %*% or (t)crossprod on a DeferredMatrix of the same nesting depth as an input DeferredMatrix.
+#    Internal multiplication should always be applied to '.matrix', to avoid infinite S4 recursion.
+#    Each method call should strip away one nesting level, i.e., operate on the seed.
+#    Exceptions are allowed for dual DeferredMatrix multiplication,
+#    where one argument is allowed to be of the same depth.
 
 #' @export
 #' @importFrom Matrix t
@@ -370,10 +381,10 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 ###################################
 # DefMat %*% DefMat utilities.
 
-# We do not implement DefMat %*% DefMat in terms of left/right %*%,
-# as those assume that either 'x' or 'y' are small and can be modified cheaply.
-# However, any such modification would collapse a DefMat into a DelayedMatrix
-# and trigger block processing during later multiplication steps.
+# We do not implement DefMat %*% DefMat in terms of left/right %*%.
+# This would cause scaling to be applied on one of the DefMats,
+# collapsing it into a DelayedMatrix. Subsequent multiplication 
+# would use block processing, which would be too slow.
 
 #' @importFrom Matrix drop rowSums
 .multiply_u2u <- function(x_seed, y_seed) 
