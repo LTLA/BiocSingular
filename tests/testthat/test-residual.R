@@ -218,7 +218,6 @@ test_that("ResidualMatrix left multiplication works as expected", {
     }
 })
 
-asdasd
 test_that("ResidualMatrix dual multiplication works as expected", {
     possibles1 <- spawn_scenarios(10, 20)
     for (test1 in possibles1) {
