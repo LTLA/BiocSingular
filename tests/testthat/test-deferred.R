@@ -313,9 +313,19 @@ test_that("DeferredMatrix crossproduct from left works as expected", {
 })
 
 test_that("DeferredMatrix dual crossprod works as expected", {
-    y <- matrix(rnorm(400), ncol=20)
-    bs.y <- DeferredMatrix(y, NULL, NULL)
-    expect_identical(crossprod(bs.y, bs.y), crossprod(bs.y))
+    possibles1 <- spawn_scenarios(20, 50)
+    for (test1 in possibles1) {
+        possibles2 <- spawn_scenarios(20, 15)
+        for (test2 in possibles2) {
+
+            expect_equal_product(crossprod(test1$def, test2$def), crossprod(test1$ref, test2$ref))
+
+            # Checking that zero-dimension behaviour is as expected.
+            expect_equal_product(crossprod(test1$def[,0], test2$def), crossprod(test1$ref[,0], test2$ref))
+            expect_equal_product(crossprod(test1$def, test2$def[,0]), crossprod(test1$ref, test2$ref[,0]))
+            expect_equal_product(crossprod(test1$def[0,], test2$def[0,]), crossprod(test1$ref[0,], test2$ref[0,]))
+        }
+    }
 })
 
 ##########################
@@ -371,9 +381,19 @@ test_that("DeferredMatrix tcrossproduct from left works as expected", {
 })
 
 test_that("DeferredMatrix dual tcrossprod works as expected", {
-    y <- matrix(rnorm(400), ncol=20)
-    bs.y <- DeferredMatrix(y, NULL, NULL)
-    expect_identical(tcrossprod(bs.y, bs.y), tcrossprod(bs.y))
+    possibles1 <- spawn_scenarios(20, 50)
+    for (test1 in possibles1) {
+        possibles2 <- spawn_scenarios(25, 50)
+        for (test2 in possibles2) {
+
+            expect_equal_product(tcrossprod(test1$def, test2$def), tcrossprod(test1$ref, test2$ref))
+
+            # Checking that zero-dimension behaviour is as expected.
+            expect_equal_product(tcrossprod(test1$def[0,], test2$def), tcrossprod(test1$ref[0,], test2$ref))
+            expect_equal_product(tcrossprod(test1$def, test2$def[0,]), tcrossprod(test1$ref, test2$ref[0,]))
+            expect_equal_product(tcrossprod(test1$def[,0], test2$def[,0]), tcrossprod(test1$ref[,0], test2$ref[,0]))
+        }
+    }
 })
 
 ##########################
