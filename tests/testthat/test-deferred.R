@@ -1,5 +1,5 @@
 # Tests the DeferredMatrix implementation.
-# library(testthat); library(BiocSingular); source("test-deferred.R")
+# library(testthat); library(BiocSingular); source("setup.R"); source("test-deferred.R")
 
 scale_and_center <- function(y, ref, code) {
     center <- scale <- NULL
@@ -198,16 +198,6 @@ spawn_extra_scenarios <- function(NR=50, NC=20) {
             REALIZER=function(x) x@x
         )
     )
-}
-
-expect_equal_product <- function(x, y) {
-    expect_s4_class(x, "DelayedMatrix")
-    X <- as.matrix(x)
-
-    # standardize NULL dimnames.
-    if (all(lengths(dimnames(X))==0L)) dimnames(X) <- NULL 
-    if (all(lengths(dimnames(y))==0L)) dimnames(y) <- NULL 
-    expect_equal(X, y)
 }
 
 ##########################
