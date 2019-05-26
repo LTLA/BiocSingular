@@ -1,12 +1,31 @@
 # Tests the ResidualMatrix implementation.
 # library(testthat); library(BiocSingular); source("setup.R"); source("test-residual.R")
 
+generate_design <- function(nobs, code) {
+    if (code==1L) {
+        design <- NULL
+    } else if (code==2L) {
+        cov <- rnorm(nobs)
+        design <- model.matrix(~cov)
+    } else if (code==3L) {
+        g <- factor(rep(1:3, length.out=nobs))
+        design <- model.matrix(~0 + g)
+    } else if (code==4L) {
+        cov <- rnorm(nobs)
+        g <- factor(rep(1:2, length.out=nobs))
+        design <- model.matrix(~0 + g + cov)
+    } else if (code==5L) {
+        design <- cbind(rnorm(nobs))
+    }
+    design
+}
+
 spawn_scenarios_basic <- function(NR, NC, CREATOR, REALIZER) {
     output <- vector("list", 8)
     counter <- 1L
 
     for (trans in c(FALSE, TRUE)) {
-        for (it in 1:4) {
+        for (it in 1:5) {
             if (trans) {
                 # Ensure output matrix has NR rows and NC columns after t().
                 y <- CREATOR(NC, NR)
@@ -16,21 +35,7 @@ spawn_scenarios_basic <- function(NR, NC, CREATOR, REALIZER) {
             ref <- REALIZER(y)
 
             # Run through a host of different design matrices.
-            if (it==1L) {
-                design <- NULL
-            } else if (it==2L) {
-                cov <- rnorm(nrow(y))
-                design <- model.matrix(~cov)
-            } else if (it==3L) {
-                g <- factor(rep(1:3, length.out=nrow(y)))
-                design <- model.matrix(~0 + g)
-            } else if (it==4L) {
-                cov <- rnorm(nrow(y))
-                g <- factor(rep(1:2, length.out=nrow(y)))
-                design <- model.matrix(~0 + g + cov)
-            } else if (it==5L) {
-                design <- cbind(rnorm(nrow(y)))
-            }
+            design <- generate_design(nrow(y), it)
 
             res <- ResidualMatrix(y, design)
             if (is.null(design)) {
@@ -129,7 +134,7 @@ test_that("ResidualMatrix subsetting works as expected", {
         expect_equal_and_resmat(test$res[i,], test$ref[i,])
         expect_equal_and_resmat(test$res[,j], test$ref[,j])
         expect_equal_and_resmat(test$res[i,j], test$ref[i,j])
-        
+
         # Works with zero dimensions.
         expect_equal_and_resmat(test$res[0,], test$ref[0,])
         expect_equal_and_resmat(test$res[,0], test$ref[,0])
@@ -152,6 +157,21 @@ test_that("ResidualMatrix subsetting works as expected", {
         colnames(test$ref) <- spawn_names
         ch <- sample(spawn_names)
         expect_equal_and_resmat(test$res[,ch], test$ref[,ch])
+    }
+})
+
+set.seed(1000012)
+test_that("ResidualMatrix centering is preserved or lost correctly", {
+    NR <- 10
+    NC <- 15
+    for (it in 1:4) {
+        design <- generate_design(NR, it)
+        y <- ResidualMatrix(matrix(rnorm(NR*NC), ncol=NC), design)
+
+        expect_true(BiocSingular:::is_centered(DelayedArray::seed(y)))
+        expect_false(BiocSingular:::is_centered(DelayedArray::seed(y[1:5,])))
+        expect_true(BiocSingular:::is_centered(DelayedArray::seed(y[,1:5])))
+        expect_true(BiocSingular:::is_centered(DelayedArray::seed(t(y))))
     }
 })
 
