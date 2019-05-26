@@ -9,16 +9,21 @@
 #' @export
 #' @importFrom methods new is
 #' @importFrom Matrix crossprod
-ResidualMatrixSeed <- function(x, design=matrix(1, ncol(x), 1)) {
+ResidualMatrixSeed <- function(x, design=NULL) {
     if (missing(x)) {
         x <- matrix(0, 0, 0)
     } else if (is(x, "ResidualMatrixSeed")) {
         return(x)
     } 
 
+    if (is.null(design)) {
+        design <- matrix(1, ncol(x), 1)
+    }
+
     QR <- qr(design)
-    Q <- qr.Q(QR)
-    new("ResidualMatrixSeed", .matrix=x, Q=Q, Qty=crossprod(Q, x), transposed=FALSE)
+    Q <- as.matrix(qr.Q(QR))
+    Qty <- as.matrix(crossprod(Q, x))
+    new("ResidualMatrixSeed", .matrix=x, Q=Q, Qty=Qty, transposed=FALSE)
 }
 
 #' @importFrom S4Vectors setValidity2
@@ -100,7 +105,7 @@ setMethod("extract_array", "ResidualMatrixSeed", function(x, index) {
     if (was_transposed) {
         resid <- t(resid)
     }
-    resid
+    as.matrix(resid)
 })
 
 ###################################
@@ -140,7 +145,7 @@ rename_ResidualMatrixSeed <- function(x, value) {
 
 #' @export
 #' @importFrom DelayedArray DelayedArray
-ResidualMatrix <- function(x, design) {
+ResidualMatrix <- function(x, design=NULL) {
     DelayedArray(ResidualMatrixSeed(x, design))
 }
 
