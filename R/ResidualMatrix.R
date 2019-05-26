@@ -17,7 +17,9 @@ ResidualMatrixSeed <- function(x, design=NULL) {
     } 
 
     if (is.null(design)) {
-        design <- matrix(1, ncol(x), 1)
+        design <- matrix(1, nrow(x), 1)
+    } else if (nrow(design)!=nrow(x)) {
+        stop("'nrow(x)' and 'nrow(design)' should be equal")
     }
 
     QR <- qr(design)
@@ -129,12 +131,18 @@ subset_ResidualMatrixSeed <- function(x, i, j) {
     centered <- is_centered(x)
 
     if (!is.null(i)) {
+        if (is.character(i)) {
+            i <- match(i, rownames(mat))
+        }
         mat <- mat[i,,drop=FALSE]
         Q <- Q[i,,drop=FALSE]
         centered <- FALSE # not guaranteed to be centered any more upon row subsetting.
     }
 
     if (!is.null(j)) {
+        if (is.character(j)) {
+            j <- match(j, colnames(mat))
+        }
         mat <- mat[,j,drop=FALSE]
         Qty <- Qty[,j,drop=FALSE]
     }
@@ -148,6 +156,9 @@ transpose_ResidualMatrixSeed <- function(x) {
 
 rename_ResidualMatrixSeed <- function(x, value) {
     x2 <- get_matrix2(x)
+    if (is_transposed(x)) {
+        value <- rev(value)
+    }
     dimnames(x2) <- value
     initialize(x, .matrix=x2)
 }
@@ -201,9 +212,14 @@ setMethod("[", "ResidualMatrix", function(x, i, j, ..., drop=TRUE) {
 
     rseed <- subset_ResidualMatrixSeed(rseed, i, j)
     if (was_transposed) {
-        rseed <- transposedResidualMatrixSeed(rseed)
+        rseed <- transpose_ResidualMatrixSeed(rseed)
     }
-    DelayedArray(rseed)
+
+    out <- DelayedArray(rseed)
+    if (drop && any(dim(out)==1L)) {
+        return(drop(out))
+    }
+    out
 })
 
 ###################################
