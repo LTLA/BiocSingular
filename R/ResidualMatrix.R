@@ -468,6 +468,10 @@ setMethod("tcrossprod", c("ResidualMatrix", "missing"), function(x, y) {
 #' @importFrom Matrix tcrossprod t
 #' @importFrom DelayedArray DelayedArray seed
 setMethod("tcrossprod", c("ResidualMatrix", "ANY"), function(x, y) {
+    if (is.null(dim(y))) { # for consistency with base::tcrossprod.
+        stop("non-conformable arguments")
+    }
+
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
         out <- t(.leftmult_ResidualMatrix(y, x_seed))
