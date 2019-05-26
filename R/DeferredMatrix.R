@@ -510,12 +510,14 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 # Considering the problem of S_x(X' - C_x') (Y - C_y)S_y
 {
     # C mputing X' Y 
-    result <- as.matrix(crossprod(get_matrix2(x_seed), get_matrix2(y_seed)))
+    x0 <- get_matrix2(x_seed)
+    y0 <- get_matrix2(y_seed)
+    result <- as.matrix(crossprod(x0, y0))
 
     # Computing C_x' Y, and subtracting it from 'result'.
     if (use_center(x_seed)) {
         x.center <- get_center(x_seed)
-        component2 <- outer(x.center, colSums(get_matrix2(y_seed)))
+        component2 <- outer(x.center, colSums(y0))
         result <- result - component2
     }
 
@@ -523,14 +525,14 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     if (use_center(x_seed) && use_center(y_seed)) {
         x.center <- get_center(x_seed)
         y.center <- get_center(y_seed)
-        component4 <- outer(x.center, y.center) * nrow(y_seed)
+        component4 <- outer(x.center, y.center) * nrow(y0)
         result <- result + component4
     }
 
     # Computing X' C_y, and subtracting it from 'result'.
     # This is done last to avoid subtracting large values.
     if (use_center(y_seed)) {
-        component3 <- outer(colSums(get_matrix2(x_seed)), get_center(y_seed))
+        component3 <- outer(colSums(x0), get_center(y_seed))
         result <- result - component3
     }
 
