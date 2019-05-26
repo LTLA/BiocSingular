@@ -99,7 +99,6 @@ test_that("DeferredMatrix utility functions work as expected", {
         expect_identical(spawn_names, colnames(test$def))
         expect_s4_class(test$def, "DeferredMatrix") # still a DefMat!
     }
-
 })
 
 set.seed(10000101)
@@ -283,7 +282,7 @@ test_that("DeferredMatrix lonely crossproduct works as expected", {
     }
 })
 
-test_that("DeferredMatrix left crossproduct works as expected", {
+test_that("DeferredMatrix crossproduct from right works as expected", {
     possibles <- spawn_extra_scenarios(60, 50)
     for (test in possibles) {
         ref.y <- test$ref
@@ -303,7 +302,7 @@ test_that("DeferredMatrix left crossproduct works as expected", {
     }
 })
 
-test_that("DeferredMatrix right crossproduct works as expected", {
+test_that("DeferredMatrix crossproduct from left works as expected", {
     possibles <- spawn_extra_scenarios(40, 100)
     for (test in possibles) {
         ref.y <- test$ref
@@ -340,7 +339,7 @@ test_that("DeferredMatrix lonely tcrossproduct works as expected", {
     }
 })
 
-test_that("DeferredMatrix left tcrossproduct works as expected", {
+test_that("DeferredMatrix tcrossproduct from right works as expected", {
     possibles <- spawn_extra_scenarios(60, 70)
     for (test in possibles) {
         ref.y <- test$ref
@@ -361,7 +360,7 @@ test_that("DeferredMatrix left tcrossproduct works as expected", {
     }
 })
 
-test_that("DeferredMatrix right tcrossproduct works as expected", {
+test_that("DeferredMatrix tcrossproduct from left works as expected", {
     possibles <- spawn_extra_scenarios(80, 50)
     for (test in possibles) {
         ref.y <- test$ref

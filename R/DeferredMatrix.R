@@ -272,6 +272,8 @@ setMethod("rowMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) ro
 #    This is necessary to avoid loss of sparsity.
 #  - NO division/multiplication operations should be applied to '.matrix'.
 #    Exceptions are only allowed when this is unavoidable, e.g., in '.internal_tcrossprod'.
+#  - NO calling of %*% or crossprod to an input DeferredMatrix.
+#    Multiplication should be applied to '.matrix', to avoid infinite S4 recursion.
 
 #' @export
 #' @importFrom Matrix t
@@ -279,9 +281,14 @@ setMethod("rowMeans", "DeferredMatrix", function(x, na.rm = FALSE, dims = 1L) ro
 setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
-        return(t(t(y) %*% t(x)))    
+        out <- t(.leftmult_DeferredMatrix(t(y), x_seed))
+    } else {
+        out <- .rightmult_DeferredMatrix(x_seed, y)
     }
+    DelayedArray(out)
+})
 
+.rightmult_DeferredMatrix <- function(x_seed, y) {
     if (use_scale(x_seed)) {
         y <- y / get_scale(x_seed)
     }
@@ -292,19 +299,29 @@ setMethod("%*%", c("DeferredMatrix", "ANY"), function(x, y) {
         out <- sweep(out, 2, as.numeric(get_center(x_seed) %*% y), "-", check.margin=FALSE)
     }
 
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
-#' @importFrom Matrix t rowSums
+#' @importFrom Matrix t 
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
     y_seed <- seed(y)
     if (is_transposed(y_seed)) {
-        if (!is.null(dim(x))) x <- t(x) # as vectors don't quite behave as 1-column matrices here.
-        return(t(t(y) %*% x))    
+        if (!is.null(dim(x))) {
+            # Vectors don't quite behave as 1-column matrices here.
+            # so we need to be a bit more careful.
+            x <- t(x) 
+        }
+        out <- t(.rightmult_DeferredMatrix(y_seed, x))
+    } else {
+        out <- .leftmult_DeferredMatrix(x, y_seed)
     }
+    DelayedArray(out)
+})
 
+#' @importFrom Matrix rowSums
+.leftmult_DeferredMatrix <- function(x, y_seed) { 
     out <- as.matrix(x %*% get_matrix2(y_seed))
 
     if (use_center(y_seed)) {
@@ -319,36 +336,44 @@ setMethod("%*%", c("ANY", "DeferredMatrix"), function(x, y) {
         out <- sweep(out, 2, get_scale(y_seed), "/", check.margin=FALSE)
     }
 
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
-#' @importFrom Matrix t
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
     x_seed <- seed(x)
     y_seed <- seed(y)
+    res <- .dual_mult_dispatcher(x_seed, y_seed, is_transposed(x_seed), is_transposed(y_seed))
+    DelayedArray(res)
+})
 
-    if (!is_transposed(x_seed)) {
-        if (!is_transposed(y_seed)) {
+#' @importFrom Matrix t
+.dual_mult_dispatcher <- function(x_seed, y_seed, x_trans, y_trans) {
+    if (!x_trans) {
+        if (!y_trans) {
             res <- .multiply_u2u(x_seed, y_seed)
         } else {
             res <- .multiply_u2t(x_seed, y_seed)
         }
     } else {
-        if (!is_transposed(y_seed)) {
+        if (!y_trans) {
             res <- .multiply_t2u(x_seed, y_seed)
         } else {
             res <- .multiply_u2u(y_seed, x_seed)
             res <- t(res)
         }
     }
-
-    DelayedArray(res)
-})
+    res
+}
 
 ###################################
 # DefMat %*% DefMat utilities.
+
+# We do not implement DefMat %*% DefMat in terms of left/right %*%,
+# as those assume that either 'x' or 'y' are small and can be modified cheaply.
+# However, any such modification would collapse a DefMat into a DelayedMatrix
+# and trigger block processing during later multiplication steps.
 
 #' @importFrom Matrix drop rowSums
 .multiply_u2u <- function(x_seed, y_seed) 
@@ -511,15 +536,27 @@ setMethod("%*%", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
 ###################################
 # Cross-product. 
 
+# Technically, we could implement this in terms of '%*%',
+# but we use specializations to exploit native crossprod() for '.matrix',
+# which is probably more efficient.
+
 #' @export
-#' @importFrom Matrix crossprod tcrossprod colSums
+#' @importFrom Matrix crossprod
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
-        return(tcrossprod(t(x)))
+        # No need to t(), the output is symmetric anyway. 
+        out <- .tcp_DeferredMatrix(x_seed)
+    } else {
+        out <- .cross_DeferredMatrix(x_seed)
     }
 
+    DelayedArray(out)
+})
+
+#' @importFrom Matrix crossprod colSums
+.cross_DeferredMatrix <- function(x_seed) {
     x0 <- get_matrix2(x_seed)
     out <- as.matrix(crossprod(x0))
 
@@ -537,19 +574,24 @@ setMethod("crossprod", c("DeferredMatrix", "missing"), function(x, y) {
         scaling <- get_scale(x_seed)
         out <- sweep(out / scaling, 2, scaling, "/", check.margin=FALSE)
     }
-
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
-#' @importFrom Matrix crossprod colSums t
+#' @importFrom Matrix crossprod
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
-        return(t(x) %*% y)
+        out <- .rightmult_DeferredMatrix(x_seed, y)
+    } else {
+        out <- .rightcross_DeferredMatrix(x_seed, y)
     }
+    DelayedArray(out)
+})
 
+#' @importFrom Matrix crossprod colSums
+.rightcross_DeferredMatrix <- function(x_seed, y) {
     out <- as.matrix(crossprod(get_matrix2(x_seed), y))
 
     if (use_center(x_seed)) {
@@ -564,18 +606,24 @@ setMethod("crossprod", c("DeferredMatrix", "ANY"), function(x, y) {
         out <- out / get_scale(x_seed)
     }
 
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
-#' @importFrom Matrix crossprod t
+#' @importFrom Matrix crossprod
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     y_seed <- seed(y)
     if (is_transposed(y_seed)) {
-        return(t(t(y) %*% x))
+        out <- t(.rightmult_DeferredMatrix(y_seed, x))
+    } else {
+        out <- .leftcross_DeferredMatrix(x, y_seed)
     }
+    DelayedArray(out)
+})
 
+#' @importFrom Matrix crossprod colSums
+.leftcross_DeferredMatrix <- function(x, y_seed) {
     out <- as.matrix(crossprod(x, get_matrix2(y_seed)))
 
     if (use_center(y_seed)) {
@@ -590,26 +638,41 @@ setMethod("crossprod", c("ANY", "DeferredMatrix"), function(x, y) {
         out <- sweep(out, 2, get_scale(y_seed), "/", check.margin=FALSE)
     }
 
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
+#' @importFrom Matrix crossprod
+#' @importFrom DelayedArray DelayedArray seed
 setMethod("crossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
-    t(x) %*% y
+    x_seed <- seed(x)
+    y_seed <- seed(y)
+    res <- .dual_mult_dispatcher(x_seed, y_seed, !is_transposed(x_seed), is_transposed(y_seed))
+    DelayedArray(res)
 })
 
 ###################################
 # Transposed cross-product. 
 
+# Technically, we could implement this in terms of '%*%',
+# but we use specializations to exploit native tcrossprod() for '.matrix',
+# which is probably more efficient.
+
 #' @export
-#' @importFrom Matrix tcrossprod t
+#' @importFrom Matrix tcrossprod
 #' @importFrom DelayedArray seed DelayedArray
 setMethod("tcrossprod", c("DeferredMatrix", "missing"), function(x, y) {
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
-        return(crossprod(t(x)))
+        out <- .cross_DeferredMatrix(x_seed)
+    } else {
+        out <- .tcp_DeferredMatrix(x_seed)
     }
+    DelayedArray(out)
+})
 
+#' @importFrom Matrix tcrossprod
+.tcp_DeferredMatrix <- function(x_seed) {
     x0 <- get_matrix2(x_seed)
 
     if (use_scale(x_seed)) {
@@ -639,8 +702,8 @@ setMethod("tcrossprod", c("DeferredMatrix", "missing"), function(x, y) {
         out <- out - as.numeric(x0 %*% extra)
     }
 
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
 #' @importFrom Matrix tcrossprod t
@@ -652,9 +715,15 @@ setMethod("tcrossprod", c("DeferredMatrix", "ANY"), function(x, y) {
 
     x_seed <- seed(x)
     if (is_transposed(x_seed)) {
-        return(t(y %*% t(x)))
+        out <- t(.leftmult_DeferredMatrix(y, x_seed))
+    } else {
+        out <- .righttcp_DeferredMatrix(x_seed, y)
     }
+    DelayedArray(out)
+})
 
+#' @importFrom Matrix tcrossprod
+.righttcp_DeferredMatrix <- function(x_seed, y) {
     if (use_scale(x_seed)) {
         # 'y' cannot be a vector anymore, due to the check above.
         y <- sweep(y, 2, get_scale(x_seed), "/", check.margin=FALSE)
@@ -666,8 +735,8 @@ setMethod("tcrossprod", c("DeferredMatrix", "ANY"), function(x, y) {
         out <- sweep(out, 2, as.numeric(tcrossprod(get_center(x_seed), y)), "-", check.margin=FALSE)
     }
 
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
 #' @importFrom Matrix tcrossprod t
@@ -675,9 +744,15 @@ setMethod("tcrossprod", c("DeferredMatrix", "ANY"), function(x, y) {
 setMethod("tcrossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     y_seed <- seed(y) 
     if (is_transposed(y_seed)) {
-        return(x %*% t(y))
+        out <- .leftmult_DeferredMatrix(x, y_seed)
+    } else {
+        out <- .lefttcp_DeferredMatrix(x, y_seed)
     }
+    DelayedArray(out)
+})
 
+#' @importFrom Matrix tcrossprod 
+.lefttcp_DeferredMatrix <- function(x, y_seed) {
     if (use_scale(y_seed)) {
         if (is.null(dim(x))) {
             x <- x / get_scale(y_seed)
@@ -691,13 +766,17 @@ setMethod("tcrossprod", c("ANY", "DeferredMatrix"), function(x, y) {
     if (use_center(y_seed)) {
         out <- out - as.numeric(x %*% get_center(y_seed))
     }
-
-    DelayedArray(out)
-})
+    out
+}
 
 #' @export
+#' @importFrom Matrix tcrossprod
+#' @importFrom DelayedArray DelayedArray seed
 setMethod("tcrossprod", c("DeferredMatrix", "DeferredMatrix"), function(x, y) {
-    x %*% t(y)
+    x_seed <- seed(x)
+    y_seed <- seed(y)
+    res <- .dual_mult_dispatcher(x_seed, y_seed, is_transposed(x_seed), !is_transposed(y_seed))
+    DelayedArray(res)
 })
 
 ###################################
