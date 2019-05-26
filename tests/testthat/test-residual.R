@@ -218,9 +218,8 @@ test_that("ResidualMatrix left multiplication works as expected", {
     }
 })
 
+asdasd
 test_that("ResidualMatrix dual multiplication works as expected", {
-    # Not using the CrippledMatrix here; some scaling of the inner matrix is unavoidable
-    # when the inner matrix is _not_ a ResidualMatrix but is being multiplied by one.
     possibles1 <- spawn_scenarios(10, 20)
     for (test1 in possibles1) {
         possibles2 <- spawn_scenarios(20, 15)
