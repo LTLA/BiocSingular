@@ -23,7 +23,13 @@ ResidualMatrixSeed <- function(x, design=NULL) {
     QR <- qr(design)
     Q <- as.matrix(qr.Q(QR))
     Qty <- as.matrix(crossprod(Q, x))
-    new("ResidualMatrixSeed", .matrix=x, Q=Q, Qty=Qty, transposed=FALSE)
+
+    # If there's an intercept, or the matrix can be formulated as having one,
+    # residuals are guaranteed to be centered - no need to re-center during PCA.
+    inter.check <- qr.resid(QR, rep(1, nrow(x)))
+    centered <- all(abs(inter.check) < 1e-8)
+
+    new("ResidualMatrixSeed", .matrix=x, Q=Q, Qty=Qty, transposed=FALSE, centered=centered)
 }
 
 #' @importFrom S4Vectors setValidity2
@@ -54,6 +60,9 @@ setValidity2("ResidualMatrixSeed", function(object) {
     if (length(is_transposed(object))!=1L) {
         msg <- c(msg, "'transposed' must be a logical scalar")
     } 
+    if (length(is_centered(object))!=1L) {
+        msg <- c(msg, "'centered' must be a logical scalar")
+    } 
 
     if (length(msg)) {
         return(msg)
@@ -74,6 +83,8 @@ setMethod("show", "ResidualMatrixSeed", function(object) {
 get_Q <- function(x) x@Q
 
 get_Qty <- function(x) x@Qty
+
+is_centered <- function(x) x@centered
 
 ###################################
 # DelayedArray support utilities. 
@@ -115,17 +126,20 @@ subset_ResidualMatrixSeed <- function(x, i, j) {
     mat <- get_matrix2(x)
     Q <- get_Q(x)
     Qty <- get_Qty(x)
+    centered <- is_centered(x)
 
     if (!is.null(i)) {
         mat <- mat[i,,drop=FALSE]
         Q <- Q[i,,drop=FALSE]
+        centered <- FALSE # not guaranteed to be centered any more upon row subsetting.
     }
+
     if (!is.null(j)) {
         mat <- mat[,j,drop=FALSE]
         Qty <- Qty[,j,drop=FALSE]
     }
 
-    initialize(x, .matrix=mat, Q=Q, Qty=Qty)
+    initialize(x, .matrix=mat, Q=Q, Qty=Qty, centered=centered)
 }
 
 transpose_ResidualMatrixSeed <- function(x) {
