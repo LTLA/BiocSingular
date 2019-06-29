@@ -37,7 +37,9 @@ bsdeferred(object)
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
     \item{fold}{Numeric scalar specifying the minimum fold-difference for cross-product calculation, see \code{?"\link{BiocSingular-options}"}.}
     \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
-    \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}.}
+    \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}. 
+    A user should not typically need to pass arguments here.
+    These are usually specified by the top-level function call (e.g., \code{rank} in \code{\link{runPCA}}).}
     \item{object}{A BiocSingularParam object.}
 }
 
