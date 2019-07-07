@@ -26,11 +26,26 @@ test_that("Random SVD works on input matrices", {
     ref <- rsvd(y, k=5, nv=5, nu=3)
     ref$d <- ref$d[1]
     expect_equal_svd(out, ref[c("d", "u", "v")])
+})
 
-    # Handles zeroes.
+set.seed(8000001)
+test_that("Random SVD handles zeroes", {
+    y <- matrix(rnorm(50000), ncol=200)
+    ref <- rsvd(y, k=5, nu=5, nv=5)
+
     out0 <- runRandomSVD(y, k=0, nv=0, nu=0)
     expect_equal(out0$d, numeric(0))
     expect_equal(out0$u, ref$u[,0])
+    expect_equal(out0$v, ref$v[,0])
+
+    out0 <- runRandomSVD(y, k=5, nv=5, nu=0)
+    expect_equal(length(out0$d), length(ref$d))
+    expect_equal(out0$u, ref$u[,0])
+    expect_equal(dim(out0$v), dim(ref$v))
+
+    out0 <- runRandomSVD(y, k=5, nv=0, nu=5)
+    expect_equal(length(out0$d), length(ref$d))
+    expect_equal(dim(out0$u), dim(ref$u))
     expect_equal(out0$v, ref$v[,0])
 })
 
