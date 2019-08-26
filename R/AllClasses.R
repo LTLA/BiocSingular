@@ -40,3 +40,10 @@ setClass("ResidualMatrix",
     contains="DelayedMatrix",
     representation(seed="ResidualMatrixSeed")
 )
+
+#' @export
+#' @importClassesFrom S4Vectors DataFrame Annotated character_OR_NULL
+setClass("LinearEmbeddingMatrix",
+    contains = "Annotated",
+    slots = c(sampleFactors = "ANY", featureLoadings = "ANY", factorData = "DataFrame")
+)
