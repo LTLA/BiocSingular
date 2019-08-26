@@ -6,6 +6,7 @@ setGeneric("runSVD", signature=c("BSPARAM"),
 )
 
 #' @export
+#' @rdname runPCA
 setGeneric("runPCA", signature=c("x"), function(x, ...) standardGeneric("runPCA"))
 
 ########################################
