@@ -92,11 +92,10 @@ Unary or binary operations will generally create a new DelayedMatrix instance co
 }
 
 \section{PCA with ResidualMatrix objects}{
-\code{runPCA(x, rank, center=TRUE, scale=FALSE, get.rotation=TRUE, get.pcs=TRUE, ...)}
-will perform a PCA on a ResidualMatrix object \code{x}.
-All other arguments are as described in \code{\link{runPCA}}.
-
-This method has the special behaviour that \code{center=TRUE} is ignored if:
+\code{runPCA(x, center=TRUE, ...)}
+will perform a PCA on a ResidualMatrix object \code{x},
+with arguments in \code{...} passed to the ANY method for \code{\link{runPCA}}.
+The \linkS4class{ResidualMatrix} method has the special behaviour that \code{center=TRUE} is ignored if:
 \itemize{
     \item \code{x} was generated using a \code{design} that can be parameterized with an intercept.
     This means that the residuals on each column of \code{x} are centered at zero already.
