@@ -4,14 +4,15 @@
 \alias{runSVD,ExactParam-method}
 \alias{runSVD,IrlbaParam-method}
 \alias{runSVD,RandomParam-method}
+\alias{runSVD,FastAutoParam-method}
 \docType{methods}
 
 \title{Run SVD}
 \description{Perform a singular value decomposition on an input matrix with a specified algorithm.}
 
 \usage{
-runSVD(x, k, nu=k, nv=k, center=FALSE, scale=FALSE, BPPARAM=SerialParam(), 
-    ..., BSPARAM=ExactParam())
+runSVD(x, k, nu=k, nv=k, center=FALSE, scale=FALSE, 
+    BPPARAM=SerialParam(), ..., BSPARAM=ExactParam())
 }
 
 \arguments{

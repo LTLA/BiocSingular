@@ -84,3 +84,9 @@ setMethod("show", "RandomParam", function(object) {
     if (length(extra.names) > 3) extra.names <- c(extra.names[seq_len(3)], "...")
     cat(sprintf("additional arguments(%i): %s\n", length(bsargs(object)), paste(extra.names, collapse=", ")))
 })
+
+#' @export
+#' @importFrom methods new
+FastAutoParam <- function(deferred=FALSE, fold=Inf) {
+    new("FastAutoParam", deferred=as.logical(deferred), fold=as.numeric(fold))
+}

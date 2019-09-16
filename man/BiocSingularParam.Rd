@@ -12,6 +12,9 @@
 \alias{RandomParam-class}
 \alias{show,RandomParam-method}
 
+\alias{FastAutoParam}
+\alias{FastAutoParam-class}
+
 \docType{class}
 \alias{show,BiocSingularParam-method}
 
@@ -27,7 +30,9 @@ ExactParam(deferred=FALSE, fold=Inf)
 IrlbaParam(deferred=FALSE, fold=Inf, extra.work=7, ...)
 
 RandomParam(deferred=FALSE, fold=Inf, ...)
-    
+
+FastAutoParam(deferred=FALSE, fold=Inf)
+
 bsfold(object)
 
 bsdeferred(object)
@@ -43,28 +48,41 @@ bsdeferred(object)
 }
 
 \details{
-The BiocSingularParam class is a virtual base class on which other parameter objects are built.
-There are 3 concrete subclasses:
+The BiocSingularParam class controls dispatch of the \code{\link{runSVD}} generic to specific algorithms for SVD.
+The BiocSingularParam class itself is virtual, with several concrete subclasses available in this package:
 \describe{
-    \item{}{\code{\link{ExactParam}}: exact SVD with \code{\link{runExactSVD}}.}
-    \item{}{\code{\link{IrlbaParam}}: approximate SVD with \pkg{irlba} via \code{\link{runIrlbaSVD}}.}
-    \item{}{\code{\link{RandomParam}}: approximate SVD with \pkg{rsvd} via \code{\link{runRandomSVD}}.}
+    \item{}{\code{ExactParam}: exact SVD with \code{\link{runExactSVD}}.}
+    \item{}{\code{IrlbaParam}: approximate SVD with \pkg{irlba} via \code{\link{runIrlbaSVD}}.}
+    \item{}{\code{RandomParam}: approximate SVD with \pkg{rsvd} via \code{\link{runRandomSVD}}.}
+    \item{}{\code{FastAutoParam}: fast approximate SVD, chosen based on the matrix representation.}
 }
-
-These objects hold parameters specifying how each algorithm should be run on an arbitrary data set.
-See the associated documentation pages for more details.
+These objects also hold parameters specifying how each algorithm should be run on an arbitrary data set.
+See the associated documentation pages for each specific SVD method for more details.
 }
 
 \section{Methods}{
+In the following code snippets, \code{x} is a BiocSingularParam object.
 \describe{
-\item{\code{show(object)}:}{Display the class of a BiocSingularParam \code{object}, and a summary of the set parameters.}
+\item{\code{show(object)}:}{Display the class of \code{object} and a summary of the set parameters.}
 \item{\code{bsfold(object)}:}{Return a numeric scalar specifying the fold-difference for cross-product calculation.}
 \item{\code{bsdeferred(object)}:}{Return a logical scalar indicating whether centering and scaling should be deferred.}
 }
 }
 
+\section{Fast automatic SVD algorithm choice}{
+When performing SVD on most matrices (ordinary matrices and classes from \pkg{Matrix}), 
+\code{\link{runSVD}} with a FastAutoParam object will dispatch to \code{\link{runIrlbaSVD}}.
+For \linkS4class{DelayedMatrix} instances, it will instead dispatch to \code{\link{runRandomSVD}}.
+This choice is based on the fact that IRLBA gives more stable results 
+but randomized SVD is appreciably faster when dealing with file-backed matrices.
+
+The exception to this rule is when the input matrix is a \linkS4class{DeferredMatrix}.
+Technically, this is a \linkS4class{DelayedMatrix}, but FastAutoParam will still dispatch to \code{\link{runIrlbaSVD}}.
+It will only dispatch to \code{\link{runRandomSVD}} if the deferred operations are being applied to another (nested) \linkS4class{DelayedMatrix} inside the \linkS4class{DeferredMatrix} object.
+}
+
 \value{
-The constructors return a BiocSingularParam subclass of the same type, containing the specified parameters.
+Each constructor returns a BiocSingularParam subclass of the same type, containing the specified parameters.
 }
 
 \seealso{

@@ -12,6 +12,9 @@ setClass("IrlbaParam", contains="BiocSingularParam", slots=c(extra.work="integer
 setClass("RandomParam", contains="BiocSingularParam", slots=c(args="list"))
 
 #' @export
+setClass("FastAutoParam", contains="BiocSingularParam")
+
+#' @export
 setClass("DeferredMatrixSeed", slots=c(.matrix="ANY", center="numeric", scale="numeric", use_center="logical", use_scale="logical", transposed="logical"))
 
 #' @export
