@@ -86,18 +86,8 @@ test_that("fast automatic method dispatches correctly", {
     set.seed(300); right<- runSVD(dy, k=3, BSPARAM=RandomParam())
     expect_identical(left, right)
 
-    centers <- runif(ncol(dy))
-    set.seed(400); left <- runSVD(dy, k=3, BSPARAM=FastAutoParam(deferred=TRUE), center=centers)
-    set.seed(400); right<- runSVD(dy, k=3, BSPARAM=RandomParam(deferred=TRUE), center=centers)
-    expect_identical(left, right)
-
-    dfm <- DeferredMatrix(dy, center=centers)
-    set.seed(500); left <- runSVD(dfm, k=3, BSPARAM=FastAutoParam())
-    set.seed(500); right<- runSVD(dfm, k=3, BSPARAM=RandomParam())
-    expect_identical(left, right)
-
-    dfy <- DeferredMatrix(y, center=centers)
-    set.seed(600); left <- runSVD(dfy, k=3, BSPARAM=FastAutoParam())
-    set.seed(600); right<- runSVD(dfy, k=3, BSPARAM=IrlbaParam())
+    dfm <- DeferredMatrix(y)
+    set.seed(400); left <- runSVD(dfm, k=3, BSPARAM=FastAutoParam())
+    set.seed(400); right<- runSVD(dfm, k=3, BSPARAM=IrlbaParam())
     expect_identical(left, right)
 })

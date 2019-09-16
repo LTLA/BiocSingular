@@ -64,21 +64,19 @@ See the associated documentation pages for each specific SVD method for more det
 In the following code snippets, \code{x} is a BiocSingularParam object.
 \describe{
 \item{\code{show(object)}:}{Display the class of \code{object} and a summary of the set parameters.}
-\item{\code{bsfold(object)}:}{Return a numeric scalar specifying the fold-difference for cross-product calculation.}
-\item{\code{bsdeferred(object)}:}{Return a logical scalar indicating whether centering and scaling should be deferred.}
+\item{\code{bsfold(object)}:}{Return a numeric scalar specifying the fold-difference for cross-product calculation,
+see \dQuote{Computing the cross-product} in \code{?"\link{BiocSingular-options}"}.}
+\item{\code{bsdeferred(object)}:}{Return a logical scalar indicating whether centering and scaling should be deferred.
+see \dQuote{Deferred centering and scaling} in \code{?"\link{BiocSingular-options}"}.}
 }
 }
 
-\section{Fast automatic SVD algorithm choice}{
-When performing SVD on most matrices (ordinary matrices and classes from \pkg{Matrix}), 
-\code{\link{runSVD}} with a FastAutoParam object will dispatch to \code{\link{runIrlbaSVD}}.
-For \linkS4class{DelayedMatrix} instances, it will instead dispatch to \code{\link{runRandomSVD}}.
-This choice is based on the fact that IRLBA gives more stable results 
-but randomized SVD is appreciably faster when dealing with file-backed matrices.
-
-The exception to this rule is when the input matrix is a \linkS4class{DeferredMatrix}.
-Technically, this is a \linkS4class{DelayedMatrix}, but FastAutoParam will still dispatch to \code{\link{runIrlbaSVD}}.
-It will only dispatch to \code{\link{runRandomSVD}} if the deferred operations are being applied to another (nested) \linkS4class{DelayedMatrix} inside the \linkS4class{DeferredMatrix} object.
+\section{Automatically choosing a fast SVD algorithm}{
+Running \code{\link{runSVD}} with a FastAutoParam object will dispatch to \code{\link{runIrlbaSVD}} for most matrices.
+This is the default choice as IRLBA is fast and the approximation is highly similar to the exact SVD result. 
+The exception is that of instances of the \linkS4class{DelayedMatrix} class, or any subclass that lacks its own specialized \code{\%*\%} method.
+In such cases, \code{\link{runSVD}} with a FastAutoParam will dispatch to \code{\link{runRandomSVD}}, which minimizes the number of matrix multiplication steps and the associated costly block processing.
+However, if a DelayedMatrix subclass has its own \code{\%*\%} method, it is assumed to be efficient enough to afford repeated multiplications in \code{\link{runIrlbaSVD}}.
 }
 
 \value{

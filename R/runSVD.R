@@ -39,7 +39,7 @@ setMethod("runSVD", "RandomParam", .FUN_GENERATOR(runRandomSVD,
 ))
 
 #' @export
-#' @importFrom methods is
+#' @importFrom methods is hasMethod
 #' @importClassesFrom DelayedArray DelayedMatrix
 #' @importFrom DelayedArray seed
 setMethod("runSVD", "FastAutoParam", function(x, k, nu=k, nv=k, center=FALSE, scale=FALSE, 
@@ -47,12 +47,7 @@ setMethod("runSVD", "FastAutoParam", function(x, k, nu=k, nv=k, center=FALSE, sc
 {
     BSPARAMFUN <- IrlbaParam
     if (is(x, "DelayedMatrix")) {
-        if (is(x, "DeferredMatrix")) {
-            .matrix <- get_matrix2(seed(x))
-            if (is(.matrix, "DelayedMatrix")) {
-                BSPARAMFUN <- RandomParam
-            }
-        } else {
+        if (class(x)=="DelayedMatrix" || !hasMethod("%*%", class(x))) { 
             BSPARAMFUN <- RandomParam
         }
     }
