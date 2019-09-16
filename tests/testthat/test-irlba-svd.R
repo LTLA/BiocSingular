@@ -146,17 +146,17 @@ test_that("IRLBA centering and scaling interact happily with other modes", {
 
     # Works with the alternative multiplication.
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
+    out <- runIrlbaSVD(y, k=6, center=center, scale=scale, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
     set.seed(100)
-    ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
+    ref <- irlba(ry, nu=6, nv=6, tol=1e-8)
     expect_equal_svd(out, ref, tol=1e-6)
 
     # Works with our deferred multiplication (which also requires parallelization,
     # in order to not just use irlba's deferred methods directly).
     set.seed(100)
-    out <- runIrlbaSVD(ry, k=5, deferred=TRUE, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
+    ref <- irlba(ry, nu=7, nv=7, tol=1e-8)
     set.seed(100)
-    ref <- irlba(y, nv=5, center=center, scale=scale, tol=1e-8)
+    out <- runIrlbaSVD(y, k=7, center=center, scale=scale, deferred=TRUE, BPPARAM=safeBPParam(2), tol=1e-8, fold=Inf)
     expect_equal_svd(out, ref, tol=1e-6)
 })
 

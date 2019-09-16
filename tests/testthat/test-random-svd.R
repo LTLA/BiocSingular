@@ -135,16 +135,16 @@ test_that("Random SVD works with centering and scaling", {
    
     ry <- scale(y, center=center, scale=scale)
     set.seed(200)
-    ref <- rsvd(ry, k=5, nu=5, nv=5)
+    ref <- rsvd(ry, k=6, nu=6, nv=6)
     set.seed(200)
-    out <- runRandomSVD(y, k=5, center=center, scale=scale, fold=1)
+    out <- runRandomSVD(y, k=6, center=center, scale=scale, fold=1)
     expect_equal_svd(out, ref)
 
     # Works with the deferred operations. 
     set.seed(100)
-    ref <- runRandomSVD(ry, k=5)
+    ref <- runRandomSVD(ry, k=7)
     set.seed(100)
-    out <- runRandomSVD(y, k=5, center=center, scale=scale, deferred=TRUE)
+    out <- runRandomSVD(y, k=7, center=center, scale=scale, deferred=TRUE)
     expect_equal_svd(out, ref)
 })
 
