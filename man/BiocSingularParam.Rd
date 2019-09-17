@@ -20,6 +20,7 @@
 
 \alias{bsfold}
 \alias{bsdeferred}
+\alias{bsparam}
 
 \title{BiocSingularParam classes}
 \description{Classes for specifying the type of singular value decomposition (SVD) algorithm and associated parameters.}
@@ -33,9 +34,7 @@ RandomParam(deferred=FALSE, fold=Inf, ...)
 
 FastAutoParam(deferred=FALSE, fold=Inf)
 
-bsfold(object)
-
-bsdeferred(object)
+bsparam()
 }
 
 \arguments{
@@ -44,7 +43,6 @@ bsdeferred(object)
     \item{extra.work}{Integer scalar, additional dimensionality of the workspace in \code{\link{runIrlbaSVD}}.}
     \item{...}{Additional arguments to pass to \code{\link{runIrlbaSVD}} or \code{\link{runRandomSVD}}.
     This should not include any named arguments in those functions.}
-    \item{object}{A BiocSingularParam object.}
 }
 
 \details{
@@ -79,6 +77,12 @@ In such cases, \code{\link{runSVD}} with a FastAutoParam will dispatch to \code{
 However, if a DelayedMatrix subclass has its own \code{\%*\%} method, it is assumed to be efficient enough to afford repeated multiplications in \code{\link{runIrlbaSVD}}.
 }
 
+\section{Setting a session-wide default}{
+\code{bsparam()} will return a session-wide value for the BiocSingularParam object, analogous to \code{\link{bpparam}()}.
+This defaults to a FastAutoParam object but can be modified by setting the \code{"BiocSingularParam.default"} global option to any BiocSingularParam object.
+Any code that uses \code{bsparam()} will automatically use this new default without needing to explicitly pass the BiocSingularParam object to those functions.
+}
+
 \value{
 Each constructor returns a BiocSingularParam subclass of the same type, containing the specified parameters.
 }
@@ -99,4 +103,9 @@ ExactParam()
 IrlbaParam(tol=1e-8)
 
 RandomParam(q=20)
+
+# Modifying the default.
+bsparam()
+options(BiocSingularParam.default=IrlbaParam())
+bsparam()
 }
