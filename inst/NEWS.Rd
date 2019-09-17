@@ -8,6 +8,8 @@
 \item Fixed runIrlba() to avoid errors at the limit of available PCs.
 
 \item Added the FastAutoParam class to automatically choose a fast SVD depending on the matrix representation.
+
+\item Added the bsparam() function to quickly set or get a global default algorithm choice.
 }}
 
 \section{Version 1.0.0}{\itemize{
