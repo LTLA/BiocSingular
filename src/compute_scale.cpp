@@ -1,8 +1,9 @@
 #include "Rcpp.h"
 #include "beachmat/numeric_matrix.h"
 #include "beachmat/integer_matrix.h"
-#include "beachmat/utils/const_column.h"
+
 #include <cmath>
+#include <omp.h>
 
 template<class M>
 Rcpp::NumericVector compute_scale_internal(Rcpp::RObject mat, Rcpp::RObject centering) {
@@ -24,28 +25,33 @@ Rcpp::NumericVector compute_scale_internal(Rcpp::RObject mat, Rcpp::RObject cent
     }
 
     Rcpp::NumericVector output(ncols);
-    beachmat::const_column<M> col_holder(ptr.get());
+    Rcpp::NumericVector battery(nrows*omp_get_max_threads());
+    Rprintf("%i\n", omp_get_max_threads()); 
 
-    for (size_t i=0; i<ncols; ++i) {
-        col_holder.fill(i);
-        auto n=col_holder.get_n();
-        auto vals=col_holder.get_values();
+    #pragma omp parallel 
+    {
+        auto holder=battery.begin() + omp_get_thread_num() * nrows;
 
-        double& current=output[i];
-        for (size_t j=0; j<n; ++j, ++vals) {
-            double val=*vals;
-            if (do_center) {
-                val-=numeric_centers[i];
+        #pragma omp for
+        for (size_t i=0; i<ncols; ++i) {
+            #pragma omp critical
+            {
+                ptr->get_col(i, holder);
             }
-            current+=val*val;
-        }
 
-        if (do_center && col_holder.is_sparse()) { // adding the contribution of the zeroes.
-            current += (nrows - n) * (numeric_centers[i] * numeric_centers[i]);
-        }
+            double& current=output[i];
+            auto vals=holder;
+            for (size_t j=0; j<nrows; ++j, ++vals) {
+                double val=*vals;
+                if (do_center) {
+                    val-=numeric_centers[i];
+                }
+                current+=val*val;
+            }
 
-        current/=nrows-1;
-        current=std::sqrt(current);
+            current/=nrows-1;
+            current=std::sqrt(current);
+        }
     }
     
     return output;
@@ -61,4 +67,14 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
     } else {
         return compute_scale_internal<beachmat::numeric_matrix>(mat, centering);
     }
+}
+
+// [[Rcpp::export(rng=false)]]
+Rcpp::IntegerVector set_omp_threads(Rcpp::IntegerVector nthreads)
+{
+    if (nthreads.size()!=1L) {
+        Rf_error("'nthreads' must be integer(1)");
+    }
+    omp_set_num_threads(nthreads[0]);
+    return nthreads;
 }
