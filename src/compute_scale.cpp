@@ -25,18 +25,28 @@ Rcpp::NumericVector compute_scale_internal(Rcpp::RObject mat, Rcpp::RObject cent
     }
 
     Rcpp::NumericVector output(ncols);
-    Rcpp::NumericVector battery(nrows*omp_get_max_threads());
-    Rprintf("%i\n", omp_get_max_threads()); 
+
+    int nth=omp_get_max_threads();
+    Rcpp::NumericVector battery(nrows*nth);
+    Rprintf("%i\n", nth);
 
     #pragma omp parallel 
     {
         auto holder=battery.begin() + omp_get_thread_num() * nrows;
+        decltype(ptr) pptr=NULL;
 
-        #pragma omp for
+        #pragma omp critical
+        if (nth==1) {
+            pptr=std::move(ptr);
+        } else {
+            pptr=ptr->clone();
+        }
+
+        #pragma omp for schedule(static)
         for (size_t i=0; i<ncols; ++i) {
             #pragma omp critical
             {
-                ptr->get_col(i, holder);
+                pptr->get_col(i, holder);
             }
 
             double& current=output[i];
