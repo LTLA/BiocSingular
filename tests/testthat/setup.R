@@ -29,3 +29,16 @@ safeBPParam <- function(nworkers) {
         BiocParallel::MulticoreParam(nworkers)
     }
 }
+
+# Adding a test to flush out any uncontrolled parallelization.
+library(BiocParallel)
+failgen <- setRefClass("FailParam", 
+    contains="BiocParallelParam",     
+    fields=list(),
+    methods=list())
+
+FAIL <- failgen()
+# register(FAIL) # TODO: once DelayedArray's %*% fix gets in.
+
+library(DelayedArray)
+setAutoBPPARAM(FAIL)
