@@ -31,6 +31,6 @@ License: GPL-3
 LinkingTo: Rcpp, beachmat
 VignetteBuilder: knitr
 SystemRequirements: C++11
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 BugReports: https://github.com/LTLA/BiocSingular/issues
 URL: https://github.com/LTLA/BiocSingular
