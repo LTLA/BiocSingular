@@ -1,8 +1,9 @@
 #' @export
-#' @importFrom BiocParallel SerialParam bpstart bpstop bpisup bpparam register
+#' @importFrom BiocParallel SerialParam bpstart bpstop 
 #' @importFrom utils head
 #' @importClassesFrom DelayedArray DelayedMatrix
 #' @importFrom methods is
+#' @importFrom DelayedArray getAutoBPPARAM setAutoBPPARAM
 runRandomSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE, ..., fold=Inf, BPPARAM=SerialParam())
 # Wrapper for irlba(), switching to the appropriate multiplication algorithm for  
 {
@@ -18,11 +19,11 @@ runRandomSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred
     nu <- checked$nu
 
     # Setting up the parallelization environment.
-    old <- bpparam()
-    register(BPPARAM)
-    on.exit(register(old))
+    old <- getAutoBPPARAM()
+    setAutoBPPARAM(BPPARAM)
+    on.exit(setAutoBPPARAM(old))
 
-    if (!bpisup(BPPARAM)) {
+    if (!.bpisup2(BPPARAM)) {
         bpstart(BPPARAM)
         on.exit(bpstop(BPPARAM), add=TRUE)
     }
