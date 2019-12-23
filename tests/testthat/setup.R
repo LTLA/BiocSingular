@@ -38,7 +38,7 @@ failgen <- setRefClass("FailParam",
     methods=list())
 
 FAIL <- failgen()
-# register(FAIL) # TODO: once DelayedArray's %*% fix gets in.
+register(FAIL) 
 
 library(DelayedArray)
 setAutoBPPARAM(FAIL)
