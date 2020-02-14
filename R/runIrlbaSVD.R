@@ -54,7 +54,7 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=
 
         res$v <- res$v[,seq_len(nv),drop=FALSE]
         res$d <- head(res$d, k)
-        res <- standardize_output_SVD(res)
+        res <- standardize_output_SVD(res, x)
     }
 
     res

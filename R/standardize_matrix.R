@@ -51,11 +51,13 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
     list(center=center, scale=scale) 
 }
 
-standardize_output_SVD <- function(res) 
+standardize_output_SVD <- function(res, x) 
 # Provide a common standard output for all SVD functions.
 {
     res$d <- as.numeric(res$d)
     res$u <- as.matrix(res$u)
+    rownames(res$u) <- rownames(x)
     res$v <- as.matrix(res$v)
+    rownames(res$v) <- colnames(x)
     res[c("d", "u", "v")]
 }

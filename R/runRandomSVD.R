@@ -41,7 +41,7 @@ runRandomSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred
     } else {
         res <- safe_rsvd(x, k=max(nu, nv, k), nu=nu, nv=nv, ...) 
         res$d <- head(res$d, k)
-        res <- standardize_output_SVD(res)
+        res <- standardize_output_SVD(res, x)
     }
 
     res
