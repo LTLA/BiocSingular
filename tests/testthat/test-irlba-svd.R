@@ -160,6 +160,21 @@ test_that("IRLBA centering and scaling interact happily with other modes", {
     expect_equal_svd(out, ref, tol=1e-6)
 })
 
+set.seed(90041)
+test_that("irlba SVD handles named inputs", {
+    y <- matrix(rnorm(10000), ncol=50)
+    rownames(y) <- sprintf("THING_%i", seq_len(nrow(y)))
+    colnames(y) <- sprintf("STUFF_%i", seq_len(ncol(y)))
+
+    out <- runIrlbaSVD(y, k=3, fold=Inf)
+    expect_identical(rownames(out$u), rownames(y))
+    expect_identical(rownames(out$v), colnames(y))
+
+    out <- runIrlbaSVD(y, k=3, fold=1)
+    expect_identical(rownames(out$u), rownames(y))
+    expect_identical(rownames(out$v), colnames(y))
+})
+
 set.seed(9005)
 test_that("IRLBA fails gracefully with silly inputs", {
     y <- matrix(rnorm(10000), ncol=50)

@@ -25,7 +25,7 @@ runExactSVD <- function(x, k=min(dim(x)), nu=k, nv=k, center=FALSE, scale=FALSE,
     } else {
         res <- safe_svd(as.matrix(x), nu=nu, nv=nv)
         res$d <- head(res$d, k)
-        res <- standardize_output_SVD(res)
+        res <- standardize_output_SVD(res, x)
     }
 
     res

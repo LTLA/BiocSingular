@@ -108,6 +108,21 @@ test_that("exact SVD works with centering and scaling", {
     expect_equal_svd(out, ref)
 })
 
+set.seed(500041)
+test_that("exact SVD handles named inputs", {
+    y <- matrix(rnorm(10000), ncol=50)
+    rownames(y) <- sprintf("THING_%i", seq_len(nrow(y)))
+    colnames(y) <- sprintf("STUFF_%i", seq_len(ncol(y)))
+
+    out <- runExactSVD(y, fold=Inf)
+    expect_identical(rownames(out$u), rownames(y))
+    expect_identical(rownames(out$v), colnames(y))
+
+    out <- runExactSVD(y, fold=1)
+    expect_identical(rownames(out$u), rownames(y))
+    expect_identical(rownames(out$v), colnames(y))
+})
+
 set.seed(50004)
 test_that("exact SVD fails gracefully with silly inputs", {
     y <- matrix(rnorm(10000), ncol=50)

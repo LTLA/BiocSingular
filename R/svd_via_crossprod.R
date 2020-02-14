@@ -26,13 +26,14 @@ svd_via_crossprod <- function(x, k, nu=k, nv=k, FUN=svd, ...)
     }
 
     res$d <- head(res$d, k)
-	standardize_output_SVD(res)
+    standardize_output_SVD(res, x)
 }
 
 #' @importFrom BiocGenerics nrow ncol
 use_crossprod <- function(x, fold) {
     if (any(dim(x)==0L)) { # avoid problems when 'fold=Inf'.
-        return(FALSE)
+        FALSE
+    } else {
+        nrow(x) >= fold*ncol(x) || ncol(x) >= nrow(x)*fold
     }
-    return(nrow(x) >= fold*ncol(x) || ncol(x) >= nrow(x)*fold)
 }

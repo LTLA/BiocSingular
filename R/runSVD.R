@@ -47,7 +47,7 @@ setMethod("runSVD", "FastAutoParam", function(x, k, nu=k, nv=k, center=FALSE, sc
 {
     BSPARAMFUN <- IrlbaParam
     if (is(x, "DelayedMatrix")) {
-        if (class(x)=="DelayedMatrix" || !hasMethod("%*%", class(x))) { 
+        if (class(x)[1]=="DelayedMatrix" || !hasMethod("%*%", class(x))) { 
             BSPARAMFUN <- RandomParam
         }
     }
