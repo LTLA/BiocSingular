@@ -73,7 +73,7 @@ test_that("standardize_matrix works correctly", {
 })
 
 test_that("standardize_output_SVD works correctly", {
-    out <- BiocSingular:::standardize_output_SVD(list(u=1:5, d=TRUE, v=1:10))
+    out <- BiocSingular:::standardize_output_SVD(list(u=1:5, d=TRUE, v=1:10), NULL)
     expect_identical(names(out), c("d", "u", "v"))
     expect_identical(out$u, cbind(1:5))
     expect_identical(out$v, cbind(1:10))
@@ -82,9 +82,15 @@ test_that("standardize_output_SVD works correctly", {
     # Handles alternative matrix types in 'u' and 'v'.
     U <- Matrix::rsparsematrix(10, 20, 0.12)
     V <- DelayedArray::DelayedArray(matrix(runif(200), 10, 20))
-    out <- BiocSingular:::standardize_output_SVD(list(u=U, d=1:5, v=V))
+    out <- BiocSingular:::standardize_output_SVD(list(u=U, d=1:5, v=V), NULL)
     expect_identical(names(out), c("d", "u", "v"))
     expect_identical(out$u, as.matrix(U)) 
     expect_identical(out$v, as.matrix(V))
     expect_identical(out$d, as.numeric(1:5))
+
+    # Sets names, if the matrix was named.
+    mat <- matrix(0, 5, 10, dimnames=list(letters[1:5], LETTERS[1:10]))
+    out <- BiocSingular:::standardize_output_SVD(list(u=1:5, d=TRUE, v=1:10), mat)
+    expect_identical(rownames(out$u), rownames(mat))
+    expect_identical(rownames(out$v), colnames(mat))
 })

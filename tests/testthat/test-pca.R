@@ -54,3 +54,14 @@ test_that("runPCA with randomized SVD matches up to the reference implementation
     dimnames(out$x) <- NULL
     expect_equal_besides_sign(out$x, ref$x)
 })
+
+set.seed(500041)
+test_that("runPCA handles named inputs", {
+    y <- matrix(rnorm(10000), ncol=50)
+    rownames(y) <- sprintf("THING_%i", seq_len(nrow(y)))
+    colnames(y) <- sprintf("STUFF_%i", seq_len(ncol(y)))
+
+    out <- runPCA(y, rank=5)
+    expect_identical(rownames(out$x), rownames(y))
+    expect_identical(rownames(out$rotation), colnames(y))
+})
