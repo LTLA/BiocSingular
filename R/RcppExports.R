@@ -7,3 +7,7 @@ compute_scale <- function(mat, centering) {
     .Call('_BiocSingular_compute_scale', PACKAGE = 'BiocSingular', mat, centering)
 }
 
+set_omp_threads <- function(nthreads) {
+    .Call('_BiocSingular_set_omp_threads', PACKAGE = 'BiocSingular', nthreads)
+}
+

@@ -16,9 +16,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// set_omp_threads
+Rcpp::IntegerVector set_omp_threads(Rcpp::IntegerVector nthreads);
+RcppExport SEXP _BiocSingular_set_omp_threads(SEXP nthreadsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< Rcpp::IntegerVector >::type nthreads(nthreadsSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_omp_threads(nthreads));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_BiocSingular_compute_scale", (DL_FUNC) &_BiocSingular_compute_scale, 2},
+    {"_BiocSingular_set_omp_threads", (DL_FUNC) &_BiocSingular_set_omp_threads, 1},
     {NULL, NULL, 0}
 };
 
