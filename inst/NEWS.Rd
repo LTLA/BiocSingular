@@ -2,6 +2,10 @@
 \title{BiocSingular News}
 \encoding{UTF-8}
 
+\section{Version 1.6.0}{\itemize{
+\item Migrated the ResidualMatrix class to its own \pkg{ResidualMatrix} package.
+}}
+
 \section{Version 1.2.0}{\itemize{
 \item Added the ResidualMatrix class for computing PCA on residuals efficiently.
 
