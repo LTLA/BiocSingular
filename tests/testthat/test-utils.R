@@ -1,5 +1,5 @@
 # This explicitly unit tests utilities that are indirectly covered elsewhere.
-# library(BiocSingular); library(testthat); source("test-utils.R")
+# library(BiocSingular); library(testthat); source("setup.R"); source("test-utils.R")
 
 test_that("use_crossprod works correctly", {
     expect_true(BiocSingular:::use_crossprod(matrix(0, nrow=10, ncol=100), 1))    
@@ -16,6 +16,14 @@ test_that("use_crossprod works correctly", {
 })
 
 test_that("scale calculations work correctly", {
+    library(DelayedArray)
+    oldp <- getAutoBPPARAM()
+    setAutoBPPARAM(SerialParam())
+
+    helper <- function(...) {
+        BiocSingular:::.compute_center_and_scale(..., TRUE)$scale
+    }
+
     for (it in 1:4) {
         if (it==1L) {
             A <- matrix(runif(2000), 50, 40)
@@ -27,20 +35,43 @@ test_that("scale calculations work correctly", {
             A <- as(Matrix::rsparsematrix(50, 40, density=0.1), "dgTMatrix")
         }
 
-        out <- BiocSingular:::compute_scale(A, NULL)
+        out <- helper(A, center=FALSE)
         ref <- sqrt(Matrix::colSums(A^2)/(nrow(A)-1))
         expect_equal(out, ref)
 
         center <- rnorm(ncol(A))
-        out <- BiocSingular:::compute_scale(A, center)
+        out <- helper(A, center=center)
         B <- sweep(A, 2, center, "-")
         ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
         expect_equal(out, ref)
 
-        expect_identical(BiocSingular:::compute_scale(A[,0], numeric(0)), numeric(0))
-        expect_identical(BiocSingular:::compute_scale(A[0,], NULL), rep(NA_real_, ncol(A)))
-        expect_error(BiocSingular:::compute_scale(A, 1), "should be equal")
+        center <- colMeans(A)
+        out <- helper(A, center=TRUE)
+        B <- sweep(A, 2, center, "-")
+        ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
+        expect_equal(out, ref)
+
+        expect_identical(helper(A[,0], numeric(0)), numeric(0))
+        expect_identical(helper(A[0,], NULL), rep(NA_real_, ncol(A)))
+        expect_error(helper(A, 1), "should be equal")
     }
+
+    # center= works correctly with varying block sizes.
+    oldb <- getAutoBlockSize()
+
+    for (blocks in c(100, 1000, 10000)) {
+        setAutoBlockSize(blocks)
+
+        A <- DelayedArray(matrix(runif(2000), 50, 40))
+        center <- rnorm(ncol(A))
+        out <- helper(A, center=center)
+        B <- DelayedArray::sweep(A, 2, center, "-")
+        ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
+        expect_equal(out, ref)
+    }
+
+    setAutoBlockSize(oldb)
+    setAutoBPPARAM(oldp)
 })
 
 test_that("standardize_matrix works correctly", {

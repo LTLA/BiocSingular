@@ -28,12 +28,12 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
     return(X)
 }
 
-#' @importFrom DelayedArray DelayedArray sweep
-#' @importFrom Matrix colSums 
+#' @importFrom Matrix colMeans
+#' @importFrom beachmat colBlockApply
 .compute_center_and_scale <- function(x, center, scale) {
     if (is.logical(center)) {
         if (center) {
-            center <- colSums(x)/nrow(x)
+            center <- colMeans(x)
         } else {
             center <- NULL
         }
@@ -42,13 +42,26 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
     if (is.logical(scale)) {
         if (scale) {
             # mimic scale() behaviour for any 'center'.
-            scale <- compute_scale(x, center)
+            scale <- colBlockApply(x, FUN=.compute_scale, center=center)
+            scale <- unlist(scale)
         } else {
             scale <- NULL
         }
     }
 
     list(center=center, scale=scale) 
+}
+
+#' @importFrom DelayedArray makeNindexFromArrayViewport
+.compute_scale <- function(block, center) {
+    if (!is.null(center)) {
+        vp <- attr(block, "from_grid")[[attr(block, "block_id")]]
+        cols <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)[[2]]
+        if (!is.null(cols)) {
+            center <- center[cols]
+        }
+    }
+    compute_scale(block, center)
 }
 
 standardize_output_SVD <- function(res, x) 

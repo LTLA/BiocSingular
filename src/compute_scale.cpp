@@ -1,16 +1,16 @@
 #include "Rcpp.h"
-#include "beachmat/numeric_matrix.h"
-#include "beachmat/integer_matrix.h"
-#include "beachmat/utils/const_column.h"
+#include "beachmat3/beachmat.h"
 #include <cmath>
 
-template<class M>
-Rcpp::NumericVector compute_scale_internal(Rcpp::RObject mat, Rcpp::RObject centering) {
-    auto ptr=beachmat::create_matrix<M>(mat);
-    size_t ncols=ptr->get_ncol();
-    size_t nrows=ptr->get_nrow();
+//' @useDynLib BiocSingular
+//' @importFrom Rcpp sourceCpp
+// [[Rcpp::export(rng=false)]]
+Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
+    auto ptr = beachmat::read_lin_block(mat);
+    size_t ncols = ptr->get_ncol();
+    size_t nrows = ptr->get_nrow();
 
-    if (nrows<=1) {
+    if (nrows <= 1) {
         return Rcpp::NumericVector(ncols, R_NaReal);
     }
 
@@ -24,41 +24,50 @@ Rcpp::NumericVector compute_scale_internal(Rcpp::RObject mat, Rcpp::RObject cent
     }
 
     Rcpp::NumericVector output(ncols);
-    beachmat::const_column<M> col_holder(ptr.get());
 
-    for (size_t i=0; i<ncols; ++i) {
-        col_holder.fill(i);
-        auto n=col_holder.get_n();
-        auto vals=col_holder.get_values();
+    if (ptr->is_sparse()) {
+        auto sptr = beachmat::promote_to_sparse(ptr);
+        std::vector<double> work_x(nrows);
+        std::vector<int> work_i(nrows);
 
-        double& current=output[i];
-        for (size_t j=0; j<n; ++j, ++vals) {
-            double val=*vals;
-            if (do_center) {
-                val-=numeric_centers[i];
+        for (size_t i=0; i<ncols; ++i) {
+            auto idx = sptr->get_col(i, work_x.data(), work_i.data());
+
+            double& current=output[i];
+            for (size_t j = 0; j < idx.n; ++j, ++idx.x) {
+                double val = *(idx.x);
+                if (do_center) {
+                    val -= numeric_centers[i];
+                }
+                current += val*val;
             }
-            current+=val*val;
+
+            // Adding back the contribution of the zeros.
+            if (do_center) {
+                current += (nrows - idx.n) * (numeric_centers[i] * numeric_centers[i]);
+            }
         }
 
-        if (do_center && col_holder.is_sparse()) { // adding the contribution of the zeroes.
-            current += (nrows - n) * (numeric_centers[i] * numeric_centers[i]);
-        }
+    } else {
+        std::vector<double> workspace(nrows);
+        for (size_t i = 0; i < ncols; ++i) {
+            auto vals = ptr->get_col(i, workspace.data());
+            double& current = output[i];
 
-        current/=nrows-1;
-        current=std::sqrt(current);
+            for (size_t j=0; j < nrows; ++j, ++vals) {
+                double val=*vals;
+                if (do_center) {
+                    val-=numeric_centers[i];
+                }
+                current += val*val;
+            }
+        }
+    }
+
+    for (auto& current : output) {
+        current /= nrows-1;
+        current = std::sqrt(current);
     }
     
     return output;
-}
-
-//' @useDynLib BiocSingular
-//' @importFrom Rcpp sourceCpp
-// [[Rcpp::export(rng=false)]]
-Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::RObject centering) {
-    auto rtype=beachmat::find_sexp_type(mat);
-    if (rtype==INTSXP) {
-        return compute_scale_internal<beachmat::integer_matrix>(mat, centering);
-    } else {
-        return compute_scale_internal<beachmat::numeric_matrix>(mat, centering);
-    }
 }

@@ -14,13 +14,13 @@ Imports:
     BiocParallel, 
     irlba, 
     rsvd, 
-    Rcpp
+    Rcpp,
+    beachmat
 Suggests: 
     testthat, 
     BiocStyle, 
     knitr, 
     rmarkdown, 
-    beachmat,
     ResidualMatrix
 biocViews: Software, DimensionReduction, PrincipalComponent
 Description: Implements exact and approximate methods for singular value
