@@ -1,6 +1,6 @@
 Package: BiocSingular
-Version: 1.5.0
-Date: 2020-02-13
+Version: 1.5.1
+Date: 2020-09-24
 Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
@@ -20,7 +20,8 @@ Suggests:
     BiocStyle, 
     knitr, 
     rmarkdown, 
-    beachmat
+    beachmat,
+    ResidualMatrix
 biocViews: Software, DimensionReduction, PrincipalComponent
 Description: Implements exact and approximate methods for singular value
         decomposition and principal components analysis, in a framework that
@@ -31,6 +32,6 @@ License: GPL-3
 LinkingTo: Rcpp, beachmat
 VignetteBuilder: knitr
 SystemRequirements: C++11
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 BugReports: https://github.com/LTLA/BiocSingular/issues
 URL: https://github.com/LTLA/BiocSingular

@@ -23,11 +23,3 @@ setMethod("runPCA", "ANY", function(x, rank, center=TRUE, scale=FALSE, get.rotat
 
     out
 })
-
-#' @export
-setMethod("runPCA", "ResidualMatrix", function(x, rank, center=TRUE, scale=FALSE, get.rotation=TRUE, get.pcs=TRUE, ...) {
-    if (center && is_centered(seed(x))) {
-        center <- FALSE
-    }
-    callNextMethod()
-})

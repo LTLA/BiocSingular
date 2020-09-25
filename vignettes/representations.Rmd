@@ -103,31 +103,8 @@ Again, most operations will cause the `LowRankMatrix` to collapse gracefully int
 
 # The `ResidualMatrix` class
 
-A common analysis in genomics applications involves regressing out uninteresting factors of variation prior to a PCA.
-However, doing so naively would discard aspects of the underlying matrix representation.
-The most obvious example is the loss of sparsity when a dense matrix of residuals is computed,
-increasing memory usage and compute time in downstream applications.
-
-The `ResidualMatrix` class provides an alternative to explicit calculation of the residuals.
-The constructor takes a matrix of input values and a design matrix, 
-where residuals are conceptually computed by fitting the linear model to the columns of the input matrix.
-However, the actual calculation of the residuals is delayed until they are explictly required.
-
-```{r}
-design <- model.matrix(~gl(5, 1000))
-y0 <- rsparsematrix(nrow(design), 30000, 0.01)
-resids <- ResidualMatrix(y0, design)
-resids
-```
-
-In fact, matrix multiplication steps involving a `ResidualMatrix` do not even need to compute the residuals explicitly at all.
-This means that `ResidualMatrix` objects can be efficiently used in approximate PCA algorithms based on multiplication.
-
-```{r}
-system.time(pc.out <- runPCA(resids, 10, BSPARAM=IrlbaParam()))
-```
-
-Other operations will cause the `ResidualMatrix` to collapse into `DelayedMatrix` for further processing.
+This has now been moved to its own `r Biocpkg("ResidualMatrix")` package.
+Check it out, it's pretty cool.
 
 # Session information
 
