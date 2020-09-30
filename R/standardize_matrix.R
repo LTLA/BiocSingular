@@ -52,10 +52,10 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
     list(center=center, scale=scale) 
 }
 
-#' @importFrom DelayedArray makeNindexFromArrayViewport
+#' @importFrom DelayedArray makeNindexFromArrayViewport currentViewport
 .compute_scale <- function(block, center) {
     if (!is.null(center)) {
-        vp <- attr(block, "from_grid")[[attr(block, "block_id")]]
+        vp <- currentViewport()
         cols <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)[[2]]
         if (!is.null(cols)) {
             center <- center[cols]
