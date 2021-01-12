@@ -31,51 +31,8 @@ This vignette aims to provide an overview of these classes and how they can be u
 
 # The `DeferredMatrix` class
 
-As previously discussed, we can defer the column centering and scaling of a matrix.
-The `DeferredMatrix` class provides a matrix representation that is equivalent to the output of `scale()`, but without actually performing the centering/scaling operations.
-This is useful when dealing with sparse matrix representations, as naive centering would result in loss of sparsity and increased memory use.
-
-```{r}
-library(Matrix)
-a <- rsparsematrix(10000, 1000, density=0.01)
-object.size(a)
-
-centering <- rnorm(ncol(a))
-scaling <- runif(ncol(a))
-y <- DeferredMatrix(a, centering, scaling)
-y
-
-object.size(y) # 'a' plus the size of 'centering' and 'scaling'.
-```
-
-At first glance, this seems to be nothing more than a variant on a `DelayedMatrix`.
-However, the real advantage of the `DeferredMatrix` comes when performing matrix multiplication.
-Multiplication is applied to the underlying sparse matrix, and the effects of centering and scaling are applied on the result.
-This allows us to achieve much greater speed than `r Biocpkg("DelayedArray")`'s block-processing mechanism, 
-which realizes blocks of the matrix into dense arrays prior to multiplication.
-
-```{r}
-v <- matrix(runif(ncol(a)*2), ncol=2)
-system.time(X <- y %*% v)
-X    
-```
-
-The cost of this speed is that the resulting matrix product is less numerically stable.
-Recovering the effect of centering involves the subtraction of two (potentially large) inner products, which increases the risk of catastrophic cancellation.
-Nonetheless, some reduction in accuracy may be worth the major speed-up when dense realization is avoided.
-
-Note that it is also possible to nest `DeferredMatrix` objects within each other.
-This allows users to center and scale on both dimensions, as shown below.
-
-```{r}
-centering2 <- rnorm(nrow(a))
-scaling2 <- runif(nrow(a))
-y2 <- DeferredMatrix(t(a), centering2, scaling2) # centering on rows of 'a'.
-y3 <- DeferredMatrix(t(y2), centering, scaling) # centering on columns.
-y3
-```
-
-Other operations will cause the `DeferredMatrix` to collapse gracefully into `DelayedMatrix`, leading to block processing for further calculations.
+This has now been moved to its own `r Biocpkg("ScaledMatrix")` package.
+Check it out, it's pretty cool.
 
 # The `LowRankMatrix` class
 
@@ -85,6 +42,7 @@ This may be prohibitively memory-consuming for a large data set.
 Instead, we can construct a `LowRankMatrix` class that mimics the output of the cross-product without actually computing it.
 
 ```{r}
+library(Matrix)
 a <- rsparsematrix(10000, 1000, density=0.01)
 out <- runPCA(a, rank=5, BSPARAM=IrlbaParam(deferred=TRUE)) # deferring for speed.
 recon <- LowRankMatrix(out$rotation, out$x)

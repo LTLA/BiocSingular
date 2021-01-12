@@ -1,6 +1,7 @@
 #' @importFrom BiocParallel SerialParam
 #' @importFrom utils head
 #' @importFrom BiocGenerics nrow ncol
+#' @importFrom Matrix crossprod tcrossprod
 #' @importFrom DelayedArray sweep
 svd_via_crossprod <- function(x, k, nu=k, nv=k, FUN=svd, ...) 
 # Computes the SVD via a crossproduct, using 'FUN' with arguments '...'. 

@@ -86,7 +86,7 @@ test_that("fast automatic method dispatches correctly", {
     set.seed(300); right<- runSVD(dy, k=3, BSPARAM=RandomParam())
     expect_identical(left, right)
 
-    dfm <- DeferredMatrix(y)
+    dfm <- ScaledMatrix(y)
     set.seed(400); left <- runSVD(dfm, k=3, BSPARAM=FastAutoParam())
     set.seed(400); right<- runSVD(dfm, k=3, BSPARAM=IrlbaParam())
     expect_identical(left, right)

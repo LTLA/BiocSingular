@@ -15,16 +15,6 @@ setClass("RandomParam", contains="BiocSingularParam", slots=c(args="list"))
 setClass("FastAutoParam", contains="BiocSingularParam")
 
 #' @export
-setClass("DeferredMatrixSeed", slots=c(.matrix="ANY", center="numeric", scale="numeric", use_center="logical", use_scale="logical", transposed="logical"))
-
-#' @export
-#' @importClassesFrom DelayedArray DelayedMatrix
-setClass("DeferredMatrix",
-    contains="DelayedMatrix",
-    representation(seed="DeferredMatrixSeed")
-)
-
-#' @export
 setClass("LowRankMatrixSeed", slots=c(rotation="ANY", components="ANY"))
 
 #' @export

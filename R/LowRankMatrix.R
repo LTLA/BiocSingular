@@ -144,7 +144,7 @@ setMethod("t", "LowRankMatrix", function(x) {
 })
 
 #' @export
-#' @importFrom DelayedArray DelayedArray seed
+#' @importFrom DelayedArray DelayedArray seed drop
 setMethod("[", "LowRankMatrix", function(x, i, j, ..., drop=TRUE) {
     if (missing(i)) i <- NULL
     if (missing(j)) j <- NULL

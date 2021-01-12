@@ -1,4 +1,5 @@
 #' @importFrom DelayedArray DelayedArray 
+#' @importFrom ScaledMatrix ScaledMatrix
 #' @importFrom BiocParallel SerialParam bpnworkers
 standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPPARAM=SerialParam())
 # Creates a deferred or delayed centered and scaled matrix.
@@ -14,7 +15,7 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
         } else {
             original <- DelayedArray(x) # exploit parallelization for DAs.
         }
-        X <- DeferredMatrix(original, center=center, scale=scale)
+        X <- ScaledMatrix(original, center=center, scale=scale)
 
     } else {
         X <- DelayedArray(x)
