@@ -38,7 +38,7 @@ A list containing:
 \item \code{d}, a numeric vector of the first \code{k} singular values.
 \item \code{u}, a numeric matrix with \code{nrow(x)} rows and \code{nu} columns.
 Each column contains a left singular vector.
-\item \code{u}, a numeric matrix with \code{ncol(x)} rows and \code{nv} columns.
+\item \code{v}, a numeric matrix with \code{ncol(x)} rows and \code{nv} columns.
 Each column contains a right singular vector.
 }
 }
