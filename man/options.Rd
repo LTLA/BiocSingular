@@ -22,7 +22,7 @@ This is currently the default in all functions, to provide the most expected beh
 In general, each SVD function performs the SVD on \code{t((t(x) - C)/S)} where \code{C} and \code{S} are numeric vectors of length equal to \code{ncol(x)}.
 The values of \code{C} and \code{S} are defined according to the \code{center} and \code{scale} options.
 \itemize{
-    \item If \code{center=TRUE}, \code{C} is defined as the column sums of \code{x}.
+    \item If \code{center=TRUE}, \code{C} is defined as the column means of \code{x}.
         If \code{center=NULL} or \code{FALSE}, all elements of \code{C} are set to zero.
         If \code{center} is a numeric vector with length equal to \code{ncol(x)}, it is used to directly define \code{C}.
     \item If \code{scale=TRUE}, the \code{i}th element of \code{S} is defined as the square root of \code{sum((x[,i] - C[i])^2)/(ncol(x)-1)}, for whatever \code{C} was defined above.
