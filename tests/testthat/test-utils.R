@@ -32,7 +32,7 @@ test_that("scale calculations work correctly", {
         } else if (it==3L) {
             A <- Matrix::rsparsematrix(50, 40, density=0.1)
         } else {
-            A <- as(Matrix::rsparsematrix(50, 40, density=0.1), "dgTMatrix")
+            A <- as(Matrix::rsparsematrix(50, 40, density=0.1), "TsparseMatrix")
         }
 
         out <- helper(A, center=FALSE)
