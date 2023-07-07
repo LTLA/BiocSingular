@@ -5,7 +5,7 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
 # Creates a deferred or delayed centered and scaled matrix.
 # The two choices have different implications for speed and accuracy.
 {
-    stats <- .compute_center_and_scale(x, center, scale)
+    stats <- .compute_center_and_scale(x, center, scale, bpnworkers(BPPARAM))
     center <- stats$center
     scale <- stats$scale
 
@@ -29,12 +29,19 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
     return(X)
 }
 
-#' @importFrom Matrix colMeans
-#' @importFrom beachmat colBlockApply
-.compute_center_and_scale <- function(x, center, scale) {
+#' @importFrom beachmat initializeCpp
+.compute_center_and_scale <- function(x, center, scale, nthreads) {
+    if (isTRUE(center) && isTRUE(scale)) {
+        ptr <- initializeCpp(x)
+        out <- compute_center_and_scale(ptr, nthreads)
+        center <- out$center
+        scale <- out$scale
+    }
+
     if (is.logical(center)) {
         if (center) {
-            center <- colMeans(x)
+            ptr <- initializeCpp(x)
+            center <- compute_center(ptr, nthreads)
         } else {
             center <- NULL
         }
@@ -42,27 +49,18 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
 
     if (is.logical(scale)) {
         if (scale) {
-            # mimic scale() behaviour for any 'center'.
-            scale <- colBlockApply(x, FUN=.compute_scale, center=center)
-            scale <- unlist(scale)
+            ptr <- initializeCpp(x)
+            tmp_center <- center
+            if (is.null(tmp_center)) {
+                tmp_center <- numeric(ncol(x))
+            }
+            scale <- compute_scale(ptr, tmp_center, nthreads)
         } else {
             scale <- NULL
         }
     }
 
     list(center=center, scale=scale) 
-}
-
-#' @importFrom DelayedArray makeNindexFromArrayViewport currentViewport
-.compute_scale <- function(block, center) {
-    if (!is.null(center)) {
-        vp <- currentViewport()
-        cols <- makeNindexFromArrayViewport(vp, expand.RangeNSBS=TRUE)[[2]]
-        if (!is.null(cols)) {
-            center <- center[cols]
-        }
-    }
-    compute_scale(block, center)
 }
 
 standardize_output_SVD <- function(res, x) 

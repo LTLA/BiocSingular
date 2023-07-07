@@ -16,62 +16,46 @@ test_that("use_crossprod works correctly", {
 })
 
 test_that("scale calculations work correctly", {
-    library(DelayedArray)
-    oldp <- getAutoBPPARAM()
-    setAutoBPPARAM(SerialParam())
-
-    helper <- function(...) {
-        BiocSingular:::.compute_center_and_scale(..., TRUE)$scale
-    }
-
-    for (it in 1:4) {
-        if (it==1L) {
-            A <- matrix(runif(2000), 50, 40)
-        } else if (it==2L) {
-            A <- matrix(rpois(2000, lambda=5), 50, 40)
-        } else if (it==3L) {
-            A <- Matrix::rsparsematrix(50, 40, density=0.1)
-        } else {
-            A <- as(Matrix::rsparsematrix(50, 40, density=0.1), "TsparseMatrix")
+    for (n in 1:2) {
+        helper <- function(...) {
+            BiocSingular:::.compute_center_and_scale(..., scale=TRUE, nthreads=n)$scale
         }
 
-        out <- helper(A, center=FALSE)
-        ref <- sqrt(Matrix::colSums(A^2)/(nrow(A)-1))
-        expect_equal(out, ref)
+        for (it in 1:4) {
+            if (it==1L) {
+                A <- matrix(runif(2000), 50, 40)
+            } else if (it==2L) {
+                A <- t(DelayedArray(matrix(rpois(2000, lambda=5), 50, 40))) # dense, prefers rows
+            } else if (it==3L) {
+                A <- Matrix::rsparsematrix(50, 40, density=0.1)
+            } else {
+                A <- t(DelayedArray(Matrix::rsparsematrix(50, 40, density=0.1))) # sparse, prefers rows
+            }
 
-        center <- rnorm(ncol(A))
-        out <- helper(A, center=center)
-        B <- sweep(A, 2, center, "-")
-        ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
-        expect_equal(out, ref)
+            out <- helper(A, center=FALSE)
+            A0 <- as.matrix(A)
+            ref <- sqrt(Matrix::colSums(A0^2)/(nrow(A0)-1))
+            expect_equal(out, ref)
 
-        center <- colMeans(A)
-        out <- helper(A, center=TRUE)
-        B <- sweep(A, 2, center, "-")
-        ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
-        expect_equal(out, ref)
+            center <- rnorm(ncol(A0))
+            out <- helper(A, center=center)
+            B <- sweep(A0, 2, center, "-")
+            ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
+            expect_equal(out, ref)
 
-        expect_identical(helper(A[,0], numeric(0)), numeric(0))
-        expect_identical(helper(A[0,], NULL), rep(NA_real_, ncol(A)))
-        expect_error(helper(A, 1), "should be equal")
+            out <- helper(A, center=TRUE)
+            center <- colMeans(A0)
+            B <- sweep(A0, 2, center, "-")
+            ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
+            expect_equal(out, ref)
+
+            expect_identical(helper(A[,0], numeric(0)), numeric(0))
+            expect_identical(helper(A[0,], TRUE), rep(NA_real_, ncol(A)))
+            expect_identical(helper(A[1,,drop=FALSE], TRUE), rep(NA_real_, ncol(A)))
+            expect_identical(helper(A[0,], NULL), rep(NA_real_, ncol(A)))
+            expect_error(helper(A, 1), "should be equal")
+        }
     }
-
-    # center= works correctly with varying block sizes.
-    oldb <- getAutoBlockSize()
-
-    for (blocks in c(100, 1000, 10000)) {
-        setAutoBlockSize(blocks)
-
-        A <- DelayedArray(matrix(runif(2000), 50, 40))
-        center <- rnorm(ncol(A))
-        out <- helper(A, center=center)
-        B <- DelayedArray::sweep(A, 2, center, "-")
-        ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
-        expect_equal(out, ref)
-    }
-
-    setAutoBlockSize(oldb)
-    setAutoBPPARAM(oldp)
 })
 
 test_that("standardize_matrix works correctly", {

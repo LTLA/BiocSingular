@@ -1,6 +1,6 @@
 Package: BiocSingular
-Version: 1.17.0
-Date: 2022-08-16
+Version: 1.17.1
+Date: 2023-07-07
 Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
@@ -32,7 +32,7 @@ Description: Implements exact and approximate methods for singular value
 License: GPL-3
 LinkingTo: Rcpp, beachmat
 VignetteBuilder: knitr
-SystemRequirements: C++11
-RoxygenNote: 7.1.1
+SystemRequirements: C++17
+RoxygenNote: 7.2.3
 BugReports: https://github.com/LTLA/BiocSingular/issues
 URL: https://github.com/LTLA/BiocSingular

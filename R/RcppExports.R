@@ -3,7 +3,15 @@
 
 #' @useDynLib BiocSingular
 #' @importFrom Rcpp sourceCpp
-compute_scale <- function(mat, centering) {
-    .Call('_BiocSingular_compute_scale', PACKAGE = 'BiocSingular', mat, centering)
+compute_center <- function(mat, nthreads) {
+    .Call('_BiocSingular_compute_center', PACKAGE = 'BiocSingular', mat, nthreads)
+}
+
+compute_center_and_scale <- function(mat, nthreads) {
+    .Call('_BiocSingular_compute_center_and_scale', PACKAGE = 'BiocSingular', mat, nthreads)
+}
+
+compute_scale <- function(mat, centers, nthreads) {
+    .Call('_BiocSingular_compute_scale', PACKAGE = 'BiocSingular', mat, centers, nthreads)
 }
 
