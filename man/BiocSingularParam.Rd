@@ -49,10 +49,10 @@ bsparam()
 The BiocSingularParam class controls dispatch of the \code{\link{runSVD}} generic to specific algorithms for SVD.
 The BiocSingularParam class itself is virtual, with several concrete subclasses available in this package:
 \describe{
-    \item{}{\code{ExactParam}: exact SVD with \code{\link{runExactSVD}}.}
-    \item{}{\code{IrlbaParam}: approximate SVD with \pkg{irlba} via \code{\link{runIrlbaSVD}}.}
-    \item{}{\code{RandomParam}: approximate SVD with \pkg{rsvd} via \code{\link{runRandomSVD}}.}
-    \item{}{\code{FastAutoParam}: fast approximate SVD, chosen based on the matrix representation.}
+    \item{\code{ExactParam}:}{exact SVD with \code{\link{runExactSVD}}.}
+    \item{\code{IrlbaParam}:}{approximate SVD with \pkg{irlba} via \code{\link{runIrlbaSVD}}.}
+    \item{\code{RandomParam}:}{approximate SVD with \pkg{rsvd} via \code{\link{runRandomSVD}}.}
+    \item{\code{FastAutoParam}:}{fast approximate SVD, chosen based on the matrix representation.}
 }
 These objects also hold parameters specifying how each algorithm should be run on an arbitrary data set.
 See the associated documentation pages for each specific SVD method for more details.
