@@ -1,4 +1,5 @@
 #include "Rtatami.h"
+#include "tatami_stats/tatami_stats.hpp"
 #include <cmath>
 #include <algorithm>
 
@@ -14,7 +15,9 @@ Rcpp::NumericVector compute_center(Rcpp::RObject mat, int nthreads) {
     if (NR == 0) {
         std::fill(output.begin(), output.end(), R_NaReal);
     } else {
-        auto row_sums = tatami::column_sums(ptr.get(), nthreads);
+        tatami_stats::sums::Options opt;
+        opt.num_threads = nthreads;
+        auto row_sums = tatami_stats::sums::by_column(ptr.get(), opt);
         for (int c = 0, cend = ptr->ncol(); c < cend; ++c) {
             output[c] = row_sums[c] / NR;
         }
@@ -39,10 +42,13 @@ Rcpp::List compute_center_and_scale(Rcpp::RObject mat, int nthreads) {
         if (NR == 0) {
             std::fill(center.begin(), center.end(), R_NaReal);
         } else {
+            double* iptr;
             if (ptr->prefer_rows()) {
-                ptr->dense_row()->fetch_copy(0, cptr);
+                auto iptr = ptr->dense_row()->fetch(0, cptr);
+                tatami::copy_n(iptr, NC, cptr);
             } else {
-                ptr->dense_column()->fetch_copy(0, cptr);
+                auto iptr = ptr->dense_column()->fetch(0, cptr);
+                tatami::copy_n(iptr, NR, cptr);
             }
         }
         std::fill(scale.begin(), scale.end(), R_NaReal);
@@ -55,21 +61,19 @@ Rcpp::List compute_center_and_scale(Rcpp::RObject mat, int nthreads) {
     if (ptr->prefer_rows()) {
         if (ptr->sparse()) {
             tatami::parallelize([&](size_t, int start, int len) -> void {
-                auto ext = tatami::consecutive_extractor<true, true>(ptr.get(), 0, NR, start, len);
-
+                auto ext = tatami::consecutive_extractor<true>(ptr.get(), true, 0, NR, start, len);
                 std::vector<double> vbuffer(len);
                 std::vector<int> ibuffer(len);
+
                 std::vector<double> tmp_means(len), tmp_vars(len);
-                std::vector<int> nonzeros(len);
-                int count = 0;
+                tatami_stats::variances::RunningSparse<double, double, int> runner(len, tmp_means.data(), tmp_vars.data(), false, start);
                 for (int r = 0; r < NR; ++r) {
                     auto range = ext->fetch(r, vbuffer.data(), ibuffer.data());
-                    tatami::stats::variances::compute_running(range, tmp_means.data(), tmp_vars.data(), nonzeros.data(), count, true, start);
+                    runner.add(range.value, range.index, range.number);
                 }
+                runner.finish();
 
-                tatami::stats::variances::finish_running(len, tmp_means.data(), tmp_vars.data(), nonzeros.data(), count);
                 std::copy(tmp_means.begin(), tmp_means.end(), cptr + start);
-
                 for (auto& v : tmp_vars) {
                     v = std::sqrt(v);
                 }
@@ -78,20 +82,18 @@ Rcpp::List compute_center_and_scale(Rcpp::RObject mat, int nthreads) {
 
         } else {
             tatami::parallelize([&](size_t, int start, int len) -> void {
-                auto ext = tatami::consecutive_extractor<true, false>(ptr.get(), 0, NR, start, len);
-
+                auto ext = tatami::consecutive_extractor<false>(ptr.get(), true, 0, NR, start, len);
                 std::vector<double> buffer(len);
+
                 std::vector<double> tmp_means(len), tmp_vars(len);
-                std::vector<int> nonzeros(len);
-                int count = 0;
+                tatami_stats::variances::RunningDense<double, double, int> runner(len, tmp_means.data(), tmp_vars.data(), false);
                 for (int r = 0; r < NR; ++r) {
                     auto ptr = ext->fetch(r, buffer.data());
-                    tatami::stats::variances::compute_running(ptr, len, tmp_means.data(), tmp_vars.data(), count);
+                    runner.add(ptr);
                 }
+                runner.finish();
 
-                tatami::stats::variances::finish_running(len, tmp_means.data(), tmp_vars.data(), nonzeros.data(), count);
                 std::copy(tmp_means.begin(), tmp_means.end(), cptr + start);
-
                 for (auto& v : tmp_vars) {
                     v = std::sqrt(v);
                 }
@@ -104,11 +106,11 @@ Rcpp::List compute_center_and_scale(Rcpp::RObject mat, int nthreads) {
             tatami::parallelize([&](size_t, int start, int len) -> void {
                 tatami::Options opt;
                 opt.sparse_extract_index = false;
-                auto ext = tatami::consecutive_extractor<false, true>(ptr.get(), start, len, opt);
+                auto ext = tatami::consecutive_extractor<true>(ptr.get(), false, start, len, opt);
                 std::vector<double> vbuffer(NR);
                 for (int c = start, end = start + len; c < end; ++c) {
                     auto range = ext->fetch(c, vbuffer.data(), NULL);
-                    auto paired = tatami::stats::variances::compute_direct(range, NR);
+                    auto paired = tatami_stats::variances::direct(range.value, range.number, NR, false);
                     cptr[c] = paired.first;
                     sptr[c] = std::sqrt(paired.second);
                 }
@@ -116,11 +118,11 @@ Rcpp::List compute_center_and_scale(Rcpp::RObject mat, int nthreads) {
 
         } else {
             tatami::parallelize([&](size_t, int start, int len) -> void {
-                auto ext = tatami::consecutive_extractor<false, false>(ptr.get(), start, len);
+                auto ext = tatami::consecutive_extractor<false>(ptr.get(), false, start, len);
                 std::vector<double> buffer(NR);
                 for (int c = start, end = start + len; c < end; ++c) {
                     auto ptr = ext->fetch(c, buffer.data());
-                    auto paired = tatami::stats::variances::compute_direct(ptr, NR);
+                    auto paired = tatami_stats::variances::direct(ptr, NR, false);
                     cptr[c] = paired.first;
                     sptr[c] = std::sqrt(paired.second);
                 }
@@ -158,7 +160,7 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::NumericVector centers
     if (ptr->prefer_rows()) {
         if (ptr->sparse()) {
             tatami::parallelize([&](size_t, int start, int len) -> void {
-                auto ext = tatami::consecutive_extractor<true, true>(ptr.get(), 0, NR, start, len);
+                auto ext = tatami::consecutive_extractor<true>(ptr.get(), true, 0, NR, start, len);
 
                 std::vector<double> vbuffer(len);
                 std::vector<int> ibuffer(len);
@@ -184,7 +186,7 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::NumericVector centers
 
         } else {
             tatami::parallelize([&](size_t, int start, int len) -> void {
-                auto ext = tatami::consecutive_extractor<true, false>(ptr.get(), 0, NR, start, len);
+                auto ext = tatami::consecutive_extractor<false>(ptr.get(), true, 0, NR, start, len);
 
                 std::vector<double> buffer(len);
                 std::vector<double> tmp_vars(len);
@@ -210,7 +212,7 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::NumericVector centers
             tatami::parallelize([&](size_t, int start, int len) -> void {
                 tatami::Options opt;
                 opt.sparse_extract_index = false;
-                auto ext = tatami::consecutive_extractor<false, true>(ptr.get(), start, len, opt);
+                auto ext = tatami::consecutive_extractor<true>(ptr.get(), false, start, len, opt);
                 std::vector<double> vbuffer(NR);
 
                 for (int c = start, end = start + len; c < end; ++c) {
@@ -230,7 +232,7 @@ Rcpp::NumericVector compute_scale(Rcpp::RObject mat, Rcpp::NumericVector centers
 
         } else {
             tatami::parallelize([&](size_t, int start, int len) -> void {
-                auto ext = tatami::consecutive_extractor<false, false>(ptr.get(), start, len);
+                auto ext = tatami::consecutive_extractor<false>(ptr.get(), false, start, len);
                 std::vector<double> buffer(NR);
                 for (int c = start, end = start + len; c < end; ++c) {
                     auto ptr = ext->fetch(c, buffer.data());

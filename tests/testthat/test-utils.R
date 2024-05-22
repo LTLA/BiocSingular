@@ -15,7 +15,7 @@ test_that("use_crossprod works correctly", {
     expect_false(BiocSingular:::use_crossprod(matrix(0, nrow=100, ncol=10), Inf))
 })
 
-test_that("scale calculations work correctly", {
+test_that("center and scale calculations work correctly", {
     for (n in 1:2) {
         helper <- function(...) {
             BiocSingular:::.compute_center_and_scale(..., scale=TRUE, nthreads=n)$scale
@@ -45,6 +45,8 @@ test_that("scale calculations work correctly", {
 
             out <- helper(A, center=TRUE)
             center <- colMeans(A0)
+            expect_equal(center, BiocSingular:::compute_center(beachmat::initializeCpp(A), n))
+
             B <- sweep(A0, 2, center, "-")
             ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
             expect_equal(out, ref)
