@@ -16,7 +16,7 @@ Imports:
     irlba, 
     rsvd, 
     Rcpp,
-    beachmat
+    beachmat (>= 2.21.1)
 Suggests: 
     testthat, 
     BiocStyle, 
