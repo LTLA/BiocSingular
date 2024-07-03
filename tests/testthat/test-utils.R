@@ -89,6 +89,15 @@ test_that("standardize_matrix works correctly", {
     }
 })
 
+test_that("standardize_matrix behaves with no-variance rows", {
+    A <- matrix(10, 50, 40)
+    out <- BiocSingular:::standardize_matrix(A, center=TRUE, scale=TRUE)
+    expect_equal(as.matrix(out), matrix(0, 50, 40))
+
+    out <- BiocSingular:::standardize_matrix(A, center=TRUE, scale=TRUE, deferred=TRUE)
+    expect_equal(as.matrix(out), matrix(0, 50, 40))
+})
+
 test_that("standardize_output_SVD works correctly", {
     out <- BiocSingular:::standardize_output_SVD(list(u=1:5, d=TRUE, v=1:10), NULL)
     expect_identical(names(out), c("d", "u", "v"))

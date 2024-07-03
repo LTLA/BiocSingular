@@ -2,6 +2,10 @@
 \title{BiocSingular News}
 \encoding{UTF-8}
 
+\section{Version 1.22.0}{\itemize{
+\item Bugfix for \code{scale=TRUE} with zero-variance rows.
+}}
+
 \section{Version 1.6.0}{\itemize{
 \item Migrated the ResidualMatrix class to its own \pkg{ResidualMatrix} package.
 }}

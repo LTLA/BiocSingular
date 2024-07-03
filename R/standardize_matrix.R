@@ -8,6 +8,9 @@ standardize_matrix <- function(x, center=FALSE, scale=FALSE, deferred=FALSE, BPP
     stats <- .compute_center_and_scale(x, center, scale, bpnworkers(BPPARAM))
     center <- stats$center
     scale <- stats$scale
+    if (!is.null(scale)) {
+        scale[scale == 0] <- 1
+    }
 
     if (deferred) {
         if (bpnworkers(BPPARAM)==1L) {
