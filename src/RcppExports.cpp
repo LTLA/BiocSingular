@@ -10,6 +10,16 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// set_executor
+SEXP set_executor(SEXP ptr);
+RcppExport SEXP _BiocSingular_set_executor(SEXP ptrSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::traits::input_parameter< SEXP >::type ptr(ptrSEXP);
+    rcpp_result_gen = Rcpp::wrap(set_executor(ptr));
+    return rcpp_result_gen;
+END_RCPP
+}
 // compute_center
 Rcpp::NumericVector compute_center(Rcpp::RObject mat, int nthreads);
 RcppExport SEXP _BiocSingular_compute_center(SEXP matSEXP, SEXP nthreadsSEXP) {
@@ -46,6 +56,7 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_BiocSingular_set_executor", (DL_FUNC) &_BiocSingular_set_executor, 1},
     {"_BiocSingular_compute_center", (DL_FUNC) &_BiocSingular_compute_center, 2},
     {"_BiocSingular_compute_center_and_scale", (DL_FUNC) &_BiocSingular_compute_center_and_scale, 2},
     {"_BiocSingular_compute_scale", (DL_FUNC) &_BiocSingular_compute_scale, 3},

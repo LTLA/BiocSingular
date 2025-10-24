@@ -1,6 +1,6 @@
 Package: BiocSingular
-Version: 1.25.0
-Date: 2024-09-21
+Version: 1.25.1
+Date: 2025-10-23
 Title: Singular Value Decomposition for Bioconductor Packages
 Authors@R: c(person("Aaron", "Lun", role=c("aut", "cre", "cph"),
         email="infinite.monkeys.with.keyboards@gmail.com"))
@@ -16,7 +16,7 @@ Imports:
     irlba, 
     rsvd, 
     Rcpp,
-    beachmat (>= 2.21.1)
+    beachmat (>= 2.25.1)
 Suggests: 
     testthat, 
     BiocStyle, 
@@ -36,6 +36,7 @@ LinkingTo:
     assorthead
 VignetteBuilder: knitr
 SystemRequirements: C++17
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.3
+Encoding: UTF-8
 BugReports: https://github.com/LTLA/BiocSingular/issues
 URL: https://github.com/LTLA/BiocSingular
