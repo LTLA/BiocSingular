@@ -6,6 +6,6 @@
 \alias{DeferredMatrixSeed}
 \title{The DeferredMatrix class}
 \description{
-This has been deprecated in favor of the \linkS4class{ScaledMatrix} class 
+This has been deprecated in favor of the \link[ScaledMatrix]{ScaledMatrix} class 
 from the \pkg{ScaledMatrix} package - use those constructors instead.
 }

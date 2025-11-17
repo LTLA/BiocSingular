@@ -19,14 +19,14 @@ runRandomSVD(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE,
     \item{scale}{A logical scalar indicating whether columns should be scaled. 
         Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
-    \item{...}{Further arguments to pass to \code{\link{rsvd}}.}
+    \item{...}{Further arguments to pass to \code{\link[rsvd]{rsvd}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
         see \code{?"\link{BiocSingular-options}"}.}
-    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+    \item{BPPARAM}{A \link[BiocParallel]{BiocParallelParam} object specifying how parallelization should be performed.}
 }
 
 \details{
-All multiplication operations in \code{\link{rsvd}} involving \code{x} will be parallelized according to the supplied \code{BPPARAM}.
+All multiplication operations in \code{\link[rsvd]{rsvd}} involving \code{x} will be parallelized according to the supplied \code{BPPARAM}.
 
 The dimensionality of the working subspace is defined as the maximum of \code{k}, \code{nu} and \code{nv}, plus the \code{q} specified in \code{...}.
 }
@@ -47,7 +47,7 @@ Aaron Lun
 }
 
 \seealso{
-\code{\link{rsvd}} for the underlying algorithm.
+\code{\link[rsvd]{rsvd}} for the underlying algorithm.
 }
 
 \examples{

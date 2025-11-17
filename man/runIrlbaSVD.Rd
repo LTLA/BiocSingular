@@ -20,14 +20,14 @@ runIrlbaSVD(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE,
         Alternatively, a numeric vector or \code{NULL} - see \code{?"\link{BiocSingular-options}"}.} 
     \item{deferred}{Logical scalar indicating whether centering/scaling should be deferred, see \code{?"\link{BiocSingular-options}"}.}
     \item{extra.work}{Integer scalar specifying the additional number of dimensions to use for the working subspace.}
-    \item{...}{Further arguments to pass to \code{\link{irlba}}.}
+    \item{...}{Further arguments to pass to \code{\link[irlba]{irlba}}.}
     \item{fold}{Numeric scalar specifying the minimum fold difference between dimensions of \code{x} to compute the cross-product, 
         see \code{?"\link{BiocSingular-options}"}.}
-    \item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+    \item{BPPARAM}{A \link[BiocParallel]{BiocParallelParam} object specifying how parallelization should be performed.}
 }
 
 \details{
-If \code{BPPARAM} has only 1 worker and a cross-product is not being computed, this function will use \code{\link{irlba}}'s own \code{center} and \code{scale} arguments.
+If \code{BPPARAM} has only 1 worker and a cross-product is not being computed, this function will use \code{\link[irlba]{irlba}}'s own \code{center} and \code{scale} arguments.
 This is effectively equivalent to deferred centering and scaling, despite the setting of \code{deferred=FALSE}.
 
 For multiple workers, this function will parallelize all multiplication operations involving \code{x} according to the supplied \code{BPPARAM}.
@@ -51,7 +51,7 @@ Aaron Lun
 }
 
 \seealso{
-\code{\link{irlba}} for the underlying algorithm.
+\code{\link[irlba]{irlba}} for the underlying algorithm.
 }
 
 \examples{

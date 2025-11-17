@@ -17,10 +17,6 @@ test_that("use_crossprod works correctly", {
 
 test_that("center and scale calculations work correctly", {
     for (n in 1:2) {
-        helper <- function(...) {
-            BiocSingular:::.compute_center_and_scale(..., scale=TRUE, nthreads=n)$scale
-        }
-
         for (it in 1:4) {
             if (it==1L) {
                 A <- matrix(runif(2000), 50, 40)
@@ -32,30 +28,31 @@ test_that("center and scale calculations work correctly", {
                 A <- t(DelayedArray(Matrix::rsparsematrix(50, 40, density=0.1))) # sparse, prefers rows
             }
 
-            out <- helper(A, center=FALSE)
             A0 <- as.matrix(A)
+            out <- BiocSingular:::.compute_center_and_scale(A, center=TRUE, scale=FALSE, nthreads=n)
+            expect_equal(out$center, colMeans(A0))
+            expect_null(out$scale)
+            expect_equal(out$center, BiocSingular:::compute_center(beachmat::initializeCpp(A), n))
+
+            out <- BiocSingular:::.compute_center_and_scale(A, center=TRUE, scale=TRUE, nthreads=n)
+            expect_equal(out$center, colMeans(A0))
+            B <- sweep(A0, 2, out$center, "-")
+            ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
+            expect_equal(out$scale, ref)
+
+            out <- BiocSingular:::.compute_center_and_scale(A, center=FALSE, scale=TRUE, nthreads=n)
             ref <- sqrt(Matrix::colSums(A0^2)/(nrow(A0)-1))
-            expect_equal(out, ref)
+            expect_equal(out$scale, ref)
+            expect_null(out$center)
 
             center <- rnorm(ncol(A0))
-            out <- helper(A, center=center)
+            out <- BiocSingular:::.compute_center_and_scale(A, center=center, scale=TRUE, nthreads=n)
             B <- sweep(A0, 2, center, "-")
             ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
-            expect_equal(out, ref)
+            expect_equal(out$center, center)
+            expect_equal(out$scale, ref)
 
-            out <- helper(A, center=TRUE)
-            center <- colMeans(A0)
-            expect_equal(center, BiocSingular:::compute_center(beachmat::initializeCpp(A), n))
-
-            B <- sweep(A0, 2, center, "-")
-            ref <- sqrt(Matrix::colSums(B^2)/(nrow(B)-1))
-            expect_equal(out, ref)
-
-            expect_identical(helper(A[,0], numeric(0)), numeric(0))
-            expect_identical(helper(A[0,], TRUE), rep(NA_real_, ncol(A)))
-            expect_identical(helper(A[1,,drop=FALSE], TRUE), rep(NA_real_, ncol(A)))
-            expect_identical(helper(A[0,], NULL), rep(NA_real_, ncol(A)))
-            expect_error(helper(A, 1), "should be equal")
+            expect_error(BiocSingular:::.compute_center_and_scale(A, center=1, scale=TRUE, nthreads=n), "should be equal")
         }
     }
 })
@@ -96,6 +93,17 @@ test_that("center and scale calculations work for edge cases", {
         out <- BiocSingular:::.compute_center_and_scale(A, center=FALSE, scale=TRUE, nthreads=1)
         expect_identical(out$scale, rep(NA_real_, 10))
     }
+
+    empty <- matrix(0, 10, 0)
+    out <- BiocSingular:::.compute_center_and_scale(empty, center=TRUE, scale=TRUE, nthreads=1)
+    expect_identical(out$center, numeric(0))
+    expect_identical(out$scale, numeric(0))
+
+    out <- BiocSingular:::.compute_center_and_scale(empty, center=TRUE, scale=FALSE, nthreads=1)
+    expect_identical(out$center, numeric(0))
+
+    out <- BiocSingular:::.compute_center_and_scale(empty, center=FALSE, scale=TRUE, nthreads=1)
+    expect_identical(out$scale, numeric(0))
 })
 
 test_that("standardize_matrix works correctly", {

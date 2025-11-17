@@ -72,13 +72,13 @@ see \dQuote{Deferred centering and scaling} in \code{?"\link{BiocSingular-option
 \section{Automatically choosing a fast SVD algorithm}{
 Running \code{\link{runSVD}} with a FastAutoParam object will dispatch to \code{\link{runIrlbaSVD}} for most matrices.
 This is the default choice as IRLBA is fast and the approximation is highly similar to the exact SVD result. 
-The exception is that of instances of the \linkS4class{DelayedMatrix} class, or any subclass that lacks its own specialized \code{\%*\%} method.
+The exception is that of instances of the \link[DelayedArray]{DelayedMatrix} class, or any subclass that lacks its own specialized \code{\%*\%} method.
 In such cases, \code{\link{runSVD}} with a FastAutoParam will dispatch to \code{\link{runRandomSVD}}, which minimizes the number of matrix multiplication steps and the associated costly block processing.
 However, if a DelayedMatrix subclass has its own \code{\%*\%} method, it is assumed to be efficient enough to afford repeated multiplications in \code{\link{runIrlbaSVD}}.
 }
 
 \section{Setting a session-wide default}{
-\code{bsparam()} will return a session-wide value for the BiocSingularParam object, analogous to \code{\link{bpparam}()}.
+\code{bsparam()} will return a session-wide value for the BiocSingularParam object, analogous to \code{\link[BiocParallel]{bpparam}()}.
 This defaults to a FastAutoParam object but can be modified by setting the \code{"BiocSingularParam.default"} global option to any BiocSingularParam object.
 Any code that uses \code{bsparam()} will automatically use this new default without needing to explicitly pass the BiocSingularParam object to those functions.
 }

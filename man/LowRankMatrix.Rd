@@ -44,14 +44,14 @@ The \code{LowRankMatrix} constructor will return a LowRankMatrix object equivale
 }
 
 \section{Methods for LowRankMatrixSeed objects}{
-LowRankMatrixSeed objects are implemented as \linkS4class{DelayedMatrix} backends.
+LowRankMatrixSeed objects are implemented as \link[DelayedArray]{DelayedMatrix} backends.
 They support standard operations like \code{dim}, \code{dimnames} and \code{extract_array}.
 
-Passing a LowRankMatrixSeed object to the \code{\link{DelayedArray}} constructor will create a LowRankMatrix object.
+Passing a LowRankMatrixSeed object to the \code{\link[DelayedArray]{DelayedArray}} constructor will create a LowRankMatrix object.
 }
 
 \section{Methods for LowRankMatrix objects}{
-LowRankMatrix objects are derived from \linkS4class{DelayedMatrix} objects and support all of valid operations on the latter.
+LowRankMatrix objects are derived from \link[DelayedArray]{DelayedMatrix} objects and support all of valid operations on the latter.
 Subsetting, transposition and replacement of row/column names are specialized for greater efficiency when operating on LowRankMatrix instances,
 and will return a new LowRankMatrix rather than a DelayedMatrix.
 

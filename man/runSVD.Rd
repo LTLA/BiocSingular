@@ -22,7 +22,7 @@ runSVD(x, k, nu=k, nv=k, center=FALSE, scale=FALSE,
 \item{nv}{Integer scalar specifying the number of right singular vectors to return.}
 \item{center}{Numeric vector, logical scalar or \code{NULL}, specifying values to subtract from each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
 \item{scale}{Numeric vector, logical scalar or \code{NULL}, specifying values to divide each column of \code{x} - see \code{?"\link{BiocSingular-options}"}.}
-\item{BPPARAM}{A \linkS4class{BiocParallelParam} object specifying how parallelization should be performed.}
+\item{BPPARAM}{A \link[BiocParallel]{BiocParallelParam} object specifying how parallelization should be performed.}
 \item{...}{Further arguments to pass to specific methods.}
 \item{BSPARAM}{A \linkS4class{BiocSingularParam} object specifying the type of algorithm to run.}
 }
