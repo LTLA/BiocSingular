@@ -60,6 +60,44 @@ test_that("center and scale calculations work correctly", {
     }
 })
 
+test_that("center and scale calculations work for edge cases", {
+    for (it in 1:4) {
+        if (it==1L) {
+            A <- matrix(runif(10), 1, 10)
+        } else if (it==2L) {
+            A <- t(DelayedArray(matrix(rnorm(10), 10, 1))) # dense, prefers rows
+        }
+
+        out <- BiocSingular:::.compute_center_and_scale(A, center=TRUE, scale=TRUE, nthreads=1)
+        expect_identical(out$center, A[1,])
+        expect_identical(out$scale, rep(NA_real_, 10))
+
+        out <- BiocSingular:::.compute_center_and_scale(A, center=TRUE, scale=FALSE, nthreads=1)
+        expect_identical(out$center, A[1,])
+
+        out <- BiocSingular:::.compute_center_and_scale(A, center=FALSE, scale=TRUE, nthreads=1)
+        expect_identical(out$scale, rep(NA_real_, 10))
+    }
+
+    for (it in 1:4) {
+        if (it==1L) {
+            A <- matrix(runif(0), 0, 10)
+        } else if (it==2L) {
+            A <- t(DelayedArray(matrix(rnorm(0), 10, 0))) # dense, prefers rows
+        }
+
+        out <- BiocSingular:::.compute_center_and_scale(A, center=TRUE, scale=TRUE, nthreads=1)
+        expect_identical(out$center, rep(NA_real_, 10))
+        expect_identical(out$scale, rep(NA_real_, 10))
+
+        out <- BiocSingular:::.compute_center_and_scale(A, center=TRUE, scale=FALSE, nthreads=1)
+        expect_identical(out$center, rep(NA_real_, 10))
+
+        out <- BiocSingular:::.compute_center_and_scale(A, center=FALSE, scale=TRUE, nthreads=1)
+        expect_identical(out$scale, rep(NA_real_, 10))
+    }
+})
+
 test_that("standardize_matrix works correctly", {
     A <- matrix(runif(2000), 50, 40)
 
