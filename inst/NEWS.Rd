@@ -2,6 +2,10 @@
 \title{BiocSingular News}
 \encoding{UTF-8}
 
+\section{Version 1.28.0}{\itemize{
+\item Bugfix for \code{center=TRUE} and \code{scale=TRUE} when there are fewer than two rows.
+}}
+
 \section{Version 1.22.0}{\itemize{
 \item Bugfix for \code{scale=TRUE} with zero-variance rows.
 }}
