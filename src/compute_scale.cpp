@@ -49,13 +49,8 @@ Rcpp::List compute_center_and_scale(Rcpp::RObject mat, int nthreads) {
         if (NR == 0) {
             std::fill(center.begin(), center.end(), R_NaReal);
         } else {
-            if (ptr->prefer_rows()) {
-                auto iptr = ptr->dense_row()->fetch(0, cptr);
-                tatami::copy_n(iptr, NC, cptr);
-            } else {
-                auto iptr = ptr->dense_column()->fetch(0, cptr);
-                tatami::copy_n(iptr, NR, cptr);
-            }
+            auto iptr = ptr->dense_row()->fetch(0, cptr);
+            tatami::copy_n(iptr, NC, cptr);
         }
         std::fill(scale.begin(), scale.end(), R_NaReal);
         return Rcpp::List::create(
