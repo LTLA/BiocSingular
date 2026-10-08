@@ -43,7 +43,7 @@ ExactParam <- function(deferred=FALSE, fold=Inf) {
 
 #' @export
 #' @importFrom methods new
-IrlbaParam <- function(deferred=FALSE, fold=Inf, extra.work=7, ...) {
+IrlbaParam <- function(deferred=FALSE, fold=Inf, extra.work=16, ...) {
     new("IrlbaParam", deferred=as.logical(deferred), fold=as.numeric(fold), extra.work=as.integer(extra.work), args=list(...))
 }
 

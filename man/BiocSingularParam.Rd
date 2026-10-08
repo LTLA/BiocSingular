@@ -28,7 +28,7 @@
 \usage{
 ExactParam(deferred=FALSE, fold=Inf)
 
-IrlbaParam(deferred=FALSE, fold=Inf, extra.work=7, ...)
+IrlbaParam(deferred=FALSE, fold=Inf, extra.work=16, ...)
 
 RandomParam(deferred=FALSE, fold=Inf, ...)
 

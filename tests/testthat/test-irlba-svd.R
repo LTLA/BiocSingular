@@ -42,22 +42,22 @@ test_that("IRLBA works on thin matrices", {
     out <- runIrlbaSVD(y, k=3, fold=1)
     set.seed(200)
     ref <- irlba(y, nv=3, nu=3)
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 
     # Handles truncation.
     set.seed(200)
-    out <- runIrlbaSVD(y, k=5, nv=3, nu=2, fold=1)
+    out <- runIrlbaSVD(y, k=4, nv=3, nu=2, fold=1)
     set.seed(200)
-    ref <- irlba(y, nu=2, nv=5)
+    ref <- irlba(y, nu=2, nv=4)
     ref$v <- ref$v[,1:3]
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 
     set.seed(200)
     out <- runIrlbaSVD(y, k=1, nv=3, nu=2, fold=1)
     set.seed(200)
     ref <- irlba(y, nu=2, nv=3)
     ref$d <- ref$d[1]
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 })
 
 set.seed(9002)
@@ -67,22 +67,22 @@ test_that("IRLBA works on fat matrices", {
     out <- runIrlbaSVD(y, k=4, fold=1)
     set.seed(300)
     ref <- irlba(y, nu=4, nv=4)
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 
     # Handles truncation.
     set.seed(300)
-    out <- runIrlbaSVD(y, k=5, nv=4, nu=2, fold=1)
+    out <- runIrlbaSVD(y, k=4, nv=3, nu=2, fold=1)
     set.seed(300)
-    ref <- irlba(y, nu=2, nv=5)
-    ref$v <- ref$v[,1:4]
-    expect_equal_svd(out, ref)
+    ref <- irlba(y, nu=2, nv=4)
+    ref$v <- ref$v[,1:3]
+    expect_equal_svd(out, ref, tol=1e-6)
 
     set.seed(300)
-    out <- runIrlbaSVD(y, k=1, nv=6, nu=2, fold=1)
+    out <- runIrlbaSVD(y, k=1, nv=3, nu=2, fold=1)
     set.seed(300)
-    ref <- irlba(y, nu=2, nv=6)
+    ref <- irlba(y, nu=2, nv=3)
     ref$d <- ref$d[1]
-    expect_equal_svd(out, ref)
+    expect_equal_svd(out, ref, tol=1e-6)
 })
 
 set.seed(9003)

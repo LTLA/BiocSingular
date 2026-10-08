@@ -4,9 +4,19 @@
 #' @importFrom utils head
 #' @importClassesFrom Matrix dgCMatrix
 #' @importFrom DelayedArray getAutoBPPARAM setAutoBPPARAM
-runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=FALSE, extra.work=7, ..., 
-    fold=Inf, BPPARAM=SerialParam())
-{
+runIrlbaSVD <- function(
+    x,
+    k=5,
+    nu=k,
+    nv=k,
+    center=FALSE,
+    scale=FALSE,
+    deferred=FALSE,
+    extra.work=16, 
+    ..., 
+    fold=Inf,
+    BPPARAM=SerialParam()
+) {
     if (nu==0 && nv==0 && k==0) {
         return(list(d=numeric(0),
                     u=matrix(0, nrow(x), 0),
@@ -29,7 +39,6 @@ runIrlbaSVD <- function(x, k=5, nu=k, nv=k, center=FALSE, scale=FALSE, deferred=
         bpstart(BPPARAM)
         on.exit(bpstop(BPPARAM), add=TRUE)
     }
-
     args <- list(work=max(k, nu, nv) + extra.work, ...)
 
     if (use_crossprod(x, fold)) {
